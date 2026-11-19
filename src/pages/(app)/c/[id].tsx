@@ -5,7 +5,7 @@
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from 'deepspace'
 import { buttonVariants, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
-import { APP_NAME } from '../../../constants'
+import { BRAND } from '../../../constants'
 import { CompetitionHeader } from '../../../features/competition/CompetitionHeader'
 import { DataTab } from '../../../features/competition/DataTab'
 import {
@@ -36,7 +36,7 @@ export default function CompetitionPage() {
   if (!competition) {
     return (
       <div className="mx-auto w-full max-w-3xl px-6 py-16 text-center">
-        <title>{`Competition · ${APP_NAME}`}</title>
+        <title>{`Competition · ${BRAND}`}</title>
         {loading ? (
           <p className="text-sm text-muted-foreground" aria-busy="true">
             Loading the competition.
@@ -67,7 +67,7 @@ export default function CompetitionPage() {
 
   return (
     <div className="mx-auto w-full max-w-4xl px-6 py-10">
-      <title>{`${competition.title} · ${APP_NAME}`}</title>
+      <title>{`${competition.title} · ${BRAND}`}</title>
       <CompetitionHeader competition={competition} phase={phase} now={now} />
       <Tabs value={tab} onValueChange={choose} className="mt-6">
         <TabsList>

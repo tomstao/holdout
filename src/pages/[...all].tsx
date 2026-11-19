@@ -1,18 +1,18 @@
 import { Link } from 'react-router-dom'
-import { APP_NAME } from '../constants'
+import { BRAND } from '../constants'
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-      <title>{`Not found · ${APP_NAME}`}</title>
+    <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
+      <title>{`Not found · ${BRAND}`}</title>
       <meta name="robots" content="noindex" />
-      <h1 className="mb-2 text-4xl font-bold text-foreground">404</h1>
-      <p className="mb-6 text-muted-foreground">Page not found</p>
+      <p className="font-mono text-sm text-muted-foreground">404</p>
+      <h1 className="mt-2 text-2xl font-semibold text-foreground">This page does not exist.</h1>
       <Link
         to="/home"
-        className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+        className="mt-6 inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
       >
-        Go home
+        See the competitions
       </Link>
     </div>
   )

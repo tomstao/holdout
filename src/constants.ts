@@ -1,6 +1,9 @@
 /** App name — replaced by the CLI during scaffolding */
 export const APP_NAME = 'holdout'
 
+/** The product's name as people read it: page titles, prose, labels. */
+export const BRAND = 'Holdout'
+
 /** Immutable app identity — data scope keys to this, so renames never
  *  strand your records.
  *
