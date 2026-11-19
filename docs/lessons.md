@@ -64,3 +64,85 @@ agent repeats them. Newest at the bottom. Each entry: what happened, what to do 
 - **The console code page is GBK:** run Python with `PYTHONUTF8=1`.
 - **Git's global identity is a personal address:** this repository uses a repo-local
   `user.name`/`user.email` with the GitHub no-reply address.
+
+## 2026-11-19, day-1 spikes (S1 to S8)
+
+Run from the throwaway branch `spike/day-1` (kept locally, not merged) against
+`npx deepspace dev start` on SDK 0.44.2, driven by a Playwright spec signed in as a test
+account. S3 used the real platform file storage. The questions are in
+[plan.md](plan.md#de-risking-spikes-day-1).
+
+| #   | Result                  | Measured                                                                                                                                                                                                     | Still open                                           |
+| --- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| S1  | Pass, locally           | A 1.5 MB `rows` array (47,324 rows) comes back intact: create 35 to 47 ms, get 20 to 32 ms, whole action about 100 ms                                                                                        | The 2 MB row limit: local accepts an 8 MB record     |
+| S2  | Pass, locally           | 50,000 rows in a 2.3 MB all-quoted file, answer key read from a record: 53 to 67 ms per request (an empty action: 10 to 23 ms). About 35 to 46 ms of CPU in Node for body parse, key parse, CSV parse, score | The CPU limit of the deployed Worker                 |
+| S3  | Decided: keep the route | Member B replaced and then deleted member A's `app`-scope file. The Worker wrote 5 MB into the host's `self` folder (1.7 to 2.0 s) and a public route streamed it back intact in 0.3 s with `Content-Length` | Nothing                                              |
+| S4  | Pass                    | 5 creates in one request and 20 two-request races: exactly one create wins every time. The loser has no `code`; its `error` starts with `Duplicate: a record with`                                           | Nothing (SDK code, the same once deployed)           |
+| S5  | Pass, locally           | Job: 200 writes in one run (0.9 s), 5 chunks of 40 with `ctx.continue` (1.0 s in total), 1,200 in one run (5.3 s; 1.6 s with 20 in flight). Cron task: 200 writes in 0.9 s                                   | The subrequest limit: local does not enforce one     |
+| S6  | Pass, locally           | 4,999 rows arrive as one 1.95 MB WebSocket frame, ready in 82 ms; a new row appears live. With no `limit`, all 5,003 rows arrive                                                                             | The WebSocket message size limit on the deployed app |
+| S7  | Pass                    | With `authorizeWrite: () => false`, `enqueueJob` from the cron task and from an action still ran the job; a signed-in member's `useJobs().enqueue` rejected with `JobRoom write access denied`               | Nothing (SDK code)                                   |
+| S8  | Not run                 | Needs two owner-controlled addresses; one send costs $0.013                                                                                                                                                  | Everything                                           |
+
+**What the spikes taught**
+
+- **Local `workerd` does not enforce the platform's limits.** A record with 8 MB of JSON
+  wrote and read back, and one job run made 1,200 record writes. A local pass says nothing
+  about the 2 MB row limit, the CPU limit, the subrequest limit or the WebSocket message
+  limit. Confirm those on the deployed app before relying on them.
+- **`app`-scope files are writable and deletable by every signed-in member,** not only by
+  the uploader. Never put anything there that another member must not replace. Datasets
+  stay in the host's `self` folder behind the Worker route
+  ([ADR 0011](decisions/0011-datasets-in-host-files-behind-a-route.md)). The host can
+  still replace or delete a file in their own folder through `useR2Files`.
+- **`appFiles` takes two kinds of key.** `upload({ key })` and `list({ prefix })` take the
+  key inside the scope (`spike/train.csv`); `download` and `delete` take the stored key
+  that `upload` returns (`apps/<app>/users/<id>/spike/train.csv`). The short key answers
+  `Access denied: key outside scope`. Store the returned `key` on the record.
+- **A `uniqueOn` refusal has no `code`.** The result is `success: false` with an `error`
+  that names the fields and the collection and always begins
+  `Duplicate: a record with`. Detect it with `error.startsWith('Duplicate:')`, in one helper
+  ([ADR 0008](decisions/0008-daily-limit-with-uniqueon-slots.md)). An update into a taken
+  key is refused the same way.
+- **`tools.create` with an existing `recordId` is a merge, not a refusal.** It does not
+  guard against creating twice; only `uniqueOn` does.
+- **`tools.create` and `tools.update` return the whole record** as `data.record`, although
+  the SDK types say `{ recordId }`. Creating the answer key sends its 1.5 MB back to the
+  Worker. Never pass a raw tools result to the client; `implement()` strips it.
+- **An action's `tools.query` returns every match when no `limit` is given:** 5,000 rows,
+  1.97 MB, in one call (23 ms locally). The default of 50 and the 30 KB page cap noted on
+  day 0 belong to the agent tools, not to action tools. `offset` works at runtime but is
+  missing from the `ActionTools` type.
+- **A `useQuery` subscription has no default cap, and `limit` also caps live rows.** With
+  `limit: 5000` and 5,000 rows shown, three more inserts never appeared. Subscribe to a
+  competition's submissions without `limit`.
+- **A submission row is about 390 bytes on the wire, not 100.** The record envelope
+  (`recordId`, `createdBy`, two ISO timestamps) and the JSON keys outweigh the data. 5,000
+  submissions are 1.95 MB per viewer, sent as one frame
+  ([ADR 0007](decisions/0007-derive-the-leaderboard-from-submissions.md)).
+- **The two answer-key caps do not agree.** `[id, target, split]` rows with 7-character
+  ids take 30 to 35 bytes each, so 50,000 rows are 1.58 MB (classification) or 1.73 MB
+  (regression), above the 1.5 MB cap; longer ids reach the cap sooner. The byte cap is the
+  one that binds. SQLite's limit counts bytes, so measure the UTF-8 length, not
+  `string.length` ([ADR 0006](decisions/0006-answer-key-in-a-server-only-collection.md)).
+- **`createdBy` is the caller for an action's writes and the owner for cron and job
+  writes.** Do not use it to decide who owns a row; store the id in a column.
+- **`authorizeRead` defaults to `authorizeWrite`.** Closing writes on the JobRoom also
+  hides the queue from every client unless `authorizeRead` is set separately. A member
+  who may read sees every job's payload.
+- **`ctx.continue` costs little:** the next chunk started about 50 ms after the previous
+  one returned.
+- **`APP_OWNER_JWT` in `.dev.vars` cannot call the app's own actions.** It carries
+  `scope: app:<id>` for the integrations API, and the app's `verifyJwt` refuses scoped
+  tokens (401). To call an action from a script, sign in a test account with the `users`
+  fixture and take the token from `getAuthToken()` in the page.
+- **`deepspace test run` owns port 5173 and will not reuse a running dev server.** To
+  iterate against `npx deepspace dev start`, run `npx playwright test -c <config>` with a
+  config that has no `webServer`.
+- **Playwright empties `test-results/` at the start of every run.** Write logs that must
+  survive somewhere else.
+- **Locally the clock moves during CPU work; on Cloudflare it does not.** `Date.now()`
+  around pure computation reads 0 in production. Time a request from the caller, or read
+  the CPU time in `npx deepspace logs`.
+- **The file allocation shows as 1.0 GiB** (`npx deepspace app files list`), not the
+  128 MiB the docs give for the free plan. The usage figure lagged a delete by a few
+  minutes.
