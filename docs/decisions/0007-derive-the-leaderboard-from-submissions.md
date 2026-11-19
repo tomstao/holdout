@@ -1,7 +1,7 @@
 # 0007. Derive the live leaderboard from submissions; keep private scores apart
 
-**Status:** Accepted, 2026-11-19. Spike S6 passed locally; the size of the snapshot frame is
-still to confirm on the deployed app ([result](#spike-s6-2026-11-19)).
+**Status:** Accepted, 2026-11-19. Confirmed by spike S6 on the deployed app
+([result](#spike-s6-2026-11-19)).
 
 ## Context
 
@@ -57,3 +57,9 @@ Corrections to the estimate above:
 - Subscribe without `limit`. There is no default cap, and a `limit` also stops live rows
   once it is reached: with `limit: 5000` and 5,000 rows shown, later inserts never
   appeared.
+
+### On the deployed app
+
+The 1.95 MB snapshot arrived on holdout.app.space as it did locally: 4,999 rows in one
+frame, ready 560 ms after the page mounted, and a row created by an action appeared live
+([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)). The paging fallback is not needed at the spec's limit of 5,000 submissions.

@@ -1,6 +1,7 @@
 # 0008. Enforce the daily limit by claiming numbered slots with `uniqueOn`
 
-**Status:** Accepted, 2026-11-19. Confirmed by spike S4 ([result](#spike-s4-2026-11-19)).
+**Status:** Accepted, 2026-11-19. Confirmed by spike S4, locally and on the deployed app
+([result](#spike-s4-2026-11-19)).
 
 ## Context
 
@@ -50,3 +51,5 @@ races between two requests: exactly one create succeeded every time ([lessons](.
 
 The check and the insert are synchronous SQL inside the Durable Object (SDK code, the
 same once deployed), so this result does not depend on a platform limit.
+
+The deployed app gave the same result: one winner in 20 of 20 races.
