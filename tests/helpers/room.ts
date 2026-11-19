@@ -74,14 +74,43 @@ export async function roomExchange(
   )
 }
 
-export const subscribe = (collection: string, subscriptionId = collection): RoomFrame => ({
+export const subscribe = (
+  collection: string,
+  subscriptionId = collection,
+  where?: Record<string, unknown>,
+): RoomFrame => ({
   type: 'core.subscribe',
-  payload: { subscriptionId, query: { collection } },
+  payload: { subscriptionId, query: { collection, ...(where ? { where } : {}) } },
 })
+
+export const remove = (collection: string, recordId: string): RoomFrame => ({
+  type: 'core.delete',
+  payload: { collection, recordId, requestId: requestId(collection, recordId) },
+})
+
+/** The room's answer to a `put` or a `remove` of this record. */
+export function ackOf(frames: RoomFrame[], collection: string, recordId: string) {
+  return frames.find(
+    (frame) =>
+      frame.type === 'records.ack' &&
+      String(frame.payload?.requestId).startsWith(`${collection}:${recordId}:`),
+  )?.payload
+}
+
+let requests = 0
+
+/**
+ * A request id no earlier write used. The room remembers the answer to a
+ * request id and replays it for a later write with the same id, whatever that
+ * write contains, so reusing one makes every probe look like the first.
+ */
+function requestId(collection: string, recordId: string): string {
+  return `${collection}:${recordId}:${Date.now()}-${++requests}`
+}
 
 export const put = (collection: string, recordId: string, data: object): RoomFrame => ({
   type: 'core.put',
-  payload: { collection, recordId, data, requestId: `${collection}:${recordId}` },
+  payload: { collection, recordId, data, requestId: requestId(collection, recordId) },
 })
 
 /** The records the room returned for a subscription, or undefined if it never answered. */
