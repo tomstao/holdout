@@ -51,11 +51,9 @@ const SCAFFOLD_FILES = [
   'src/server/http-routes.ts',
   'src/server/realtime-routes.ts',
   'src/components/ui/**',
-  'src/components/Navigation.tsx',
   'src/components/ErrorScreen.tsx',
   'src/components/Seo.tsx',
   'src/pages/_app.tsx',
-  'src/pages/\\[...all\\].tsx',
   'src/pages/index.tsx',
   'src/pages/?app?/_layout.tsx',
   'src/pages/?app?/home.tsx',
@@ -196,11 +194,6 @@ export default defineConfig(
     // The kit's primitives forward htmlFor and friends through props.
     files: ['src/components/ui/**'],
     rules: { 'jsx-a11y/label-has-associated-control': 'off' },
-  },
-  {
-    // Scaffold chrome is rewritten during the design phase (docs/plan.md).
-    files: ['src/components/Navigation.tsx'],
-    rules: { 'react-hooks/set-state-in-effect': 'off' },
   },
 
   // 4a. Pure domain code: deterministic, no runtime packages.

@@ -1,25 +1,24 @@
 /**
- * Top nav — minimal placeholder bar wired to the app's mechanisms:
- * nav.ts-driven links (with role/dev filtering), sign-in via <AuthOverlay>,
- * and sign-out. Restyle or rebuild it freely; keep the data-testid hooks
- * (`app-navigation`, `nav-sign-in-button`, `nav-user-name`, `nav-user-email`)
- * — the shipped tests rely on them. `nav-user-email` is the one that carries
- * an identity the test can check exactly: a display name is optional, the
- * email is the credential the session was opened with.
+ * The app's top bar: the wordmark, the links from src/nav.ts, and either a
+ * sign-in button or the account menu.
+ *
+ * The test ids are a contract with the specs and the DeepSpace test tooling:
+ * `app-navigation`, `nav-sign-in-button`, `nav-user-name`, `nav-user-email`.
+ * `nav-user-email` is the one a test can check exactly: the email is what the
+ * session was opened with.
  */
-
-import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { AuthOverlay, useAuthProfileReady, signOut } from 'deepspace'
-import { ChevronDown, LogOut, Menu, X } from 'lucide-react'
-import { APP_NAME } from '../constants'
+import { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { AuthOverlay, signOut, useAuthProfileReady } from 'deepspace'
+import { ChevronDownIcon, LogOutIcon, MenuIcon, SettingsIcon, XIcon } from 'lucide-react'
 import type { Role } from '../constants'
-import { nav } from '../nav'
 import { cn } from '../lib/utils'
+import { nav, type NavItem } from '../nav'
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -27,88 +26,97 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui'
+import { Wordmark } from './Wordmark'
+
+function isActive(item: NavItem, pathname: string): boolean {
+  return [item.path, ...(item.also ?? [])].some((prefix) => pathname.startsWith(prefix))
+}
 
 export default function Navigation() {
   const { isLoaded, isSignedIn, user, userLoading } = useAuthProfileReady({ requireUser: true })
-  const location = useLocation()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [showSignIn, setShowSignIn] = useState(false)
 
-  const profileReady = !isSignedIn || (!userLoading && !!user)
-  const userRole = (user?.role ?? 'anonymous') as Role | 'anonymous'
-
-  // Close the mobile menu when navigating
-  useEffect(() => {
-    setMobileMenuOpen(false)
-  }, [location.pathname])
-
-  const visibleNav = nav.filter((item) => {
+  const profileReady = !isSignedIn || (!userLoading && user !== null)
+  const role = user?.role ?? 'anonymous'
+  const links = nav.filter((item) => {
     if (item.devOnly && !import.meta.env.DEV) return false
     if (!item.roles) return true
     if (!profileReady) return false
-    if (userRole === 'admin') return true
-    return item.roles.includes(userRole as Role)
+    return role === 'admin' || item.roles.includes(role as Role)
   })
-
-  const navLink = (item: (typeof nav)[number]) => {
-    const active = location.pathname.startsWith(item.path)
-    return (
-      <Link
-        key={item.path}
-        to={item.path}
-        aria-current={active ? 'page' : undefined}
-        className={cn(
-          'px-3 py-1.5 text-sm',
-          active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
-        )}
-      >
-        {item.label}
-      </Link>
-    )
-  }
 
   return (
     <>
-      <nav data-testid="app-navigation" className="border-b border-border bg-background">
-        <div className="mx-auto flex h-12 max-w-7xl items-center gap-4 px-4">
-          <Link to="/home" className="text-sm font-semibold text-foreground">
-            {APP_NAME}
+      <nav
+        data-testid="app-navigation"
+        aria-label="Main"
+        className="border-b border-border bg-background"
+      >
+        <div className="mx-auto flex h-14 max-w-4xl items-center gap-6 px-6">
+          <Link to="/home" aria-label="Holdout home" className="rounded-sm">
+            <Wordmark />
           </Link>
 
-          <div className="hidden items-center md:flex">{visibleNav.map(navLink)}</div>
+          <div className="hidden h-full items-stretch gap-5 md:flex">
+            {links.map((item) => {
+              const active = isActive(item, pathname)
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'inline-flex items-center border-b-2 pt-0.5 text-sm transition-colors',
+                    active
+                      ? 'border-foreground text-foreground'
+                      : 'border-transparent text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
 
           <div className="flex-1" />
 
-          {!isLoaded ? null : isSignedIn && !profileReady ? (
-            /* Signed in, profile still loading — skeleton pill, never the
-               Sign in button (that would offer sign-in to a signed-in user). */
-            <div className="flex items-center gap-2 rounded-full border border-border bg-card/60 py-1 pr-2.5 pl-1">
-              <div className="h-6 w-6 animate-pulse rounded-full bg-muted" />
-              <div className="hidden h-4 w-20 animate-pulse rounded-md bg-muted sm:block" />
+          {!isLoaded ? null : isSignedIn && !user ? (
+            // Signed in, profile still loading: a placeholder, never the Sign in
+            // button, which would offer sign-in to someone who is signed in.
+            <div
+              aria-busy="true"
+              className="flex h-9 items-center gap-2 rounded-md border border-border bg-card px-1.5"
+            >
+              <div className="size-6 animate-pulse rounded-full bg-muted" />
+              <div className="hidden h-4 w-20 animate-pulse rounded-sm bg-muted sm:block" />
             </div>
-          ) : isSignedIn && user ? (
+          ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
                   <button
+                    type="button"
                     aria-label="Account menu"
-                    className="group flex items-center gap-2 rounded-full border border-border bg-card/60 py-1 pr-2.5 pl-1 text-sm transition-colors hover:bg-card"
+                    className="group flex h-9 items-center gap-2 rounded-md border border-border bg-card pr-2 pl-1.5 text-sm transition-colors outline-none hover:bg-accent focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                   >
-                    <Avatar className="h-6 w-6 ring-1 ring-border ring-inset">
-                      <AvatarImage src={user.imageUrl ?? undefined} referrerPolicy="no-referrer" />
+                    <Avatar className="size-6">
+                      <AvatarImage src={user.imageUrl} referrerPolicy="no-referrer" />
                       <AvatarFallback className="text-[11px]">
-                        {(user.name?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
+                        {(user.name || user.email).slice(0, 1).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <span
                       data-testid="nav-user-name"
-                      className="hidden max-w-[140px] truncate text-foreground sm:inline"
+                      className="hidden max-w-36 truncate text-foreground sm:inline"
                     >
                       {user.name || user.email}
                     </span>
-                    <ChevronDown
-                      className="h-3.5 w-3.5 text-muted-foreground transition-transform duration-150 group-data-[popup-open]:rotate-180"
-                      aria-hidden
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="size-3.5 text-muted-foreground transition-transform duration-150 group-data-[popup-open]:rotate-180"
                     />
                   </button>
                 }
@@ -126,44 +134,75 @@ export default function Navigation() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>
-                  <LogOut aria-hidden />
+                <DropdownMenuItem onClick={() => void navigate('/settings')}>
+                  <SettingsIcon aria-hidden="true" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void signOut()}>
+                  <LogOutIcon aria-hidden="true" />
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <button
+            <Button
+              size="sm"
               data-testid="nav-sign-in-button"
-              onClick={() => setShowAuthModal(true)}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
+              onClick={() => {
+                setShowSignIn(true)
+              }}
             >
               Sign in
-            </button>
+            </Button>
           )}
 
-          <button
-            className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground hover:text-foreground md:hidden"
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-            aria-label="Toggle menu"
-            aria-expanded={mobileMenuOpen}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9 md:hidden"
+            aria-label={menuOpen ? 'Close the menu' : 'Open the menu'}
+            aria-expanded={menuOpen}
+            aria-controls="nav-links"
+            onClick={() => {
+              setMenuOpen((open) => !open)
+            }}
           >
-            {mobileMenuOpen ? (
-              <X className="h-4 w-4" aria-hidden />
-            ) : (
-              <Menu className="h-4 w-4" aria-hidden />
-            )}
-          </button>
+            {menuOpen ? <XIcon aria-hidden="true" /> : <MenuIcon aria-hidden="true" />}
+          </Button>
         </div>
 
-        {mobileMenuOpen && (
-          <div className="flex flex-col border-t border-border px-2 py-2 md:hidden">
-            {visibleNav.map(navLink)}
+        {menuOpen && (
+          <div id="nav-links" className="flex flex-col border-t border-border px-6 py-2 md:hidden">
+            {links.map((item) => {
+              const active = isActive(item, pathname)
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'py-2 text-sm',
+                    active ? 'font-medium text-foreground' : 'text-muted-foreground',
+                  )}
+                  onClick={() => {
+                    setMenuOpen(false)
+                  }}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
           </div>
         )}
       </nav>
 
-      {showAuthModal && <AuthOverlay onClose={() => setShowAuthModal(false)} />}
+      {showSignIn && (
+        <AuthOverlay
+          onClose={() => {
+            setShowSignIn(false)
+          }}
+        />
+      )}
     </>
   )
 }
