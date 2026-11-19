@@ -9,10 +9,12 @@
 import type { ActionHandler } from 'deepspace/worker'
 import type { Env } from '../../worker'
 import type { ActionName } from '../contracts/actions'
+import { makeCreateCompetition } from './create-competition'
+import { createCompetitionDeps } from './host-files'
 
-// Empty until the first contract lands (docs/plan.md, day 1); delete this disable then.
-// eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type
-const handlers = {} satisfies Record<ActionName, ActionHandler<Env>>
+const handlers = {
+  createCompetition: makeCreateCompetition(createCompetitionDeps),
+} satisfies Record<ActionName, ActionHandler<Env>>
 
 /** The shape the scaffold's action route expects. */
 export const actions: Record<string, ActionHandler<Env>> = handlers
