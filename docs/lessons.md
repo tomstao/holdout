@@ -21,6 +21,11 @@ agent repeats them. Newest at the bottom. Each entry: what happened, what to do 
   id.** Unit tests that need no platform identity run in Vitest's `pure` project, so they
   work before registration and in CI.
 - **Uploads to app files return 401 locally until the app has been deployed once.**
+- **`app init` registers the id but does not claim the subdomain;** the first deploy
+  does, so a taken name only shows up then. `app init` also suggests a commit message
+  (`Register app_…`) that commitlint rejects; use a Conventional Commit.
+- **`vite build` runs the type-aware ESLint through `vite-plugin-checker`** (about 9 of
+  the build's 10 seconds); a lint error fails the build and so the deploy.
 - **Members can trigger cron tasks, enqueue jobs and read job payloads and results by
   default.** Design every task and job to be safe when run early, and never put private
   data in a job row.

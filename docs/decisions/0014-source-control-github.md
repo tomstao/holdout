@@ -1,7 +1,7 @@
 # 0014. Ship from GitHub source
 
-**Status:** Proposed, 2026-11-19. **The owner decides** before the first deploy; it cannot
-be changed afterwards.
+**Status:** Accepted, 2026-11-19, by the owner. It latches at the first deploy and cannot be
+changed afterwards.
 
 ## Context
 

@@ -75,9 +75,10 @@ Enforced by ESLint and dependency-cruiser; details in
 - **Cron tasks and jobs must be safe to run early and twice.** Members can trigger them,
   and they can be retried.
 - **No paid integration calls in tests.**
-- **Source control and deploys:** the source mode is the owner's decision
-  ([ADR 0014](docs/decisions/0014-source-control-github.md)). Do not run
-  `npx deepspace push` or `npx deepspace deploy` unless the owner asks.
+- **Source control and deploys:** the app ships from GitHub
+  ([ADR 0014](docs/decisions/0014-source-control-github.md)). Never run
+  `npx deepspace push`; run `npx deepspace deploy` only when the owner asks, from a clean,
+  pushed `main`.
 - **Commits:** Conventional Commits, one topic per commit and per pull request, small
   enough to review. Hooks must pass; never `--no-verify`.
 - **Docs move with code:** update the spec, architecture or decision a change touches in
@@ -106,8 +107,8 @@ SDK and deployed to Cloudflare Workers with `npx deepspace deploy`.
 
 **Version control.** An app has one source authority, latched permanently by its first
 release: DeepSpace's cloud repo (commit-first deploys, `deepspace push`) or GitHub
-(deploys ship the current checkout, including uncommitted bytes). This project's choice is
-pending ([ADR 0014](docs/decisions/0014-source-control-github.md)). Use `status`,
+(deploys ship the current checkout, including uncommitted bytes). This project ships from
+GitHub ([ADR 0014](docs/decisions/0014-source-control-github.md)): never run `deepspace push`. Use `status`,
 `activity`, `releases` and `rollback` to recover context and see what is live.
 
 ```sh

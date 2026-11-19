@@ -19,19 +19,18 @@ Gotchas go to [lessons.md](lessons.md) the moment they are found.
 
 Only the owner can do these: they need a browser login or are hard to reverse.
 
-1. `npx deepspace auth login`, then `npx deepspace auth whoami` shows the intended account.
-2. Decide the source mode ([ADR 0014](decisions/0014-source-control-github.md); proposed:
-   GitHub). For GitHub: create the repository, `git remote add origin <url>`,
-   `git push -u origin main`.
-3. `npx deepspace app init` registers the app and writes its id to `wrangler.toml`
-   (the placeholder is already committed, so first use will not register on its own).
-   If the name `holdout` is taken, change `name` in `wrangler.toml` and `APP_NAME` in
-   `src/constants.ts`, then run it again. Commit `wrangler.toml`.
+1. [x] `npx deepspace auth login`; `auth whoami` shows the owner's account (2026-11-19).
+2. [x] Source mode: GitHub ([ADR 0014](decisions/0014-source-control-github.md), accepted).
+       [ ] Create the repository, `git remote add origin <url>`, `git push -u origin main`.
+3. [x] `npx deepspace app init`: registered `app_01M7T9QF5YQP70H5073J172J32`, id committed
+       in `wrangler.toml`. The `holdout` subdomain is only claimed by the first deploy; if it
+       is taken, change `name` in `wrangler.toml` and `APP_NAME` in `src/constants.ts`.
 4. `npx deepspace status --json`: `sourceInference` must say GitHub before any deploy.
    Never run `deepspace push`.
 5. First deploy of the empty app: `npx deepspace deploy`. App files and the email
    integration only work after one deploy.
-6. `npm run test:unit` now also runs the `app` Vitest project; `npm run build` works.
+6. [x] `npm run test:unit` now also runs the `app` Vitest project; `npm run build` works
+       (both checked after registration).
 
 ## De-risking spikes (day 1)
 

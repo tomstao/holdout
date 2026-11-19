@@ -18,6 +18,6 @@ only through a new record that supersedes it.
 | [0011](0011-datasets-in-host-files-behind-a-route.md)   | Datasets in the host's private folder, served by a Worker route | Accepted |
 | [0012](0012-integrations-email-only.md)                 | One integration: the close-out email                            | Accepted |
 | [0013](0013-docs-in-the-repo.md)                        | Keep the planning documents in the repository                   | Accepted |
-| [0014](0014-source-control-github.md)                   | Ship from GitHub source                                         | Proposed |
+| [0014](0014-source-control-github.md)                   | Ship from GitHub source                                         | Accepted |
 
 Decisions marked "to confirm in spike Sn" are tested on day 1 ([plan](../plan.md#de-risking-spikes-day-1)).
