@@ -76,3 +76,25 @@ Both spikes ran again on holdout.app.space ([lessons](../lessons.md#2026-11-19-d
 - **Chunks cost nothing measurable.** Five chunks of 40 with `ctx.continue` took the same
   5.7 s as one run of 200. The design keeps them, for progress and a restart point.
 - S7 gave the same result as locally.
+
+## Built, 2026-11-19
+
+`src/server/close.ts` holds both halves as plain functions; `src/cron.ts` and
+`src/jobs.ts` wire them to the rooms. What the code adds to the decision above:
+
+- **A grace period.** The job waits until ten seconds after the deadline
+  (`ctx.continue` with `afterMs`) before it reads the submissions, so one that passed
+  the deadline check in the last instant has written both its rows.
+- **Chunks of 40, 20 writes in flight.** At about 28 ms a write, a chunk takes about
+  60 ms on the deployed app.
+- **Three attempts.** The cron task enqueues with `maxAttempts: 3`; a competition still
+  `closing` after ten minutes is enqueued again.
+- **The queue is closed to clients.** `authorizeWrite` refuses everyone and
+  `authorizeRead` is set on its own for members.
+- **A submission without its private score is left out** of the standings instead of
+  failing the close.
+
+Not built: the email. It waits for spike S8.
+
+Checked by 15 unit tests of the two functions and by `tests/close.spec.ts`, where a
+competition due in 45 seconds is closed by a real cron tick and job in about 70 seconds.

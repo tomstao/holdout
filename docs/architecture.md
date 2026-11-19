@@ -64,7 +64,7 @@ holdout/
 │  │  ├─ predictions.ts      check a predictions file; line it up with the answer key    (built)
 │  │  ├─ metrics.ts          accuracy, macro-F1, RMSE, MAE; which direction is better    (built)
 │  │  ├─ scoring.ts          score predictions on the public and the private rows        (built)
-│  │  ├─ ranking.ts          leaderboard and tie-breaks (built); final selection, shake-up later
+│  │  ├─ ranking.ts          leaderboard, tie-breaks, final standings, shake-up            (built)
 │  │  ├─ time.ts             deadline rule, UTC day key, daily reset time                (built)
 │  │  └─ *.test.ts           unit and property tests; metric fixtures checked against scikit-learn
 │  ├─ contracts/             Zod contracts shared by both runtimes                         (built)
@@ -78,9 +78,10 @@ holdout/
 │  │  ├─ create-competition.ts host-files.ts                                              (built)
 │  │  ├─ submit-predictions.ts shared.ts                                                  (built)
 │  │  ├─ update-competition.ts
-│  ├─ server/                Hono route registration (scaffold) + files-routes.ts         (built)
-│  ├─ cron.ts                close-due-competitions task
-│  ├─ jobs.ts                close-competition job
+│  ├─ server/                Hono routes (scaffold) + files-routes.ts, room-tools.ts,
+│  │                         close.ts: the cron task's and the job's logic               (built)
+│  ├─ cron.ts                close-due-competitions task, every minute                    (built)
+│  ├─ jobs.ts                close-competition job                                        (built)
 │  ├─ client/                Browser glue: callAction, useCollection                       (built)
 │  ├─ features/              Browser features, one folder each: components + hooks
 │  │  ├─ competition/        header, countdown; Leaderboard, Overview, Data, Submit tabs   (built)
@@ -276,15 +277,19 @@ sequenceDiagram
   C->>R: set status closing, closingStartedAt
   C->>J: enqueueJob('close-competition', { competitionId })
   J->>R: read competition; stop if closed
-  J->>R: read submissions and private_scores (paged)
+  J->>J: wait until 10 s after the deadline
+  J->>R: read submissions and private_scores
   J->>J: ranking.finalStandings() (domain)
   J->>R: upsert final_standings in chunks (ctx.continue between chunks)
   J->>R: set status closed, closedAt
-  J->>M: one email: host in "to", participants in "bcc"
+  J-->>M: one email: host in "to", participants in "bcc" (not built yet: spike S8)
 ```
 
-Every step can run twice without harm: standings have deterministic ids, the job stops on
-a closed competition, and the email is sent only by the run that sets `closed`.
+Every step can run twice without harm: standings have deterministic ids and the job stops
+on a closed competition. The job waits ten seconds after the deadline before it reads, so
+a submission that passed the deadline check in the last instant has finished writing; after
+that the rows no longer change and every step computes the same standings. The logic is in
+`src/server/close.ts`, as plain functions over the record tools and a clock.
 
 ## Trust model
 
