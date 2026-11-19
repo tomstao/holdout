@@ -83,7 +83,7 @@ holdout/
 │  ├─ client/                Browser glue: callAction, useCollection                       (built)
 │  ├─ features/              Browser features, one folder each: components + hooks
 │  │  ├─ competitions/       list rows, header, countdown, edit form
-│  │  ├─ create/             host form, file drop with local validation
+│  │  ├─ create/             host form, file drop, local check of the files                (built)
 │  │  ├─ submit/             drop zone, local check, my submissions
 │  │  └─ leaderboard/        live table, final standings with shake-up
 │  ├─ components/ui/         Base UI primitives kit (scaffold, restyled by the theme)
@@ -91,8 +91,8 @@ holdout/
 │  ├─ pages/                 Routes (generouted, file-based)
 │  │  ├─ index.tsx           /            static landing, prerendered
 │  │  ├─ (app)/home.tsx      /home        competition list
-│  │  ├─ (app)/c/[id].tsx    /c/:id       competition page, public
-│  │  └─ (app)/(protected)/host/new.tsx  /host/new   create form, sign-in required
+│  │  ├─ (app)/c/[id].tsx    /c/:id       competition page, public (header and data so far)
+│  │  └─ (app)/(protected)/host/new.tsx  /host/new   create form, sign-in required    (built)
 │  └─ themes.css, themes.ts  the Holdout theme
 ├─ scripts/                  design-gate.ts                                                 (built)
 ├─ tests/                    Playwright specs run by `npx deepspace test run`

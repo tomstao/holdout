@@ -253,3 +253,22 @@ After the deployed run the four spike collections were empty and the file storag
   Worker SDK.** `create-competition.ts` takes its file store, clock, seed and id source as
   dependencies; `host-files.ts` holds the real ones and is the only file that imports
   `deepspace/worker` at runtime.
+
+## 2026-11-19, day 2: the create form
+
+- **Zod's own messages are not for people.** "Too small: expected string to have >=3
+  characters" under a field is noise. The contract gives each field a person fills in a
+  message that can be shown as it is, and the form shows `issue.message` unchanged.
+- **A full-page screenshot captures only the viewport.** The app shell is `h-screen` and
+  scrolls inside `<main>`, so the page never grows. Give the page a tall viewport
+  (`page.setViewportSize`) before `page.screenshot`.
+- **A colour that just changed is still in transition.** A drop zone measured red 50 ms
+  after its problems were fixed (`transition-colors`). Assert the class or the
+  `data-state`, not the computed colour, and do not judge it from a screenshot taken at
+  once.
+- **React 19's types deprecate `FormEvent`.** Use `SyntheticEvent` for a submit handler.
+- **The scaffold's lint exemption covered every page under `(protected)/`.** It was a
+  glob. It now names the three scaffold files, so our own protected pages get the strict
+  rules.
+- **`node` cannot run a contract file directly.** Imports without an extension resolve in
+  Vite and Vitest only. To look at what a schema answers, write a unit test.
