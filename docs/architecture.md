@@ -64,7 +64,7 @@ holdout/
 │  │  ├─ predictions.ts      check a predictions file; line it up with the answer key    (built)
 │  │  ├─ metrics.ts          accuracy, macro-F1, RMSE, MAE; which direction is better    (built)
 │  │  ├─ scoring.ts          score predictions on the public and the private rows        (built)
-│  │  ├─ ranking.ts          leaderboard, tie-breaks, auto-selection of finals, shake-up
+│  │  ├─ ranking.ts          leaderboard and tie-breaks (built); final selection, shake-up later
 │  │  ├─ time.ts             deadline rule, UTC day key, daily reset time                (built)
 │  │  └─ *.test.ts           unit and property tests; metric fixtures checked against scikit-learn
 │  ├─ contracts/             Zod contracts shared by both runtimes                         (built)
@@ -83,16 +83,15 @@ holdout/
 │  ├─ jobs.ts                close-competition job
 │  ├─ client/                Browser glue: callAction, useCollection                       (built)
 │  ├─ features/              Browser features, one folder each: components + hooks
-│  │  ├─ competitions/       list rows, header, countdown, edit form
-│  │  ├─ create/             host form, file drop, local check of the files                (built)
-│  │  ├─ submit/             drop zone, local check, my submissions
-│  │  └─ leaderboard/        live table, final standings with shake-up
+│  │  ├─ competition/        header, countdown; Leaderboard, Overview, Data, Submit tabs   (built)
+│  │  ├─ create/             host form, local check of the files                           (built)
+│  │  └─ home/               competition list for /home (later)
 │  ├─ components/ui/         Base UI primitives kit (scaffold, restyled by the theme)
-│  ├─ components/            App chrome: Navigation, ErrorScreen, Seo (scaffold, Navigation rewritten)
+│  ├─ components/            App chrome: Navigation, ErrorScreen, Seo; FileDrop (shared CSV drop zone)
 │  ├─ pages/                 Routes (generouted, file-based)
 │  │  ├─ index.tsx           /            static landing, prerendered
 │  │  ├─ (app)/home.tsx      /home        competition list
-│  │  ├─ (app)/c/[id].tsx    /c/:id       competition page, public (header and data so far)
+│  │  ├─ (app)/c/[id].tsx    /c/:id       competition page, public: header and four tabs (built)
 │  │  └─ (app)/(protected)/host/new.tsx  /host/new   create form, sign-in required    (built)
 │  └─ themes.css, themes.ts  the Holdout theme
 ├─ scripts/                  design-gate.ts                                                 (built)

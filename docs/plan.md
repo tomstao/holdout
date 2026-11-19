@@ -94,9 +94,10 @@ needed. S8 moved to day 4, where the close-out email is built.
       host refused; deadline check; slot claim with `uniqueOn` and one retry; private score
       written second, submission removed if that fails. The race is tested against the real
       room (`submit.spec.ts`): with a limit of 1, two simultaneous submissions give one score.
-- [ ] **PR 9, `/c/:id`:** header and tabs; Leaderboard from `useCollection('submissions')`
+- [x] **PR 9, `/c/:id`:** header and tabs; Leaderboard from `useCollection('submissions')`
       and `domain/ranking.ts`; Overview; Data with downloads; Submit with local check and
-      my submissions.
+      my submissions. Not yet: the viewer's row pinned when it is below the fold (a line
+      above the table gives their rank instead), and the Edit tab (F5).
 - [ ] **PR 10, multi-user spec:** two participants in two browsers; B's page shows A's new
       row without a reload; the daily limit refuses the next submission with the reset time.
 

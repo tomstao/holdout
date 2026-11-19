@@ -286,3 +286,12 @@ After the deployed run the four spike collections were empty and the file storag
 - **A submission's answer must not carry the private score, and `implement()` makes sure
   of it:** the output contract has no such field. The spec still asserts the answer's
   exact keys, so a contract change that added one would fail a test.
+- **The kit's `EmptyState` takes an action as `{ label, onClick }`,** not an element. A link
+  there means a click handler that navigates.
+- **A tab panel is not mounted until its tab is chosen.** A spec that needs an element of
+  the Data tab clicks the tab first; the tab is in the URL (`?tab=data`), so a test can
+  also open it directly.
+- **A highlight for new rows needs no state.** The leaderboard keys each row by the
+  participant and their latest submission, so a new submission remounts that row and a
+  CSS animation plays once. Rows older than the page itself do not get the class. No
+  effect, no timer, nothing for the React hooks rules to object to.
