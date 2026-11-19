@@ -69,7 +69,7 @@ been run.
 - [x] **PR 3, `domain/metrics.ts`:** accuracy, macro-F1, RMSE, MAE and their direction.
       Fixtures with expected values computed once by scikit-learn
       (`scripts/fixtures/metrics.py`, output committed as JSON) and asserted to 1e-12.
-- [ ] **PR 4, `domain/split.ts` and `domain/dataset.ts`:** `Usage` parsing; deterministic,
+- [x] **PR 4, `domain/split.ts` and `domain/dataset.ts`:** `Usage` parsing; deterministic,
       label-stratified split from a seed; train/test/solution validation with
       file-row-column issues; sample submission. Property tests: the split is a partition,
       is stable for a seed, and keeps every class in both halves when it has two or more

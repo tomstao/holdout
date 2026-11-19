@@ -59,8 +59,8 @@ holdout/
 │  │  │                      time and seeds are arguments. Runs in both runtimes.
 │  │  ├─ result.ts           Result of a function that can reject its input; issue log   (built)
 │  │  ├─ csv.ts              RFC 4180 reader and writer; header lookup; size, row limits (built)
-│  │  ├─ dataset.ts          validate train/test/solution; build the answer key; sample submission
-│  │  ├─ split.ts            Usage column, or deterministic stratified split by public share
+│  │  ├─ dataset.ts          validate train/test/solution; build the answer key; sample  (built)
+│  │  ├─ split.ts            Usage column, or seeded stratified split by public share    (built)
 │  │  ├─ predictions.ts      validate a predictions file against an answer key
 │  │  ├─ metrics.ts          accuracy, macro-F1, RMSE, MAE; which direction is better    (built)
 │  │  ├─ scoring.ts          score predictions on the public and the private rows

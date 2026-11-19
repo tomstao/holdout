@@ -76,12 +76,16 @@ Worker as the authority):
   leaves room is listed at the top of `src/domain/csv.ts`.
 - The named ID and target columns exist; `test.csv` has no target column.
 - IDs are non-empty and unique within each file; the IDs of `solution.csv` equal the IDs of
-  `test.csv` exactly.
+  `test.csv` exactly, in any order. IDs, targets and `Usage` values are compared without
+  surrounding spaces.
 - Regression targets parse as finite numbers. Classification targets are non-empty
   strings; the set of labels is taken from `solution.csv`.
-- With a `Usage` column: every value is `Public`, `Private` or `Ignored`, and Public and
-  Private each have at least one row. Without it, rows are split by the public share
+- With a `Usage` column (the name and its values in any letter case): every value is
+  `Public`, `Private` or `Ignored`, and Public and Private each have at least one row.
+  Without it, the file needs at least two rows, which are split by the public share
   (deterministic, stratified by label for classification; [ADR 0006](decisions/0006-answer-key-in-a-server-only-collection.md)).
+- The answer key must also fit in 1.5 MB once prepared for storage, which is a little
+  larger than its CSV: with 7-character IDs and short labels that is about 47,000 rows.
 - Each problem is reported with its file, row and column, at most 20 per file, with a
   count of the rest.
 
