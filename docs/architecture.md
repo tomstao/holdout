@@ -70,8 +70,8 @@ holdout/
 │  ├─ contracts/             Zod contracts shared by both runtimes                         (built)
 │  │  ├─ define.ts result.ts action-client.ts schema-drift.ts                             (built)
 │  │  ├─ actions.ts          action registry                                              (built, empty)
-│  │  ├─ records.ts          record registry                                              (built, empty)
-│  │  └─ competitions.ts     record and action schemas for this app
+│  │  ├─ records.ts          record registry                                              (built)
+│  │  └─ competitions.ts     record schemas of the five collections; action schemas later (built)
 │  ├─ schemas.ts, schemas/   DeepSpace CollectionSchemas: storage columns and RBAC (scaffold location)
 │  ├─ actions/               Server actions (Worker)
 │  │  ├─ implement.ts records.ts index.ts                                                 (built)
@@ -147,13 +147,13 @@ four roles, including `admin`, so not even the app owner's browser receives the 
 | `taskType`                              | text, select             | `classification`, `regression`; immutable              |
 | `metric`                                | text, select             | `accuracy`, `macro_f1`, `rmse`, `mae`; immutable       |
 | `idColumn`, `targetColumn`              | text                     | immutable                                              |
-| `labels`                                | text, json               | `string[]` for classification, `null` for regression   |
+| `labels`                                | text, json               | `string[]` for classification, absent for regression   |
 | `deadline`                              | number                   | epoch ms                                               |
 | `dailyLimit`                            | number                   | 1 to 20                                                |
 | `scoreDecimals`                         | number                   | 2 to 6                                                 |
 | `testRows`, `publicRows`, `privateRows` | number                   | counts only; which rows are public stays secret        |
 | `status`                                | text, select             | `open`, `closing`, `closed`                            |
-| `closingStartedAt`, `closedAt`          | number                   | epoch ms or null                                       |
+| `closingStartedAt`, `closedAt`          | number                   | epoch ms, absent until set                             |
 | `hostId`                                | text                     | required, immutable                                    |
 | `hostName`                              | text                     | display name at creation                               |
 | `files`                                 | text, json               | `{ train, test, sample }`, each `{ key, name, bytes }` |
@@ -186,8 +186,10 @@ four roles, including `admin`, so not even the app owner's browser receives the 
 `participantId`, `participantName`, `rank`, `finalScore`, `publicRank`, `publicScore`,
 `submissionCount`, `chosen` (json: `{ submissionId, publicScore, privateScore }[]`).
 
-Each collection has a Zod contract in `src/contracts/` and a `CollectionSchema` in
-`src/schemas/`; `schema-drift.test.ts` fails when they disagree.
+Each collection has a Zod contract in `src/contracts/competitions.ts` and a
+`CollectionSchema` in `src/schemas/`; `schema-drift.test.ts` fails when they disagree.
+A value that may be missing is optional in the contract, never `null`: the record room
+stores `null` as no value and leaves the key out when the row is read.
 
 ## Server actions
 

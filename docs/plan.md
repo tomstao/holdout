@@ -71,13 +71,16 @@ needed. S8 moved to day 4, where the close-out email is built.
 
 ## Day 2: data model and creating competitions
 
-- [ ] **PR 5, schemas, record contracts and RBAC:** five collections in `src/schemas/`, their
+- [x] **PR 5, schemas, record contracts and RBAC:** five collections in `src/schemas/`, their
       Zod contracts in `src/contracts/competitions.ts`, registered; drift test green.
-      Settle the answer key's size limit and encoding first
-      ([ADR 0006](decisions/0006-answer-key-in-a-server-only-collection.md#spike-s1-2026-11-19)).
-      Playwright `rbac.spec.ts`: a participant's `useQuery` on `answer_keys` and
-      `private_scores` returns nothing, and so does `records.query` through the agent tools.
+      The answer key keeps its `[id, target, split]` rows and its 1.5 MB limit
+      ([ADR 0006](decisions/0006-answer-key-in-a-server-only-collection.md#encoding-settled-2026-11-19)).
+      Playwright `rbac.spec.ts`: a visitor and a member can create nothing in any
+      collection. The room answers an empty collection and a closed one alike, so the
+      read half of the spec waits for PR 6, which can create rows.
 - [ ] **PR 6, `createCompetition` and the files route:** action contract and handler,
+      `rbac.spec.ts` extended: another user is sent no row of the new answer key, through
+      the room or the agent tools;
       files to the host's `self` folder, `GET /api/competitions/:id/files/:kind`. API spec
       for invalid input, invalid files and success.
 - [ ] **PR 7, `/host/new`:** form with kit components, three file drops validated locally
