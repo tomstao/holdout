@@ -32,6 +32,15 @@ scores must stay hidden until the close, and read permissions are per row, not p
 - Everyone can see each participant's per-attempt public scores and counts, not just
   their best. That gives nobody an edge in probing their own scores; it is a privacy
   trade-off accepted for a classroom tool.
+- The same rows carry more than the pages show (found by the review of 2026-11-19, and
+  accepted for v1):
+  - **the name of each uploaded file.** The page lists it only under "Your submissions",
+    but a submission row is public, so anyone reading the room can see what a rival
+    called their file. Hiding it needs a second collection that only its owner reads;
+  - **the unrounded public score.** `scoreDecimals` sets how a score is shown. The full
+    value is in the row and in the submit action's answer, as the spec says ("stored
+    unrounded"), so rounding is not a defence against probing. The daily limit and the
+    private rows are.
 
 ## Alternatives considered
 

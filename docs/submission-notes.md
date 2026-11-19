@@ -67,7 +67,16 @@ _Kept up to date per session._
       The create action retries; a stress case reproduced it before the fix;
     - the host's edit and the scheduled close can touch a competition in the same
       instant. The close job repairs the one bad outcome.
-  - Left 370 unit tests and 38 Playwright tests (against the real room and file storage)
+  - Asked a fresh agent, given the spec's guarantees and the code but none of the build's
+    reasoning, to review the actions, the access rules and the close. It reported twelve
+    findings. Each was checked against the code before anything changed: ten were fixed
+    and two were accepted and recorded ([plan.md](plan.md) has the table). Five of the
+    ten were routes of the scaffold that the app never used and that were live for a few
+    hours: a cron socket where any member could pause the close, tool routes for an
+    assistant the app does not have, an integrations proxy billed to the owner, a file
+    proxy that took uploads, and a built-in collection open to signed-out sockets
+    ([ADR 0016](decisions/0016-serve-only-what-the-app-uses.md)).
+  - Left 403 unit tests and 41 Playwright tests (against the real room and file storage)
     passing, and the design rules checked in CI.
 - **Where I directed or corrected it** (_a draft from the session; edit or delete_):
   - Set the working rules up front: small conventional commits, hooks never skipped, one
@@ -99,6 +108,11 @@ From [plan.md](plan.md):
   recipients yet. The page shows the results either way.
 - **The demo competition on the deployed app**, and the landing's "Try the demo
   competition" link, which needs that competition's id.
+- **The name of each uploaded file is in the public submission row.** The page shows it
+  only to its owner; hiding it from the wire needs a collection only the owner reads
+  ([ADR 0007](decisions/0007-derive-the-leaderboard-from-submissions.md)).
+- **Nothing limits how often an action may be called.** A refused call is cheap now, but
+  there is no rate limit per user.
 - **Reference screenshots** for the design were never taken; the screens were checked
   against the design direction and DeepSpace's checklists instead.
 - Out of scope for v1 by decision, each with what would come next: choosing final
