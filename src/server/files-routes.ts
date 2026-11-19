@@ -10,9 +10,9 @@
  */
 import type { Hono } from 'hono'
 import { appFiles, AppFileError } from 'deepspace/worker'
-import type { ActionResult, GetActionData } from 'deepspace/worker'
-import type { CompetitionRecord } from '../contracts/competitions'
-import type { AppContext, Env } from '../../worker.js'
+import { typedRecords } from '../actions/records.js'
+import type { AppContext } from '../../worker.js'
+import { roomTools } from './room-tools.js'
 
 const DOWNLOAD_NAMES = {
   train: 'train.csv',
@@ -26,33 +26,13 @@ function isFileKind(value: string): value is FileKind {
   return Object.hasOwn(DOWNLOAD_NAMES, value)
 }
 
-/** Read one competition with RBAC off: this is Worker code acting for the app. */
-async function readCompetition(env: Env, id: string): Promise<CompetitionRecord | undefined> {
-  const room = env.RECORD_ROOMS.get(env.RECORD_ROOMS.idFromName(`app:${env.DEEPSPACE_APP_ID}`))
-  const response = await room.fetch(
-    new Request('https://internal/api/tools/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': env.OWNER_USER_ID,
-        'X-App-Action': 'true',
-      },
-      body: JSON.stringify({
-        tool: 'records.get',
-        params: { collection: 'competitions', recordId: id },
-      }),
-    }),
-  )
-  const result = await response.json<ActionResult<GetActionData<CompetitionRecord>>>()
-  return result.success ? result.data.record.data : undefined
-}
-
 export function registerFilesRoutes(app: Hono<AppContext>): void {
   app.get('/api/competitions/:id/files/:kind', async (c) => {
     const kind = c.req.param('kind')
     if (!isFileKind(kind)) return c.json({ error: 'not_found' }, 404)
-    const competition = await readCompetition(c.env, c.req.param('id'))
-    if (!competition) return c.json({ error: 'not_found' }, 404)
+    const found = await typedRecords(roomTools(c.env)).get('competitions', c.req.param('id'))
+    if (!found.success) return c.json({ error: 'not_found' }, 404)
+    const competition = found.data.record.data
 
     try {
       const file = await appFiles(c.env, { scope: 'self', userId: competition.hostId }).download(
