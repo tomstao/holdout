@@ -9,11 +9,24 @@
  *   - the Zod schema here is the TypeScript contract both runtimes compile against.
  * src/contracts/schema-drift.test.ts fails when the two disagree.
  *
- * The planned collections are specified in docs/architecture.md ("Data model").
+ * The collections are described in docs/architecture.md ("Data model").
  */
 import type { z } from 'zod'
+import {
+  answerKeyRecord,
+  competitionRecord,
+  finalStandingRecord,
+  privateScoreRecord,
+  submissionRecord,
+} from './competitions'
 
-export const recordSchemas = {} as const satisfies Readonly<Record<string, z.ZodObject>>
+export const recordSchemas = {
+  competitions: competitionRecord,
+  answer_keys: answerKeyRecord,
+  submissions: submissionRecord,
+  private_scores: privateScoreRecord,
+  final_standings: finalStandingRecord,
+} as const satisfies Readonly<Record<string, z.ZodObject>>
 
 export type RecordSchemas = typeof recordSchemas
 export type CollectionName = keyof RecordSchemas
