@@ -17,6 +17,7 @@ const PURE_TESTS = [
   'src/domain/**/*.test.ts',
   'src/contracts/**/*.test.ts',
   'src/actions/**/*.test.ts',
+  'src/server/**/*.test.ts',
   'src/client/**/*.test.ts',
   'scripts/**/*.test.ts',
 ]
