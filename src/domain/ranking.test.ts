@@ -1,7 +1,14 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import { compareScores, METRICS } from './metrics'
-import { formatScore, leaderboard, type ScoredSubmission } from './ranking'
+import {
+  finalStandings,
+  formatScore,
+  leaderboard,
+  shakeUp,
+  type PrivatelyScored,
+  type ScoredSubmission,
+} from './ranking'
 
 let counter = 0
 const at = (
@@ -126,6 +133,172 @@ describe('leaderboard properties', () => {
     fc.assert(
       fc.property(fc.constantFrom(...METRICS), submissions, (metric, all) => {
         expect(leaderboard(metric, [...all].reverse())).toEqual(leaderboard(metric, all))
+      }),
+    )
+  })
+})
+
+const scored = (
+  participantId: string,
+  publicScore: number,
+  privateScore: number,
+  submittedAt: number,
+): PrivatelyScored => ({ ...at(participantId, publicScore, submittedAt), privateScore })
+
+describe('finalStandings', () => {
+  it('takes the better private score of the two best public submissions', () => {
+    const picked = scored('ann', 0.9, 0.7, 1)
+    const alsoPicked = scored('ann', 0.8, 0.85, 2)
+    const standings = finalStandings('accuracy', [
+      picked,
+      alsoPicked,
+      // Her best private score, but only her third best public one: it does not count.
+      scored('ann', 0.5, 0.99, 3),
+    ])
+    expect(standings).toEqual([
+      {
+        rank: 1,
+        participantId: 'ann',
+        participantName: 'ANN',
+        finalScore: 0.85,
+        publicRank: 1,
+        publicScore: 0.9,
+        submissionCount: 3,
+        chosen: [
+          { submissionId: picked.submissionId, publicScore: 0.9, privateScore: 0.7 },
+          { submissionId: alsoPicked.submissionId, publicScore: 0.8, privateScore: 0.85 },
+        ],
+      },
+    ])
+  })
+
+  it('ranks by final score, so the public order can turn over', () => {
+    const standings = finalStandings('accuracy', [
+      scored('ann', 0.95, 0.6, 1),
+      scored('bob', 0.9, 0.8, 2),
+      scored('cy', 0.7, 0.9, 3),
+    ])
+    expect(
+      standings.map((row) => [row.rank, row.participantId, row.publicRank, shakeUp(row)]),
+    ).toEqual([
+      [1, 'cy', 3, 2],
+      [2, 'bob', 2, 0],
+      [3, 'ann', 1, -2],
+    ])
+  })
+
+  it('ranks lower first for an error metric, in the choice and in the final score', () => {
+    const standings = finalStandings('rmse', [
+      scored('ann', 1.0, 4.0, 1),
+      scored('ann', 2.0, 3.0, 2),
+      scored('ann', 9.0, 0.1, 3),
+      scored('bob', 1.5, 3.5, 4),
+    ])
+    expect(standings.map((row) => [row.participantId, row.finalScore])).toEqual([
+      ['ann', 3.0],
+      ['bob', 3.5],
+    ])
+  })
+
+  it('chooses the earlier of equal public scores', () => {
+    const first = scored('ann', 0.8, 0.5, 1)
+    const second = scored('ann', 0.8, 0.6, 2)
+    const third = scored('ann', 0.8, 0.9, 3)
+    const [ann] = finalStandings('accuracy', [third, second, first])
+    expect(ann?.chosen.map((choice) => choice.submissionId)).toEqual([
+      first.submissionId,
+      second.submissionId,
+    ])
+    expect(ann?.finalScore).toBe(0.6)
+  })
+
+  it('gives a tie on the final score to the earlier deciding submission', () => {
+    const tied = finalStandings('accuracy', [
+      scored('late', 0.5, 0.7, 20),
+      scored('early', 0.4, 0.7, 10),
+    ])
+    expect(tied.map((row) => row.participantId)).toEqual(['early', 'late'])
+  })
+
+  it('takes the one submission of a participant who made one', () => {
+    const [only] = finalStandings('mae', [scored('ann', 2, 3, 1)])
+    expect(only).toMatchObject({ rank: 1, finalScore: 3, submissionCount: 1 })
+    expect(only?.chosen).toHaveLength(1)
+  })
+
+  it('is empty without submissions', () => {
+    expect(finalStandings('accuracy', [])).toEqual([])
+  })
+})
+
+describe('shakeUp', () => {
+  it('is positive for a climb and negative for a fall', () => {
+    expect(shakeUp({ rank: 1, publicRank: 4 })).toBe(3)
+    expect(shakeUp({ rank: 5, publicRank: 3 })).toBe(-2)
+    expect(shakeUp({ rank: 2, publicRank: 2 })).toBe(0)
+  })
+})
+
+const privately = fc.array(
+  fc.record({
+    submissionId: fc.uuid(),
+    participantId: fc.constantFrom('a', 'b', 'c', 'd', 'e'),
+    participantName: fc.constantFrom('A', 'B'),
+    publicScore: fc.constantFrom(0, 0.25, 0.5, 0.75, 1),
+    privateScore: fc.constantFrom(0, 0.2, 0.4, 0.6, 0.8, 1),
+    submittedAt: fc.integer({ min: 0, max: 20 }),
+  }),
+  { maxLength: 40 },
+)
+
+describe('finalStandings properties', () => {
+  it('ranks every participant once, 1 to n, best final score first', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(...METRICS), privately, (metric, all) => {
+        const standings = finalStandings(metric, all)
+        const oneToN = standings.map((_, index) => index + 1)
+        expect(standings.map((row) => row.rank)).toEqual(oneToN)
+        expect(new Set(standings.map((row) => row.participantId)).size).toBe(
+          new Set(all.map((s) => s.participantId)).size,
+        )
+        expect(standings.map((row) => row.publicRank).sort((a, b) => a - b)).toEqual(oneToN)
+        for (let index = 1; index < standings.length; index++) {
+          const [above, below] = [standings[index - 1], standings[index]]
+          if (!above || !below) continue
+          expect(compareScores(metric, above.finalScore, below.finalScore)).toBeLessThanOrEqual(0)
+        }
+      }),
+    )
+  })
+
+  it('chooses at most two submissions, none worse in public score than one left out', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(...METRICS), privately, (metric, all) => {
+        for (const row of finalStandings(metric, all)) {
+          const own = all.filter((s) => s.participantId === row.participantId)
+          expect(row.chosen.length).toBe(Math.min(2, own.length))
+          const chosenIds = new Set(row.chosen.map((choice) => choice.submissionId))
+          const leftOut = own.filter((s) => !chosenIds.has(s.submissionId))
+          for (const choice of row.chosen) {
+            for (const other of leftOut) {
+              expect(
+                compareScores(metric, choice.publicScore, other.publicScore),
+              ).toBeLessThanOrEqual(0)
+            }
+            expect(compareScores(metric, row.finalScore, choice.privateScore)).toBeLessThanOrEqual(
+              0,
+            )
+          }
+          expect(row.chosen.map((choice) => choice.privateScore)).toContain(row.finalScore)
+        }
+      }),
+    )
+  })
+
+  it('does not depend on the order the submissions arrive in', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(...METRICS), privately, (metric, all) => {
+        expect(finalStandings(metric, [...all].reverse())).toEqual(finalStandings(metric, all))
       }),
     )
   })
