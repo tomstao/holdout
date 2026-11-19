@@ -84,8 +84,9 @@ needed. S8 moved to day 4, where the close-out email is built.
       competition exists, a visitor, another member and the host are sent no row of its
       answer key, cannot change or delete it, and learn nothing by guessing. Not covered:
       the same reads through the agent tools, which need an agent token.
-- [ ] **PR 7, `/host/new`:** form with kit components, three file drops validated locally
-      with the same domain code, issues shown per file; redirect on success.
+- [x] **PR 7, `/host/new`:** form with kit components, three file drops validated locally
+      with the same domain code, issues shown per file; redirect on success. It lands on
+      a first `/c/:id` (header, rules, downloads), which PR 9 replaces with the full page.
 
 ## Day 3: submitting and the live leaderboard
 
