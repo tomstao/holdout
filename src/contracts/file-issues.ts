@@ -8,6 +8,7 @@
  * problems than were reported gets one closing issue with the count.
  */
 import { DATASET_FILES, type DatasetRejected } from '../domain/dataset'
+import type { Rejected } from '../domain/result'
 import type { Issue } from './result'
 
 export function datasetIssues(rejected: DatasetRejected): Issue[] {
@@ -27,6 +28,25 @@ export function datasetIssues(rejected: DatasetRejected): Issue[] {
         message: `And ${more.toLocaleString('en-US')} more ${more === 1 ? 'problem' : 'problems'} in this file.`,
       })
     }
+  }
+  return issues
+}
+
+/**
+ * The same for a single file, such as a predictions file: the path is
+ * `['row N', column]`, empty for a problem about the whole file.
+ */
+export function fileIssues(rejected: Rejected): Issue[] {
+  const issues: Issue[] = rejected.issues.map(({ row, column, message }) => ({
+    path: [...(row === undefined ? [] : [`row ${row}`]), ...(column === undefined ? [] : [column])],
+    message,
+  }))
+  if (rejected.omitted > 0) {
+    const more = rejected.omitted
+    issues.push({
+      path: [],
+      message: `And ${more.toLocaleString('en-US')} more ${more === 1 ? 'problem' : 'problems'} in this file.`,
+    })
   }
   return issues
 }

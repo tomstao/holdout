@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DatasetRejected } from '../domain/dataset'
-import { datasetIssues } from './file-issues'
+import { datasetIssues, fileIssues } from './file-issues'
 
 const rejected = (
   issues: DatasetRejected['issues'],
@@ -50,5 +50,29 @@ describe('datasetIssues', () => {
     expect(datasetIssues(rejected([{ message: 'Something is wrong.' }]))).toEqual([
       { path: [], message: 'Something is wrong.' },
     ])
+  })
+})
+
+describe('fileIssues', () => {
+  it('puts the row and the column into the path, and counts what was left out', () => {
+    expect(
+      fileIssues({
+        ok: false,
+        issues: [
+          { row: 4, column: 'species', message: 'Bad label.' },
+          { column: 'id', message: 'Missing ID.' },
+          { message: 'Too short.' },
+        ],
+        omitted: 3,
+      }),
+    ).toEqual([
+      { path: ['row 4', 'species'], message: 'Bad label.' },
+      { path: ['id'], message: 'Missing ID.' },
+      { path: [], message: 'Too short.' },
+      { path: [], message: 'And 3 more problems in this file.' },
+    ])
+    expect(fileIssues({ ok: false, issues: [{ message: 'x' }], omitted: 1 })[1]?.message).toBe(
+      'And 1 more problem in this file.',
+    )
   })
 })
