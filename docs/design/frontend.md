@@ -145,6 +145,20 @@ First line of `src/pages/(app)/home.tsx`:
   "Closed".
 - Empty: `EmptyState` with "Host a competition".
 
+As built:
+
+- One table per section, the same four columns: competition, participants, top score,
+  deadline. On a phone the two number columns fold into the line under the summary.
+- The top score says what it was measured on: "public" while the competition runs,
+  "final" once it is closed.
+- Time left is to the minute until the last minute, so a page of rows does not tick every
+  second. It is the row's only orange.
+- A section shows eight rows, then "Show all n". Each row is one live subscription (its
+  submissions, or its final standings), so the page opens only as many as it shows.
+- Running competitions come first, the one that ends soonest on top; closed ones follow,
+  the latest first (`src/domain/listing.ts`).
+- The visitor's sign-in prompt is an outline button: the orange one is already in the bar.
+
 ### `/c/:id` Competition
 
 Header: title, host, status badge, deadline (local time, UTC on hover), countdown. Tabs

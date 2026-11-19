@@ -116,7 +116,7 @@ needed. S8 moved to day 4, where the close-out email is built.
   - [x] **12a, theme and chrome:** the Holdout theme with an AA check, IBM Plex served by
         the app, the wordmark and favicon, Navigation
         ([ADR 0015](decisions/0015-theme-status-colours-and-self-hosted-fonts.md)).
-  - [ ] **12b, `/home`:** the competition list with its declared pattern (spec F6).
+  - [x] **12b, `/home`:** the competition list with its declared pattern (spec F6).
   - [ ] **12c, landing:** the static page with its Design Direction block; `design:gate`
         added to `npm run check`.
 - [ ] **PR 13, demo competition:** script that shuffles and renumbers Palmer Penguins into

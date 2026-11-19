@@ -65,6 +65,7 @@ holdout/
 │  │  ├─ metrics.ts          accuracy, macro-F1, RMSE, MAE; which direction is better    (built)
 │  │  ├─ scoring.ts          score predictions on the public and the private rows        (built)
 │  │  ├─ ranking.ts          leaderboard, tie-breaks, final standings, shake-up            (built)
+│  │  ├─ listing.ts          which section of /home a competition is in, and the order    (built)
 │  │  ├─ time.ts             deadline rule, UTC day key, daily reset time                (built)
 │  │  └─ *.test.ts           unit and property tests; metric fixtures checked against scikit-learn
 │  ├─ contracts/             Zod contracts shared by both runtimes                         (built)
@@ -86,12 +87,12 @@ holdout/
 │  ├─ features/              Browser features, one folder each: components + hooks
 │  │  ├─ competition/        header, countdown; Leaderboard, Overview, Data, Submit tabs   (built)
 │  │  ├─ create/             host form, local check of the files                           (built)
-│  │  └─ home/               competition list for /home (later)
+│  │  └─ home/               the sections and rows of the competition list on /home      (built)
 │  ├─ components/ui/         Base UI primitives kit (scaffold, restyled by the theme)
 │  ├─ components/            App chrome: Navigation, Wordmark, ErrorScreen, Seo; FileDrop (shared CSV drop zone)
 │  ├─ pages/                 Routes (generouted, file-based)
 │  │  ├─ index.tsx           /            static landing, prerendered
-│  │  ├─ (app)/home.tsx      /home        competition list
+│  │  ├─ (app)/home.tsx      /home        competition list, public                       (built)
 │  │  ├─ (app)/c/[id].tsx    /c/:id       competition page, public: header and four tabs (built)
 │  │  └─ (app)/(protected)/host/new.tsx  /host/new   create form, sign-in required    (built)
 │  └─ themes.css, themes.ts  the Holdout theme                                          (built)
