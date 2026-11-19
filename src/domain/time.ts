@@ -85,3 +85,16 @@ export function timeLeft(ms: number): string {
   if (minutes > 0) return `${minutes} min ${seconds % 60} s`
   return `${seconds} s`
 }
+
+/** Where a competition is, as a visitor is told. */
+export type Phase = 'open' | 'closing' | 'closed'
+
+/**
+ * A competition is open until its deadline, then closing until the close job
+ * has written the final standings and marked it closed. The record still says
+ * `open` for up to a minute after the deadline; the clock decides.
+ */
+export function phaseAt(status: Phase, deadline: number, now: number): Phase {
+  if (status === 'closed') return 'closed'
+  return status === 'open' && acceptsSubmissions(deadline, now) ? 'open' : 'closing'
+}
