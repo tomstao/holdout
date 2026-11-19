@@ -15,7 +15,16 @@
  * persisted to `~/.deepspace/playwright-states/`), context creation, and
  * cleanup. No need to manage browser contexts manually.
  */
+import type { Page } from '@playwright/test'
 import { test, expect, loadAllTestAccounts } from 'deepspace/testing'
+import {
+  callAction,
+  createCompetition,
+  removeStoredFiles,
+  SAMPLE_CSV,
+  SOLUTION_CSV,
+} from './helpers/competitions'
+import { authToken } from './helpers/room'
 
 // A machine that has never created test accounts is the normal state of a
 // fresh checkout, and there `users()` throws — turning "you have no pool yet"
@@ -133,4 +142,96 @@ test('API status page shows local retry after first-load API failure', async ({ 
   await retryButton.click()
   await expect.poll(() => requestCount).toBeGreaterThan(requestsAfterFailure)
   expect(user.page.url()).toBe(urlAfterFailure)
+})
+
+/**
+ * Holdout's core multi-user promise (spec F3): a submission appears on every
+ * other open leaderboard without a reload, rows reorder by best score with
+ * ties to the earlier best, and the daily limit stops the next submission
+ * with the time it resets. One host and two participants.
+ */
+test.describe('the live leaderboard', () => {
+  test.skip(
+    loadAllTestAccounts().length < 3,
+    'Needs 3 test accounts (a host and two participants). Create one with ' +
+      '`npx deepspace test accounts create --email <name>@deepspace.test --name "<name>" --password-stdin`.',
+  )
+
+  async function submitThroughThePage(page: Page, csv: string) {
+    await page.getByRole('tab', { name: 'Submit' }).click()
+    await page
+      .getByTestId('file-predictions')
+      .locator('input[type="file"]')
+      .setInputFiles({ name: 'predictions.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
+    await page.getByTestId('submit-predictions').click()
+    await expect(page.getByText(/^Scored \d\.\d{4}\.$/).last()).toBeVisible({ timeout: 15_000 })
+    await page.getByRole('tab', { name: 'Leaderboard' }).click()
+  }
+
+  /** The participant ids of a page's leaderboard rows, top to bottom. */
+  async function ranking(page: Page): Promise<(string | null)[]> {
+    const rows = page.getByTestId('leaderboard-row')
+    const ids: (string | null)[] = []
+    for (let index = 0; index < (await rows.count()); index++) {
+      ids.push(await rows.nth(index).getAttribute('data-participant'))
+    }
+    return ids
+  }
+
+  test('two participants watch each other move, and the limit holds', async ({ users }) => {
+    const [host, ann, ben] = await users(3)
+    await host.page.goto('/home')
+    const { competitionId, token } = await createCompetition(host.page, { dailyLimit: 2 })
+    try {
+      await Promise.all([
+        ann.page.goto(`/c/${competitionId}`),
+        ben.page.goto(`/c/${competitionId}`),
+      ])
+      for (const viewer of [ann, ben]) {
+        await expect(viewer.page.getByText('No submissions yet.')).toBeVisible()
+      }
+
+      // Ann scores 2 of 6 on the public rows; Ben's open page shows her row, flashing.
+      await submitThroughThePage(ann.page, SAMPLE_CSV)
+      const annRowOnBen = ben.page.getByTestId('leaderboard-row')
+      await expect(annRowOnBen).toHaveCount(1)
+      await expect(annRowOnBen).toHaveClass(/row-flash/)
+      await expect(annRowOnBen).not.toHaveAttribute('aria-current')
+      const [annParticipant] = await ranking(ben.page)
+
+      // Ben scores 1.0 and goes first on both pages.
+      await submitThroughThePage(ben.page, SOLUTION_CSV)
+      for (const viewer of [ann, ben]) {
+        await expect(viewer.page.getByTestId('leaderboard-row')).toHaveCount(2)
+        await expect(viewer.page.getByTestId('leaderboard-row').first()).toContainText('1.0000')
+      }
+      const [benParticipant] = await ranking(ann.page)
+      expect(benParticipant).not.toBe(annParticipant)
+      await expect(ann.page.getByTestId('my-rank')).toHaveText('You are 2 of 2.')
+
+      // Ann ties Ben at 1.0 with her second and last submission. Ben's best came first,
+      // so he keeps first place on both pages.
+      await submitThroughThePage(ann.page, SOLUTION_CSV)
+      for (const viewer of [ann, ben]) {
+        await expect(viewer.page.getByTestId('leaderboard-row').nth(1)).toContainText('1.0000')
+        expect(await ranking(viewer.page)).toEqual([benParticipant, annParticipant])
+      }
+
+      // Ann has used both of today's submissions: the page says so and the server agrees.
+      await ann.page.getByRole('tab', { name: 'Submit' }).click()
+      await expect(ann.page.getByTestId('submit-usage')).toHaveText(
+        /^You have used all 2 submissions today\. The count resets in \d+ (h|min|s)/,
+      )
+      await expect(ann.page.getByTestId('submit-predictions')).toBeDisabled()
+      const third = await callAction(
+        ann.page,
+        'submitPredictions',
+        { competitionId, fileName: 'third.csv', csv: SAMPLE_CSV },
+        await authToken(ann.page),
+      )
+      expect(third.body).toMatchObject({ success: false, code: 'limit_reached' })
+    } finally {
+      await removeStoredFiles(host.page, token, competitionId)
+    }
+  })
 })
