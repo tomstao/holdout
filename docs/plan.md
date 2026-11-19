@@ -96,8 +96,7 @@ needed. S8 moved to day 4, where the close-out email is built.
       room (`submit.spec.ts`): with a limit of 1, two simultaneous submissions give one score.
 - [x] **PR 9, `/c/:id`:** header and tabs; Leaderboard from `useCollection('submissions')`
       and `domain/ranking.ts`; Overview; Data with downloads; Submit with local check and
-      my submissions. Not yet: the viewer's row pinned when it is below the fold (a line
-      above the table gives their rank instead). The Edit tab came in PR 14.
+      my submissions. The Edit tab came in PR 14, the viewer's pinned row in PR 15.
 - [x] **PR 10, multi-user spec:** two participants in two browsers; B's page shows A's new
       row without a reload; the daily limit refuses the next submission with the reset time.
       In `collab.spec.ts`, with a host as the third account; it also checks the reorder and
@@ -131,6 +130,10 @@ needed. S8 moved to day 4, where the close-out email is built.
 - [x] **PR 14, edit (F5):** `updateCompetition` (host only, while open; a deadline only
       moves later), the Edit tab with a confirmation for the deadline, and the close job
       opening a competition again if its deadline moved as it was being marked.
+
+- [x] **PR 15, the viewer's own row:** it stays in sight on a long leaderboard and in the
+      final standings (pinned to the edge of the page while its place is off screen), and
+      a polite live region speaks the viewer's rank when it changes.
 
 ## Day 5: verify, review, ship
 

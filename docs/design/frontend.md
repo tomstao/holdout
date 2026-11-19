@@ -226,7 +226,14 @@ Use the kit; never browser defaults ([product polish](https://docs.deep.space/de
 - Disable Submit and Create while a call is in flight (it also prevents double
   submissions, [ADR 0008](../decisions/0008-daily-limit-with-uniqueon-slots.md)).
 - Live updates: a moved row highlights for about a second; an `aria-live="polite"`
-  region announces the viewer's own rank change only, not every row.
+  region announces the viewer's own rank change only, not every row. As built: the
+  region's text is "Your rank is 3." and depends on nothing but the viewer's rank, so it
+  changes, and is spoken, only when that does.
+- The viewer's own row is sticky on its cells (`.my-row` in `src/styles.css`): pinned to
+  the bottom edge of the page while its place is below the fold, to the top edge once
+  scrolled past. The tables have no scrolling wrapper, because a sticky row sticks to the
+  nearest ancestor that scrolls. On a phone the final standings drop the public rank
+  column to fit.
 - Scores always show the competition's decimals; the full value is in a tooltip.
 - Phones: the leaderboard keeps rank, name and score; other columns move into a row
   disclosure.
