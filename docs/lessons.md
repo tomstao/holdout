@@ -443,3 +443,17 @@ After the deployed run the four spike collections were empty and the file storag
   the DOM.
 - **A shared form part belongs in `src/components/`.** `Field` (label, hint or error)
   moved out of the create form when the edit form needed it.
+
+## 2026-11-19, day 4: the viewer's own row
+
+- **`position: sticky` on a table row belongs on its cells**, and it sticks to the
+  nearest ancestor that scrolls. The tables sat in an `overflow-x-auto` wrapper, which
+  scrolls in both directions as far as CSS is concerned; the row stuck to that and went
+  nowhere. The wrapper is gone and long names wrap instead.
+- **A collapsed table's borders do not travel with a stuck cell.** The pinned row draws
+  its rules as inset shadows.
+- **To test a pinned row, measure a cell.** `toBeInViewport()` on the `<tr>` reported
+  1%: the row's own box stays where the table put it while its cells stick.
+- **A live region that should speak one thing must contain only that thing.** "Your rank
+  is 3." changes when the rank does. "You are 3 of 12." would also be spoken every time
+  someone new joined.
