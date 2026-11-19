@@ -57,6 +57,17 @@ test.describe('Smoke tests', () => {
     await expect(page.getByTestId('app-navigation')).toBeVisible({ timeout: 15000 })
   })
 
+  test('the home page is the competition list, not the scaffold placeholder', async ({ page }) => {
+    await page.goto('/home')
+    await expect(page.getByRole('heading', { level: 1, name: 'Competitions' })).toBeVisible({
+      timeout: 15000,
+    })
+    await expect(page.getByText(/placeholder page/i)).toHaveCount(0)
+    // A visitor's primary action: the inline prompt opens the sign-in overlay.
+    await page.getByTestId('sign-in-prompt').getByRole('button', { name: 'Sign in' }).click()
+    await expect(page.getByTestId('auth-overlay')).toBeVisible()
+  })
+
   test('sign-in button visible when logged out', async ({ page }) => {
     await page.goto('/home')
     await expect(page.getByTestId('nav-sign-in-button')).toBeVisible({ timeout: 15000 })
@@ -66,7 +77,7 @@ test.describe('Smoke tests', () => {
   test('the app paints in the Holdout theme with its own fonts', async ({ page }) => {
     await page.goto('/home')
     await expect(page.getByTestId('app-navigation')).toBeVisible({ timeout: 15000 })
-    await expect(page).toHaveTitle('Holdout')
+    await expect(page).toHaveTitle('Competitions · Holdout')
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'holdout')
     // --color-background and --font-sans of [data-theme='holdout'] (src/themes.css).
     await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(245, 241, 232)')
