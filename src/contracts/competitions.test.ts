@@ -205,6 +205,17 @@ describe('collection schemas', () => {
     }
   })
 
+  it('declares no immutable column on a closed collection', () => {
+    // The room checks immutability before permission, so the flag would turn
+    // a refused write into a yes/no answer about the stored value.
+    for (const name of ['answer_keys', 'private_scores']) {
+      expect(
+        schemaOf(name).columns.filter((column) => column.immutable),
+        name,
+      ).toEqual([])
+    }
+  })
+
   it('lets everyone, signed in or not, read the other three', () => {
     for (const name of ['competitions', 'submissions', 'final_standings']) {
       for (const role of ROLES) {

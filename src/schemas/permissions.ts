@@ -23,5 +23,13 @@ export const READ_ONLY = everyRole({ read: true, create: false, update: false, d
 /**
  * No browser receives these rows, the app owner's included. Only Worker code
  * (actions, the cron task, jobs) reads them, with RBAC off.
+ *
+ * A closed collection must not declare an `immutable` column. On an update
+ * the record room compares an immutable field with the stored value before
+ * it checks permission: a client that guesses the value is told
+ * `UPDATE DENIED`, one that guesses wrong is told
+ * `Cannot modify immutable field`. That difference would let a participant
+ * confirm a private score by trying each possible value. Without the flag
+ * every write is answered `UPDATE DENIED` (tests/rbac.spec.ts).
  */
 export const CLOSED = everyRole({ read: false, create: false, update: false, delete: false })
