@@ -8,6 +8,7 @@ import {
   deadlineProblem,
   HOUR_MS,
   nextUtcMidnight,
+  timeLeft,
   utcDay,
 } from './time'
 
@@ -79,5 +80,16 @@ describe('acceptsSubmissions', () => {
     expect(acceptsSubmissions(NOW, NOW - 1)).toBe(true)
     expect(acceptsSubmissions(NOW, NOW)).toBe(false)
     expect(acceptsSubmissions(NOW, NOW + 1)).toBe(false)
+  })
+})
+
+describe('timeLeft', () => {
+  it('names the two largest units, rounded down', () => {
+    expect(timeLeft(2 * DAY_MS + 4 * HOUR_MS + 59 * 60_000)).toBe('2 d 4 h')
+    expect(timeLeft(3 * HOUR_MS + 12 * 60_000 + 59_999)).toBe('3 h 12 min')
+    expect(timeLeft(12 * 60_000 + 40_500)).toBe('12 min 40 s')
+    expect(timeLeft(9_999)).toBe('9 s')
+    expect(timeLeft(0)).toBe('0 s')
+    expect(timeLeft(-5000)).toBe('0 s')
   })
 })
