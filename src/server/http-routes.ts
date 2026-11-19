@@ -240,13 +240,17 @@ export function registerAuthAndIntegrationRoutes(app: Hono<AppContext>): void {
     const target = integrationPath(integrationName, c.req.param('endpoint'))
     if (!target) return c.json({ error: 'Unknown integration' }, 404)
     const config = lookupOwn(integrations, integrationName)
-    const billingMode = config?.billing ?? 'developer'
+    // The scaffold billed an unlisted integration to the app's owner, for any
+    // signed-in caller. Here a name that src/integrations.ts does not list is
+    // not served at all (docs/decisions/0016).
+    if (!config) return c.json({ error: 'Unknown integration' }, 404)
+    const billingMode = config.billing
 
     // Sign-in is required unless the app opts this integration into anonymous
     // use; developer billing would otherwise let any visitor spend the owner's
     // credits. User billing always needs a caller to bill.
     const auth = await resolveAuth(c.req.raw, c.env)
-    if (!auth && (billingMode === 'user' || !config?.anonymous)) {
+    if (!auth && (billingMode === 'user' || !config.anonymous)) {
       return c.json({ error: 'Sign in required for this integration' }, 401)
     }
 
@@ -291,6 +295,12 @@ export function registerPlatformProxyRoutes(app: Hono<AppContext>): void {
   // Scoped R2 files → platform-worker. The app has no local R2 binding; the
   // platform bucket scopes keys to the verified app and, by default, user.
   app.all('/api/files/*', async (c) => {
+    // Reading, listing and deleting one's own files only. Uploads through this
+    // proxy would let any member fill the app's file allocation; the app's
+    // files are written by the create action (docs/decisions/0016).
+    if (!['GET', 'HEAD', 'DELETE'].includes(c.req.method)) {
+      return c.json({ error: 'Files are uploaded by creating a competition.' }, 405)
+    }
     // A same-origin GET/HEAD with no bearer is identified by the app-origin
     // session cookie, so a private file URL renders in <img>/<audio>/<video>.
     // The fallback lives here, not in resolveAuth, which also gates writes.

@@ -22,7 +22,8 @@
 
 export const integrations: Record<string, { billing: 'developer' | 'user'; anonymous?: boolean }> =
   {
-    google: { billing: 'user' },
-    composio: { billing: 'user' },
-    // openai: { billing: 'developer', anonymous: true },
+    // Empty on purpose: the browser calls no integration in this app. The proxy
+    // in src/server/http-routes.ts refuses every name that is not listed here
+    // (docs/decisions/0016). The close-out email will be sent by the close job,
+    // from Worker code, not through the proxy.
   }
