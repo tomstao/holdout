@@ -61,11 +61,11 @@ holdout/
 │  │  ├─ csv.ts              RFC 4180 reader and writer; header lookup; size, row limits (built)
 │  │  ├─ dataset.ts          validate train/test/solution; build the answer key; sample  (built)
 │  │  ├─ split.ts            Usage column, or seeded stratified split by public share    (built)
-│  │  ├─ predictions.ts      validate a predictions file against an answer key
+│  │  ├─ predictions.ts      check a predictions file; line it up with the answer key    (built)
 │  │  ├─ metrics.ts          accuracy, macro-F1, RMSE, MAE; which direction is better    (built)
-│  │  ├─ scoring.ts          score predictions on the public and the private rows
+│  │  ├─ scoring.ts          score predictions on the public and the private rows        (built)
 │  │  ├─ ranking.ts          leaderboard, tie-breaks, auto-selection of finals, shake-up
-│  │  ├─ time.ts             deadline rule (built); UTC day key and daily reset time later
+│  │  ├─ time.ts             deadline rule, UTC day key, daily reset time                (built)
 │  │  └─ *.test.ts           unit and property tests; metric fixtures checked against scikit-learn
 │  ├─ contracts/             Zod contracts shared by both runtimes                         (built)
 │  │  ├─ define.ts result.ts action-client.ts schema-drift.ts                             (built)
@@ -76,7 +76,8 @@ holdout/
 │  ├─ actions/               Server actions (Worker)
 │  │  ├─ implement.ts records.ts index.ts fakes.ts (in-memory tools for tests)          (built)
 │  │  ├─ create-competition.ts host-files.ts                                              (built)
-│  │  ├─ submit-predictions.ts  update-competition.ts
+│  │  ├─ submit-predictions.ts shared.ts                                                  (built)
+│  │  ├─ update-competition.ts
 │  ├─ server/                Hono route registration (scaffold) + files-routes.ts         (built)
 │  ├─ cron.ts                close-due-competitions task
 │  ├─ jobs.ts                close-competition job

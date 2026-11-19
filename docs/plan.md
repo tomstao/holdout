@@ -90,9 +90,10 @@ needed. S8 moved to day 4, where the close-out email is built.
 
 ## Day 3: submitting and the live leaderboard
 
-- [ ] **PR 8, `submitPredictions`:** `domain/predictions.ts` and `domain/scoring.ts`;
+- [x] **PR 8, `submitPredictions`:** `domain/predictions.ts` and `domain/scoring.ts`;
       host refused; deadline check; slot claim with `uniqueOn` and one retry; private score
-      written second, submission removed if that fails.
+      written second, submission removed if that fails. The race is tested against the real
+      room (`submit.spec.ts`): with a limit of 1, two simultaneous submissions give one score.
 - [ ] **PR 9, `/c/:id`:** header and tabs; Leaderboard from `useCollection('submissions')`
       and `domain/ranking.ts`; Overview; Data with downloads; Submit with local check and
       my submissions.

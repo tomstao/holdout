@@ -272,3 +272,17 @@ After the deployed run the four spike collections were empty and the file storag
   rules.
 - **`node` cannot run a contract file directly.** Imports without an extension resolve in
   Vite and Vitest only. To look at what a schema answers, write a unit test.
+
+## 2026-11-19, day 3: submitting
+
+- **Domain code cannot use `Date`, so the UTC day is computed by hand.** `utcDay` in
+  `src/domain/time.ts` uses Hinnant's civil-from-days algorithm; a property test compares
+  it with `Date.prototype.toISOString` over 1970 to 2200. That test is the one place in
+  `src/domain` with an `eslint-disable` for `Date`.
+- **The fake record store imitates `uniqueOn` and concurrent writes.** `fakeRoom(seed,
+{ uniqueOn })` refuses a duplicate with the room's own text, and `before(call, effect)`
+  runs a write just before the handler's next call, which is how a unit test plays the
+  race of two submissions.
+- **A submission's answer must not carry the private score, and `implement()` makes sure
+  of it:** the output contract has no such field. The spec still asserts the answer's
+  exact keys, so a contract change that added one would fail a test.
