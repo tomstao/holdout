@@ -1,0 +1,24 @@
+# Git hooks, installed by lefthook's npm postinstall (https://lefthook.dev).
+# Fast checks on commit; the type check and unit tests on push.
+# The full gate is `npm run check` (CI runs it on every pull request).
+
+pre-commit:
+  jobs:
+    # Sequential on purpose: ESLint must read the files Prettier just wrote.
+    - name: prettier
+      glob: '*.{ts,tsx,js,cjs,mjs,json,md,css,html,yml,yaml}'
+      run: npx prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+    - name: eslint
+      glob: '*.{ts,tsx,js,cjs,mjs}'
+      run: npx eslint --max-warnings=0 --no-warn-ignored {staged_files}
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: npx commitlint --edit {1}
+
+pre-push:
+  jobs:
+    - name: validate
+      run: npm run validate

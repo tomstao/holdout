@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # The DeepSpace template needs npm 11.6+ (npm 10's peer resolver can
+      # fail on its Vitest dependency); Node 22 ships npm 10.
+      - run: npm install --global npm@^11.6.0
+
+      - run: npm ci
+
+      # format:check, lint, type-check, arch, unit tests with coverage
+      - run: npm run check
+
+      # `vite build` needs the app id that `npx deepspace app init` writes to
+      # wrangler.toml; until then there is nothing to build against.
+      - name: build
+        run: |
+          if grep -q '__APP_ID__' wrangler.toml; then
+            echo "::notice::Skipping the build: the app is not registered yet (npx deepspace app init)."
+          else
+            npm run build
+          fi
+
+  # Playwright specs (`npx deepspace test run`) need a DeepSpace login and
+  # test accounts, so they run locally before each deploy (docs/testing.md).
