@@ -425,3 +425,21 @@ After the deployed run the four spike collections were empty and the file storag
 - **Treat a downloaded file as data before it is code's input:** fetched into an empty
   folder and checked for size, header, row and class counts, quotes and formula-like
   cells before it was copied into the repository.
+
+## 2026-11-19, day 4: editing a competition
+
+- **A `datetime-local` input holds minutes; a stored time may hold seconds.** Read back
+  from the input, an untouched deadline was up to a minute earlier than the stored one,
+  and "a deadline only moves later" refused every save. The form sends the stored value
+  unless the input's text changed.
+- **Two writers of one record need the later one to repair, not the earlier one to
+  lock.** The host's edit and the cron task can both act on a competition in the same
+  instant. Neither can hold a lock, so the close job checks what it finds and undoes a
+  mark that no longer holds
+  ([ADR 0009](decisions/0009-close-with-cron-and-a-job.md), addendum).
+- **The kit's dialog cuts a long title short.** "Move the deadline to Nov 21, 2026,
+  6:37 PM?" lost its time, the one thing the dialog must show. Titles stay short; the
+  detail goes in the description. Found in a screenshot, not by a test: the text was in
+  the DOM.
+- **A shared form part belongs in `src/components/`.** `Field` (label, hint or error)
+  moved out of the create form when the edit form needed it.

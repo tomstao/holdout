@@ -185,6 +185,11 @@ arrive.
 Title, summary and description, and a later deadline (never earlier), while open. Same
 validation as F1. Everyone watching sees the change live.
 
+**Where:** the Edit tab of `/c/:id`, which the host has in place of Submit. Moving the
+deadline asks for confirmation and names the new time. A deadline moves at most to 90
+days from now; leaving it as it is always works, however close it is. Once the deadline
+has passed, the tab says the competition can no longer be edited.
+
 ### F6. Browse competitions
 
 **Where:** `/home`. Signed in: "Hosting", "Entered", "Open" and "Recently closed"

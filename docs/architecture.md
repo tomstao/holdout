@@ -77,7 +77,7 @@ holdout/
 │  ├─ actions/               Server actions (Worker)
 │  │  ├─ implement.ts records.ts index.ts fakes.ts (in-memory tools for tests)          (built)
 │  │  ├─ create-competition.ts host-files.ts retry.ts (file writes retry when storage is busy) (built)
-│  │  ├─ submit-predictions.ts shared.ts                                                  (built)
+│  │  ├─ submit-predictions.ts update-competition.ts shared.ts                            (built)
 │  │  ├─ update-competition.ts
 │  ├─ server/                Hono routes (scaffold) + files-routes.ts, room-tools.ts,
 │  │                         close.ts: the cron task's and the job's logic               (built)
@@ -85,11 +85,11 @@ holdout/
 │  ├─ jobs.ts                close-competition job                                        (built)
 │  ├─ client/                Browser glue: callAction, useCollection                       (built)
 │  ├─ features/              Browser features, one folder each: components + hooks
-│  │  ├─ competition/        header, countdown; Leaderboard, Overview, Data, Submit tabs   (built)
+│  │  ├─ competition/        header, countdown; Leaderboard, Overview, Data, Submit, Edit tabs (built)
 │  │  ├─ create/             host form, local check of the files                           (built)
 │  │  └─ home/               the sections and rows of the competition list on /home      (built)
 │  ├─ components/ui/         Base UI primitives kit (scaffold, restyled by the theme)
-│  ├─ components/            App chrome: Navigation, Wordmark, ErrorScreen, Seo; FileDrop (shared CSV drop zone)
+│  ├─ components/            App chrome: Navigation, Wordmark, ErrorScreen, Seo; FileDrop (shared CSV drop zone), Field
 │  ├─ components/landing/    the landing's two drawings: HeroBoard, SplitDiagram          (built)
 │  ├─ pages/                 Routes (generouted, file-based)
 │  │  ├─ index.tsx           /            static landing, prerendered                    (built)
@@ -204,11 +204,11 @@ stores `null` as no value and leaves the key out when the row is read.
 All are `POST /api/actions/<name>` with a JWT, built with `implement()`: input validated,
 output stripped to the contract. Failure codes come from `src/contracts/result.ts`.
 
-| Action              | Input                                                                                                                                                                              | Output                                                      | Failures                                                                                           |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `createCompetition` | `title, summary, description, taskType, metric, idColumn, targetColumn, deadline, dailyLimit, scoreDecimals, publicShare, files: { train, test, solution }` (each `{ name, csv }`) | `{ competitionId }`                                         | `invalid_input`, `invalid_file` (+ issues), `internal`                                             |
-| `submitPredictions` | `competitionId, fileName, csv`                                                                                                                                                     | `{ submissionId, publicScore, slot, dailyLimit, resetsAt }` | `not_found`, `forbidden` (host), `closed`, `limit_reached`, `invalid_file`, `conflict`, `internal` |
-| `updateCompetition` | `competitionId` and any of `title, summary, description, deadline`                                                                                                                 | `{ competitionId }`                                         | `not_found`, `forbidden` (not host), `closed`, `invalid_input` (earlier deadline)                  |
+| Action              | Input                                                                                                                                                                              | Output                                                      | Failures                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `createCompetition` | `title, summary, description, taskType, metric, idColumn, targetColumn, deadline, dailyLimit, scoreDecimals, publicShare, files: { train, test, solution }` (each `{ name, csv }`) | `{ competitionId }`                                         | `invalid_input`, `invalid_file` (+ issues), `internal`                                                     |
+| `submitPredictions` | `competitionId, fileName, csv`                                                                                                                                                     | `{ submissionId, publicScore, slot, dailyLimit, resetsAt }` | `not_found`, `forbidden` (host), `closed`, `limit_reached`, `invalid_file`, `conflict`, `internal`         |
+| `updateCompetition` | `competitionId, title, summary, description, deadline` (the current deadline, or a later one)                                                                                      | `{ competitionId, deadline }`                               | `not_found`, `forbidden` (not host), `closed`, `invalid_input` (+ issues; an earlier deadline), `internal` |
 
 One custom route: `GET /api/competitions/:id/files/:kind` (`train`, `test`, `sample`)
 streams the dataset from the host's private file folder; public, cacheable, 404 for an

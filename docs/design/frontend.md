@@ -187,13 +187,13 @@ As built:
 Header: title, host, status badge, deadline (local time, UTC on hover), countdown. Tabs
 (`Tabs` from the kit; the selected tab in the URL query so links work):
 
-| Tab                   | Content                                                                                                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Leaderboard (default) | Live table; the viewer's row pinned when off-screen; after close, final standings with private score, public rank and shake-up, plus a toggle back to the public board |
-| Overview              | Description; the metric in one sentence with its direction; the rules (daily limit, public share, two auto-picked finals)                                              |
-| Data                  | Three download buttons with sizes; the ID and target columns; a five-row preview of `sample_submission.csv`                                                            |
-| Submit (signed in)    | Drop zone; local check result; Submit (`Button loading`); "2 of 5 today, resets in 4 h"; my submissions                                                                |
-| Edit (host only)      | Title, summary, description, deadline (later only)                                                                                                                     |
+| Tab                                  | Content                                                                                                                                                                                        |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Leaderboard (default)                | Live table; the viewer's row pinned when off-screen; after close, final standings with private score, public rank and shake-up, plus a toggle back to the public board                         |
+| Overview                             | Description; the metric in one sentence with its direction; the rules (daily limit, public share, two auto-picked finals)                                                                      |
+| Data                                 | Three download buttons with sizes; the ID and target columns; a five-row preview of `sample_submission.csv`                                                                                    |
+| Submit (signed in)                   | Drop zone; local check result; Submit (`Button loading`); "2 of 5 today, resets in 4 h"; my submissions                                                                                        |
+| Edit (host only, in place of Submit) | Title, summary, description, deadline (later only). Save is off until something changes. The confirmation's title is short and its body names the new time: the dialog cuts a long title short |
 
 Not found: "This competition does not exist." with a link to `/home`.
 

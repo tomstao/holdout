@@ -98,3 +98,17 @@ Not built: the email. It waits for spike S8.
 
 Checked by 15 unit tests of the two functions and by `tests/close.spec.ts`, where a
 competition due in 45 seconds is closed by a real cron tick and job in about 70 seconds.
+
+## Addendum, 2026-11-19: a deadline that moves at the last moment
+
+The host can move a deadline later (spec F5). The room has no "check and write" in one
+step, so this order is possible, within a few milliseconds of the deadline:
+
+1. `updateCompetition` reads the competition: open, deadline not yet passed.
+2. The cron task finds it due and marks it `closing`.
+3. `updateCompetition` writes the later deadline.
+
+The job then finds a `closing` competition that is not due. It sets it back to `open`
+and stops (`reason: 'reopened'`). Without that, the competition would have stayed
+`closing`, refusing submissions, until the new deadline. Covered by a unit test of the
+job; the order itself was not reproduced against the real rooms.
