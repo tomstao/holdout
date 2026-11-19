@@ -207,3 +207,25 @@ After the deployed run the four spike collections were empty and the file storag
   `plan.md`, conflict.** That is why day 1 was stacked. To keep pull requests independent,
   tick the plan and add lessons in the pull request that merges last, or in a small docs
   pull request afterwards.
+
+## 2026-11-19, day 2: data model
+
+- **The record room stores `null` as "no value" and leaves the key out on read.**
+  (`rowToData` in the SDK skips `null` columns.) A contract field written as
+  `.nullable()` would never read back as `null`. Model a value that may be missing as
+  `.optional()` and leave it out when writing.
+- **The room checks a write's shape before its permission.** A member's `core.put` of an
+  incomplete record answers `Required field 'summary' is missing`; only a complete one
+  answers `CREATE DENIED: role=member, collection=…`. A test of a refusal has to send a
+  valid record, or it passes for the wrong reason.
+- **A subscription to a closed collection, an empty one and one that does not exist all
+  answer the same: no records.** "The participant receives nothing" proves nothing until
+  rows exist. Seed through an action, then read as another user.
+- **The room can be driven without a page.** Open `/ws/app:<id>?token=<jwt>` and send
+  `{ type: 'core.subscribe', payload: { subscriptionId, query: { collection } } }` or
+  `core.put`; the first frame back is `user.info` with the caller's role
+  (`tests/helpers/room.ts`). The token is `POST /api/auth/token` with the session cookie.
+- **`deepspace rollback` needs `--yes` when it is not at a terminal,** and says so only
+  after preparing. A rollback is recorded as a new release (release #3 re-deployed #1).
+- **A heredoc that contains an apostrophe fails in this Git Bash even when its
+  delimiter is quoted.** Write generated files with an editor or a script file.

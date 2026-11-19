@@ -69,3 +69,14 @@ The same 1.5 MB record wrote and read back intact on holdout.app.space: create 1
 The 2 MB row limit this record was sized for did not show up: records of 2.2, 3 and 8 MB
 were stored and read back as well. The 1.5 MB cap stays. Nothing documents a higher
 limit, and every submission reads the whole key: an 8 MB key took 0.33 s to read.
+
+## Encoding settled, 2026-11-19
+
+The record contract (`src/contracts/competitions.ts`) keeps the rows as
+`[id, target, split]` with the split written out (`public`, `private`, `ignored`).
+
+A shorter encoding would fit about 15% more rows into 1.5 MB. It is not worth a second
+representation: the deployed app stored 8 MB, so the cap is a choice and not a wall;
+`validateDataset` already measures the key as it will be stored and tells the host what
+to change; and a competition for a class is far below 47,000 test rows. The spec's
+"50,000 rows" stays as the upper bound for short IDs.
