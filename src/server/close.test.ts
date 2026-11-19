@@ -223,6 +223,25 @@ describe('closeCompetition', () => {
     expect(room.rows('competitions').get('c1')?.status).toBe('open')
   })
 
+  it('opens a competition again when its deadline moved later after it was marked', async () => {
+    const room = scoredRoom({
+      status: 'closing',
+      closingStartedAt: DEADLINE,
+      deadline: DEADLINE + 3_600_000,
+    })
+    const { result } = await close(room, DEADLINE + 5_000)
+    expect(result).toEqual({ status: 'skipped', reason: 'reopened' })
+    expect(room.rows('competitions').get('c1')).toMatchObject({
+      status: 'open',
+      deadline: DEADLINE + 3_600_000,
+    })
+    expect(room.rows('final_standings').size).toBe(0)
+
+    const stuck = scoredRoom({ status: 'closing', deadline: DEADLINE + 3_600_000 })
+    stuck.failOn('update:competitions')
+    await expect(close(stuck, DEADLINE + 5_000)).rejects.toThrow('competitions c1')
+  })
+
   it('waits out the grace period after the deadline before it reads anything', async () => {
     const room = scoredRoom()
     const { result, told } = await close(room, DEADLINE + 4_000)

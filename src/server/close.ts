@@ -11,7 +11,8 @@
  * Both are safe to run early and twice. Members can trigger a cron task, and
  * a job can be retried: the task and the job check the deadline themselves,
  * the standings have fixed record ids, and a closed competition is left
- * alone.
+ * alone. A competition marked `closing` whose deadline has since moved later
+ * is opened again.
  *
  * Plain functions over the record tools and a clock, so they can be tested
  * without a Worker. src/cron.ts and src/jobs.ts wire them to the rooms.
@@ -95,7 +96,7 @@ export interface CloseStep {
 /** The job's result. Counts only: members can read it. */
 export type CloseResult =
   | { status: 'closed'; participants: number; submissions: number }
-  | { status: 'skipped'; reason: 'not_found' | 'already_closed' | 'not_due' }
+  | { status: 'skipped'; reason: 'not_found' | 'already_closed' | 'not_due' | 'reopened' }
 
 /** One step of the close job. Returns nothing when it asked to continue. */
 export async function closeCompetition(
@@ -110,7 +111,14 @@ export async function closeCompetition(
   if (!found.success) return { status: 'skipped', reason: 'not_found' }
   const competition = found.data.record.data
   if (competition.status === 'closed') return { status: 'skipped', reason: 'already_closed' }
-  if (now < competition.deadline) return { status: 'skipped', reason: 'not_due' }
+  if (now < competition.deadline) {
+    if (competition.status !== 'closing') return { status: 'skipped', reason: 'not_due' }
+    // The host moved the deadline later in the instant the cron task marked the
+    // competition (src/actions/update-competition.ts). It is not over: open it again.
+    const reopened = await records.update('competitions', competitionId, { status: 'open' })
+    if (!reopened.success) throw new Error(`competitions ${competitionId}: ${reopened.error}`)
+    return { status: 'skipped', reason: 'reopened' }
+  }
 
   const { next } = progressOf(step.resumeFrom)
   const settledAt = competition.deadline + CLOSE_GRACE_MS
