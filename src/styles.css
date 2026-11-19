@@ -311,4 +311,148 @@
   .row-flash {
     animation: none;
   }
+
+  /* An in-page link jumps instead of gliding. */
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/*
+ * The sealed look: a diagonal hatch in two of the theme's neutrals. Used by
+ * the landing page's private column and its split diagram.
+ */
+.sealed,
+.board-seal {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-muted) 0 4px,
+    var(--color-border) 4px 8px
+  );
+}
+
+/*
+ * Landing: the leaderboard in the hero (src/components/landing/HeroBoard.tsx).
+ * One 12-second loop, linear and without overshoot:
+ *
+ *    0-40%  the public board, the private column sealed
+ *   40-47%  the seal lifts; the status goes from "Open" to "Final"
+ *   50-57%  three rows slide to their final ranks (`--shift` rows each)
+ *   57-93%  the final standings, with the shake-up
+ *   93-100% the board resets
+ *
+ * Keyframes, not script, so the prerendered page moves before any JavaScript
+ * runs. Under prefers-reduced-motion nothing runs and the board stays as it
+ * is before the deadline.
+ */
+.board {
+  --row: 2.75rem;
+  --shift: 0;
+}
+
+@keyframes board-seal {
+  0%,
+  40% {
+    transform: translateY(0);
+  }
+  47%,
+  93% {
+    transform: translateY(-101%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes board-row {
+  0%,
+  50% {
+    transform: translateY(0);
+  }
+  57%,
+  93% {
+    transform: translateY(calc(var(--shift) * var(--row)));
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* The status says "Open" until the seal starts to lift, then "Final". */
+@keyframes board-open {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  41%,
+  93% {
+    opacity: 0;
+  }
+  94%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes board-final {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  41%,
+  93% {
+    opacity: 1;
+  }
+  94%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The shake-up appears once the rows have landed. */
+@keyframes board-shake {
+  0%,
+  57% {
+    opacity: 0;
+  }
+  58%,
+  93% {
+    opacity: 1;
+  }
+  94%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.board-seal {
+  animation: board-seal 12s linear infinite;
+}
+
+.board-row {
+  animation: board-row 12s linear infinite;
+}
+
+.board-open {
+  animation: board-open 12s linear infinite;
+}
+
+.board-final {
+  opacity: 0;
+  animation: board-final 12s linear infinite;
+}
+
+.board-shake {
+  opacity: 0;
+  animation: board-shake 12s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-seal,
+  .board-row,
+  .board-open,
+  .board-final,
+  .board-shake {
+    animation: none;
+  }
 }
