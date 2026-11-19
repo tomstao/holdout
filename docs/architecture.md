@@ -249,11 +249,14 @@ sequenceDiagram
   B->>B: check header, row shape and labels locally
   B->>A: callAction({ competitionId, fileName, csv })
   A->>R: get competition (open? host? deadline > now?)
+  A->>R: query today's submissions for the caller (limit reached? stop here)
+  A->>A: check the file on its own: columns, rows, labels, numbers (domain)
   A->>R: get answer key
-  A->>A: validate rows against the key, score public and private (domain)
-  A->>R: query today's submissions for the caller -> next slot n
+  A->>A: line the rows up with the key, score public and private (domain)
+  A->>R: query today's submissions again -> next slot n
   A->>R: create submissions { ..., utcDay, slot: n }  (uniqueOn refuses a taken slot)
   A->>R: create private_scores { submissionId, privateScore }
+  Note over A,R: any failure after the first create removes the submission again
   A-->>B: { publicScore, slot, resetsAt }
   R-->>B: every open leaderboard receives the new submission
 ```
