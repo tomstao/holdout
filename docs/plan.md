@@ -49,20 +49,14 @@ goes into [lessons.md](lessons.md) and updates its decision's status.
 | S7  | Does `enqueueJob` from Worker code bypass `authorizeWrite`?                                               | Set `authorizeWrite` to refuse everyone; enqueue from the cron task      | The job runs; clients cannot enqueue           | Allow `admin` only                                                                                                                |
 | S8  | Does `email/send` from a job deliver with `bcc` and `reply_to`?                                           | One send to two owner-controlled addresses                               | Both arrive, neither sees the other            | Send one message per recipient (cost × n)                                                                                         |
 
-Results (2026-11-19, run locally): [lessons.md](lessons.md#2026-11-19-day-1-spikes-s1-to-s8).
-S3, S4 and S7 are settled. S1, S2, S5 and S6 passed locally, but local `workerd` enforces
-none of the platform's limits, so each still needs one run on the deployed app. S8 has not
-been run.
+Results (2026-11-19, locally and on the deployed app):
+[lessons.md](lessons.md#2026-11-19-day-1-spikes-s1-to-s8). S1 to S7 pass and no fallback is
+needed. S8 moved to day 4, where the close-out email is built.
 
 ## Day 1: domain core
 
-- [ ] **PR 1, spikes S1 to S8** (throwaway branch `spike/day-1`; results only, no app code
-      merged)
-  - [x] S3, S4, S7: settled
-  - [x] S1, S2, S5, S6: passed locally
-  - [ ] S1, S2, S5, S6 on the deployed app (needs the owner to deploy the spike branch
-        once, then roll back)
-  - [ ] S8 (needs two owner-controlled addresses)
+- [x] **PR 1, spikes S1 to S7** (throwaway branch `spike/day-1`; results only, no app code
+      merged). Run locally and once on the deployed app (release #2). S8 moved to PR 11.
 - [x] **PR 2, `domain/csv.ts`:** RFC 4180 parser (BOM, CRLF, quoted commas, quotes and
       newlines, trailing newline), header lookup, byte and row limits. Property test:
       formatting rows and parsing them back gives the same rows.
@@ -105,7 +99,9 @@ been run.
 - [ ] **PR 11, close:** `domain/ranking.ts` final selection and standings; cron task and
       job per [ADR 0009](decisions/0009-close-with-cron-and-a-job.md); final standings view
       with shake-up; email sent outside test mode. Spec: a competition due in two minutes
-      closes on its own.
+      closes on its own. Standings are written 20 at a time (a write takes about 28 ms on
+      the deployed app). First, spike S8: one send with `bcc` and `reply_to` to two
+      owner-controlled addresses.
 - [ ] **PR 12, design:** Holdout theme, Navigation, `/home` with its declared pattern, the
       landing with its Design Direction block; `design:gate` added to `npm run check`.
 - [ ] **PR 13, demo competition:** script that shuffles and renumbers Palmer Penguins into
