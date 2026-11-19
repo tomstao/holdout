@@ -56,7 +56,6 @@ const SCAFFOLD_FILES = [
   'src/pages/_app.tsx',
   'src/pages/index.tsx',
   'src/pages/?app?/_layout.tsx',
-  'src/pages/?app?/home.tsx',
   'src/pages/?app?/?protected?/_layout.tsx',
   'src/pages/?app?/?protected?/api-status.tsx',
   'src/pages/?app?/?protected?/settings.tsx',
