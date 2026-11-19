@@ -287,8 +287,8 @@ a closed competition, and the email is sent only by the run that sets `closed`.
 | A caller acts on a competition they do not own             | Actions run with RBAC off, so each one checks `hostId` against the verified `userId` before writing                                    |
 | The host submits to their own competition                  | `submitPredictions` refuses with `forbidden`                                                                                           |
 | Probing the public leaderboard                             | Daily limit; final ranking on private rows; scores shown at the host's decimals                                                        |
-| Someone overwrites a dataset file                          | Files live in the host's `self` folder, which only the host and the Worker can write                                                   |
-| A member triggers the close task or enqueues the job early | Both re-check `deadline <= now`, so an early run does nothing                                                                          |
+| Someone overwrites a dataset file                          | Files live in the host's `self` folder, which only the host and the Worker can write (`app` scope lets any member overwrite: spike S3) |
+| A member triggers the close task or enqueues the job early | The JobRoom refuses every client write (spike S7); the task and the job re-check `deadline <= now`, so an early run does nothing       |
 | Spending the owner's credits                               | The only paid call is one email per closed competition, sent by the job                                                                |
 
 Identity comes only from the verified JWT (`ctx.userId`); no action takes a user id from
@@ -304,13 +304,17 @@ its input.
 
 ## Limits and failure modes
 
-| Limit                  | Value                                         | Where it is enforced                  |
-| ---------------------- | --------------------------------------------- | ------------------------------------- |
-| Answer key record      | 1.5 MB of JSON, 50,000 rows                   | domain validation, before any write   |
-| Action request body    | under 10 MB (train 5 + test 2 + solution 1.5) | contracts (`max` on each CSV string)  |
-| App file allocation    | 128 MiB on the free plan                      | platform (`storage_quota_exceeded`)   |
-| Records per page       | about 30 KB per `tools.query` page            | paged reads in the job and the action |
-| Worker CPU per request | not documented                                | spike S2 in [plan.md](plan.md)        |
+| Limit                  | Value                                          | Where it is enforced                  |
+| ---------------------- | ---------------------------------------------- | ------------------------------------- |
+| Answer key record      | 1.5 MB of JSON (UTF-8 bytes), 50,000 rows      | domain validation, before any write   |
+| Action request body    | under 10 MB (train 5 + test 2 + solution 1.5)  | contracts (`max` on each CSV string)  |
+| App file allocation    | 1.0 GiB shown for this app (docs: 128 MiB)     | platform (`storage_quota_exceeded`)   |
+| Records per query      | no cap from action tools: 5,000 rows, 1.97 MB  | explicit `limit` and `offset` in code |
+| Worker CPU per request | not documented; a submission needs 35 to 46 ms | to see on the deployed app (S2)       |
+| Leaderboard snapshot   | about 390 bytes per submission, in one frame   | spec limit of 5,000 submissions       |
 
-Unknowns are tracked as de-risking spikes in [plan.md](plan.md#de-risking-spikes-day-1),
-each with a fallback.
+The day-1 spikes measured these ([lessons](lessons.md#2026-11-19-day-1-spikes-s1-to-s8)).
+Local `workerd` enforces none of the platform's limits, so the 2 MB row limit, the CPU
+limit, the subrequest limit and the WebSocket message size are confirmed only once they
+have been seen on the deployed app; each keeps its fallback in
+[plan.md](plan.md#de-risking-spikes-day-1) until then.

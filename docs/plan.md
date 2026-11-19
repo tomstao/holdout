@@ -49,9 +49,20 @@ goes into [lessons.md](lessons.md) and updates its decision's status.
 | S7  | Does `enqueueJob` from Worker code bypass `authorizeWrite`?                                               | Set `authorizeWrite` to refuse everyone; enqueue from the cron task      | The job runs; clients cannot enqueue           | Allow `admin` only                                                                                                                |
 | S8  | Does `email/send` from a job deliver with `bcc` and `reply_to`?                                           | One send to two owner-controlled addresses                               | Both arrive, neither sees the other            | Send one message per recipient (cost × n)                                                                                         |
 
+Results (2026-11-19, run locally): [lessons.md](lessons.md#2026-11-19-day-1-spikes-s1-to-s8).
+S3, S4 and S7 are settled. S1, S2, S5 and S6 passed locally, but local `workerd` enforces
+none of the platform's limits, so each still needs one run on the deployed app. S8 has not
+been run.
+
 ## Day 1: domain core
 
-- [ ] **PR 1, spikes S1 to S8** (throwaway branch; results only, no app code merged)
+- [ ] **PR 1, spikes S1 to S8** (throwaway branch `spike/day-1`; results only, no app code
+      merged)
+  - [x] S3, S4, S7: settled
+  - [x] S1, S2, S5, S6: passed locally
+  - [ ] S1, S2, S5, S6 on the deployed app (needs the owner to deploy the spike branch
+        once, then roll back)
+  - [ ] S8 (needs two owner-controlled addresses)
 - [ ] **PR 2, `domain/csv.ts`:** RFC 4180 parser (BOM, CRLF, quoted commas, quotes and
       newlines, trailing newline), header lookup, byte and row limits. Property test:
       formatting rows and parsing them back gives the same rows.
@@ -68,6 +79,8 @@ goes into [lessons.md](lessons.md) and updates its decision's status.
 
 - [ ] **PR 5, schemas, record contracts and RBAC:** five collections in `src/schemas/`, their
       Zod contracts in `src/contracts/competitions.ts`, registered; drift test green.
+      Settle the answer key's size limit and encoding first
+      ([ADR 0006](decisions/0006-answer-key-in-a-server-only-collection.md#spike-s1-2026-11-19)).
       Playwright `rbac.spec.ts`: a participant's `useQuery` on `answer_keys` and
       `private_scores` returns nothing, and so does `records.query` through the agent tools.
 - [ ] **PR 6, `createCompetition` and the files route:** action contract and handler,
