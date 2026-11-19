@@ -9,26 +9,45 @@ updates live for everyone watching. Part of the answer key is held out: at the d
 the private leaderboard, scored on rows nobody saw a score for, replaces the public one,
 and the page shows how far each person moved.
 
-> **Status:** setup is done: research, spec, architecture, decisions, design brief and
-> plan are written, and the tooling and the typed contract layer are in place with tests.
-> No features yet; the build follows [docs/plan.md](docs/plan.md). The scaffold is
-> deployed at <https://holdout.app.space>.
+> **Status, 2026-11-19:** the features of v1 are built, tested and live at
+> <https://holdout.app.space>. Still open: the close-out email, the demo competition, and
+> the last walk through the acceptance criteria on the live site
+> ([docs/plan.md](docs/plan.md)). The live site shows the owner's last deploy, which can
+> be behind `main`.
+
+## What is in it
+
+| Where       | What                                                                                           |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| `/`         | The landing page: static, prerendered, with the public/private split explained                 |
+| `/home`     | Every competition, live: the ones you host, the ones you entered, open and recently closed     |
+| `/host/new` | Create a competition from `train.csv`, `test.csv` and `solution.csv`, checked as you drop them |
+| `/c/:id`    | A competition: the live leaderboard, the rules, the data, and Submit (or Edit, for its host)   |
+
+At its deadline a competition closes on its own: a scheduled task finds it, a job scores
+each participant's two best public submissions on the private rows, and the page shows
+the final standings and how far each person moved.
 
 ## Quick start
 
-Requires Node 22.15+ or 24 (`.nvmrc`), npm 11.6+, and a GitHub or Google account for
-DeepSpace.
+Requires Node 22.18+ or 24 (`.nvmrc`; the check and the scripts run TypeScript directly),
+npm 11.6+, and a GitHub or Google account for DeepSpace.
 
 ```sh
 npm install                 # also installs the git hooks
-npm run check               # format, lint, types, layers, unit tests
+npm run check               # format, lint, types, layers, design gate, unit tests
 npx deepspace auth login    # once per machine
-npx deepspace app init      # once: registers the app, writes its id to wrangler.toml
 npx deepspace dev start     # http://localhost:5173
+npx deepspace test run all  # Playwright against a local server; needs test accounts
 ```
 
-Before the first deploy, read the source-control decision
-([ADR 0014](docs/decisions/0014-source-control-github.md)): it is permanent.
+The app is registered already (its id is in `wrangler.toml`). The Playwright specs need
+three DeepSpace test accounts; [docs/testing.md](docs/testing.md) says how to make them
+and what each spec asserts. `node scripts/demo/make-demo.ts` writes the demo competition's
+files.
+
+Deploys come from this repository's `main`
+([ADR 0014](docs/decisions/0014-source-control-github.md)).
 
 ## How it is built
 
@@ -39,6 +58,7 @@ Before the first deploy, read the source-control decision
 | Data           | One record room; RBAC closes the answer key and private scores to every client                                                      |
 | API            | DeepSpace server actions with Zod contracts shared by both runtimes                                                                 |
 | Scheduled work | Cron room finds due competitions; job room closes them                                                                              |
+| Design         | One theme (paper, ink, one orange) held to WCAG AA by a test; IBM Plex served by the app; a gate for DeepSpace's design rules       |
 | Quality        | strict TypeScript in three projects, type-aware ESLint, Prettier, dependency-cruiser, Vitest + fast-check, Playwright, lefthook, CI |
 
 The reasons are in [docs/decisions/](docs/decisions/README.md).
