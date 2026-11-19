@@ -356,3 +356,23 @@ After the deployed run the four spike collections were empty and the file storag
 - **The design gate looked for `[data-theme="x"]` with double quotes.** Prettier writes
   the selector with single quotes, so the gate missed the theme block. It accepts both
   now. A check that greps a formatted file should not depend on the quote style.
+
+## 2026-11-19, day 4: file storage under concurrent uploads
+
+- **The file storage refuses uploads that race for one account's usage counter.** The
+  SDK keeps a usage summary per account and updates it by compare-and-swap, eight
+  attempts with no wait between them (`deepspace/dist/worker.js`, the quota admission).
+  The losers get `AppFileError` with status 503: "Storage is busy with other uploads.
+  Retry shortly." Eight competitions created at once by one account lost two of eight.
+- **So a file write retries on 503.** `src/actions/retry.ts` wraps the host's uploads and
+  deletes: up to four attempts, waits of about 150, 400 and 900 ms spread at random. The
+  key is fixed, so a repeated upload writes the same object. The same eight at once now
+  all succeed, with three retries logged, in two runs out of two.
+- **It showed up as a flaky spec first.** Playwright runs the specs in parallel and every
+  host in them is the same test account, so adding one more spec that creates a
+  competition was enough. A second platform answer seen once the same day, not
+  reproduced: `put: Please look at https://www.cloudflarestatus.com … (10043)`. It is not
+  a 503 from the files API as far as the log shows, and is not retried.
+- **To reproduce a concurrency fault, write the stress case first.** A temporary spec
+  that fires eight `createCompetition` calls with `Promise.all` failed before the fix and
+  passed after it, which a rerun of the flaky suite could not show.

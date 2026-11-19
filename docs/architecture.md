@@ -76,7 +76,7 @@ holdout/
 │  ├─ schemas.ts, schemas/   DeepSpace CollectionSchemas: storage columns and RBAC (scaffold location)
 │  ├─ actions/               Server actions (Worker)
 │  │  ├─ implement.ts records.ts index.ts fakes.ts (in-memory tools for tests)          (built)
-│  │  ├─ create-competition.ts host-files.ts                                              (built)
+│  │  ├─ create-competition.ts host-files.ts retry.ts (file writes retry when storage is busy) (built)
 │  │  ├─ submit-predictions.ts shared.ts                                                  (built)
 │  │  ├─ update-competition.ts
 │  ├─ server/                Hono routes (scaffold) + files-routes.ts, room-tools.ts,
