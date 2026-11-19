@@ -90,8 +90,9 @@ holdout/
 │  │  └─ home/               the sections and rows of the competition list on /home      (built)
 │  ├─ components/ui/         Base UI primitives kit (scaffold, restyled by the theme)
 │  ├─ components/            App chrome: Navigation, Wordmark, ErrorScreen, Seo; FileDrop (shared CSV drop zone)
+│  ├─ components/landing/    the landing's two drawings: HeroBoard, SplitDiagram          (built)
 │  ├─ pages/                 Routes (generouted, file-based)
-│  │  ├─ index.tsx           /            static landing, prerendered
+│  │  ├─ index.tsx           /            static landing, prerendered                    (built)
 │  │  ├─ (app)/home.tsx      /home        competition list, public                       (built)
 │  │  ├─ (app)/c/[id].tsx    /c/:id       competition page, public: header and four tabs (built)
 │  │  └─ (app)/(protected)/host/new.tsx  /host/new   create form, sign-in required    (built)

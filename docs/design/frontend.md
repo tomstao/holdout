@@ -130,6 +130,29 @@ an AI image) whose sealed band lifts on a loop, gated by `prefers-reduced-motion
 copy under 150 words. Calls to action: "Try the demo competition" and "Host a
 competition".
 
+As built:
+
+- Patterns from DeepSpace's library: N2 sticky bar, H1 split hero with a code-built
+  mockup, F4 single showcase, C1 contrast band (in ink, so orange stays for the button),
+  FT1 minimal footer. The worked example read first was 02, "runner": one accent, mono
+  type, mechanical easing, one convincing artifact.
+- Headline: "Your public score is not your grade." Seven words. The page has about 100
+  words of copy.
+- The hero board (`src/components/landing/HeroBoard.tsx`) is markup and CSS keyframes in
+  `src/styles.css`, on a 12-second linear loop: the seal lifts off the private column,
+  three rows slide to their final ranks, the shake-up appears, the board resets. The
+  rank numbers are their own column and stay put. The public leader finishes fifth.
+- No script drives it, so the prerendered page moves before JavaScript loads. Under
+  `prefers-reduced-motion` the keyframes are off and the board stays sealed; in-page
+  links jump instead of gliding.
+- "How the split works" is a numbered list of four sentences beside a drawing: 100 test
+  rows as an answer sheet, 30 scattered public ones in ink, 70 hatched. The share is the
+  create form's default.
+- The first call to action reads "See the competitions" and goes to `/home`. It becomes
+  "Try the demo competition" when the demo exists (plan PR 13).
+- The page imports the button's styles from `components/ui/Button`, not the kit's index,
+  and nothing from `deepspace`, so the static page stays light.
+
 ### `/home` Competition list
 
 First line of `src/pages/(app)/home.tsx`:
@@ -210,11 +233,20 @@ Use the kit; never browser defaults ([product polish](https://docs.deep.space/de
 
 ## Done when
 
-- `npm run design:gate` passes and joins `npm run check`.
-- The eyeball checklist in
-  [anti-AI gate](https://docs.deep.space/design/anti-ai-gate.md#the-eyeball-checklist)
-  passes for the landing.
-- The smoke spec asserts the real H1, the absence of placeholder copy, an app-specific
-  `<title>`, and that a primitive opens and a toast appears
-  ([testing.md](../testing.md)).
-- Screens are compared side by side with the screenshots in `docs/design/refs/`.
+- [x] `npm run design:gate` passes and is part of `npm run check`.
+- [x] The eyeball checklist in
+      [anti-AI gate](https://docs.deep.space/design/anti-ai-gate.md#the-eyeball-checklist)
+      passes for the landing: the Direction block is at the top of the file; the headline
+      has seven words; the hero's visual is the leaderboard; the features section is a
+      numbered list and a drawing, not three cards; there are no image slots, both
+      visuals are code; the palette is paper, ink and one orange; nothing of the
+      scaffold's landing remains. The official grep commands find nothing in the landing
+      files.
+- [x] The specs assert the real H1 on `/` and `/home`, the absence of placeholder copy,
+      app-specific titles, a primitive that opens (the account menu, `home.spec.ts`) and
+      a toast after a mutation (`competition.spec.ts`, `collab.spec.ts`)
+      ([testing.md](../testing.md)).
+- [ ] Screens compared side by side with screenshots in `docs/design/refs/`. **Not
+      done.** No reference screenshots were taken: they would be other people's pages in
+      a public repository. The screens were checked against the Direction block and the
+      DeepSpace checklists instead, from screenshots at 1280 and 390 px.
