@@ -98,8 +98,10 @@ needed. S8 moved to day 4, where the close-out email is built.
       and `domain/ranking.ts`; Overview; Data with downloads; Submit with local check and
       my submissions. Not yet: the viewer's row pinned when it is below the fold (a line
       above the table gives their rank instead), and the Edit tab (F5).
-- [ ] **PR 10, multi-user spec:** two participants in two browsers; B's page shows A's new
+- [x] **PR 10, multi-user spec:** two participants in two browsers; B's page shows A's new
       row without a reload; the daily limit refuses the next submission with the reset time.
+      In `collab.spec.ts`, with a host as the third account; it also checks the reorder and
+      the tie-break live.
 
 ## Day 4: the close and the design
 

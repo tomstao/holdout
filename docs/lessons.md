@@ -295,3 +295,9 @@ After the deployed run the four spike collections were empty and the file storag
   participant and their latest submission, so a new submission remounts that row and a
   CSS animation plays once. Rows older than the page itself do not get the class. No
   effect, no timer, nothing for the React hooks rules to object to.
+- **`tests/` has no DOM types** (`tsconfig.node.json` has no `DOM` lib), so
+  `locator.evaluateAll((rows) => rows.map((row) => row.getAttribute(…)))` does not type
+  check. Read attributes through locators (`rows.nth(i).getAttribute(…)`) instead.
+- **The live spec needs three test accounts** (a host and two participants); the pool on
+  this machine is Alice, Bob and Carol. A spec that needs more accounts than exist skips
+  itself and says how to create one.

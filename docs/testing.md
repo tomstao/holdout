@@ -51,7 +51,7 @@ so regenerating it needs nothing but Python.
 | `submit.spec.ts`      | `submitPredictions` against the real room: 401 without a token; a perfect file scores 1 and the answer carries no private score; nobody, the submitter included, is sent a `private_scores` row; `not_found`, the host refused, a bad file refused with its row and column and no slot used; with a limit of 1, two submissions sent at once give one score and one `limit_reached` |
 | `competition.spec.ts` | `/c/:id` for three people: a visitor sees the empty board, the rules, the data with a five-row preview, and a sign-in prompt on Submit; a participant's bad file is caught before sending, two good ones are scored, "Best" is marked and their leaderboard row says "(you)"; the visitor's open page shows the row without a reload; the host has no Submit tab                    |
 | `create.spec.ts`      | `/host/new` end to end: a visitor is asked to sign in; problems appear under the file with row and column and Create stays disabled; the corrected file clears them; field messages appear and go; the new competition opens on `/c/:id` and its sample file downloads; an unknown competition says so                                                                              |
-| `collab.spec.ts`      | Two participants: a submission appears on the other's open leaderboard without a reload                                                                                                                                                                                                                                                                                             |
+| `collab.spec.ts`      | A host and two participants: each participant's page shows the other's new row without a reload, flashing; rows reorder by best score and a tie goes to the earlier best; after the daily limit the page says when the count resets, Submit is disabled and the server refuses with `limit_reached`. Also the scaffold's two-account and API-status checks                          |
 | `limits.spec.ts`      | Invalid file does not use a slot; the slot after the limit is refused with the reset time; a closed competition refuses                                                                                                                                                                                                                                                             |
 | `close.spec.ts`       | A competition due in two minutes closes on its own; final standings and shake-up appear                                                                                                                                                                                                                                                                                             |
 
@@ -59,7 +59,8 @@ so regenerating it needs nothing but Python.
 collection without a page that mounts the hooks.
 
 Accounts: `npx deepspace test accounts create` (at most 10 per machine); the multi-user
-fixture signs them in ([DeepSpace testing guide](https://docs.deep.space/guides/testing.md)).
+fixture signs them in. The full suite needs three: `collab.spec.ts` uses a host and two
+participants, and skips itself with fewer ([DeepSpace testing guide](https://docs.deep.space/guides/testing.md)).
 No action deletes a competition, so a spec's competitions (titled `__test-<time>__ …`) stay
 in the local room; delete `.wrangler/state` to start clean. Their files go to the real
 platform storage and are removed in `finally`.
