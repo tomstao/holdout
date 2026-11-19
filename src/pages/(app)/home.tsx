@@ -59,6 +59,9 @@ function CompetitionList({ viewerId, entered, enteredLoading }: CompetitionListP
     (competition) => competition.status !== 'closed',
   )
   const section = { viewerId, now }
+  const ready = !loading && !enteredLoading
+  // The empty state has its own Sign in for a visitor; the band would ask twice.
+  const emptyStateAsks = ready && !anyRunning
 
   return (
     <div className="mx-auto w-full max-w-4xl px-6 py-10">
@@ -77,7 +80,7 @@ function CompetitionList({ viewerId, entered, enteredLoading }: CompetitionListP
         )}
       </header>
 
-      {!viewerId && (
+      {!viewerId && !emptyStateAsks && (
         <div
           data-testid="sign-in-prompt"
           className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
@@ -91,7 +94,7 @@ function CompetitionList({ viewerId, entered, enteredLoading }: CompetitionListP
         </div>
       )}
 
-      {loading || enteredLoading ? (
+      {!ready ? (
         <div aria-busy="true" className="mt-10 space-y-3">
           {[0, 1, 2].map((index) => (
             <div key={index} className="h-16 animate-pulse rounded-md bg-muted" />

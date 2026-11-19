@@ -100,8 +100,11 @@ test.describe('Smoke tests', () => {
       timeout: 15000,
     })
     await expect(page.getByText(/placeholder page/i)).toHaveCount(0)
-    // A visitor's primary action: the inline prompt opens the sign-in overlay.
-    await page.getByTestId('sign-in-prompt').getByRole('button', { name: 'Sign in' }).click()
+    // A visitor is asked to sign in once below the bar: by the band above the list, or by
+    // the empty state when nothing is running. Either opens the sign-in overlay.
+    const prompt = page.getByTestId('sign-in-prompt').or(page.getByTestId('no-open-competitions'))
+    await expect(prompt).toHaveCount(1)
+    await prompt.getByRole('button', { name: 'Sign in' }).click()
     await expect(page.getByTestId('auth-overlay')).toBeVisible()
   })
 
