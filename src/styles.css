@@ -278,3 +278,23 @@
     touch-action: manipulation;
   }
 }
+
+/*
+ * A leaderboard row whose participant just submitted: a short fade of the
+ * accent behind it (spec F3). Off for people who ask for less motion.
+ */
+@keyframes row-flash {
+  from {
+    background-color: var(--color-accent);
+  }
+}
+
+.row-flash {
+  animation: row-flash 1.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-flash {
+    animation: none;
+  }
+}
