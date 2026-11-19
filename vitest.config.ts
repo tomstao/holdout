@@ -4,31 +4,66 @@ import { appIdDefine } from 'deepspace/build'
 
 const appDir = fileURLToPath(new URL('.', import.meta.url))
 
-// Dedicated Vitest config, intentionally standalone (Vitest prefers this file
-// over vite.config.ts, so the app build config is never loaded for unit tests).
+// Vitest only. Playwright specs in tests/*.spec.ts run through `deepspace test run`.
 //
-// Two reasons it exists:
-//   1. vite.config.ts is built for the Cloudflare Worker / rolldown-vite
-//      toolchain (@cloudflare/vite-plugin, generouted, vite-plugin-checker).
-//      Vitest cannot load those plugins, and they are irrelevant to unit tests.
-//   2. Vitest's default `include` would sweep up the Playwright specs in
-//      tests/*.spec.ts and fail. Explicit unit-test paths keep the runners
-//      separate; Playwright runs via `npm test` / tests/playwright.config.ts.
-//
-// Unit tests live next to their source. The Node-only prerender test stays at
-// the root so it does not enter the browser/Worker TypeScript project in src/.
+// Two projects:
+//   pure  Domain logic, contracts and the typed action layer. No platform
+//         identity needed, so these run anywhere, including before the app is
+//         registered and in CI.
+//   app   Tests that import src/constants.ts, which needs the app id the build
+//         injects from wrangler.toml (the scaffold's prerender tests). Skipped,
+//         with a warning, until `npx deepspace app init` has written the id.
+const PURE_TESTS = [
+  'src/domain/**/*.test.ts',
+  'src/contracts/**/*.test.ts',
+  'src/actions/**/*.test.ts',
+  'src/client/**/*.test.ts',
+  'scripts/**/*.test.ts',
+]
+
+function appIdOrNull(): Record<string, string> | null {
+  try {
+    return appIdDefine({ appDir })
+  } catch {
+    console.warn(
+      '[vitest] Skipping the "app" project: wrangler.toml has no app id yet. Run `npx deepspace app init`.',
+    )
+    return null
+  }
+}
+
+const appDefine = appIdOrNull()
+const alias = { '@': fileURLToPath(new URL('./src', import.meta.url)) }
+
 export default defineConfig({
-  // Same app id the bundle is built with, from the same wrangler config —
-  // so a unit test importing src/constants.ts sees what the browser will.
-  define: appIdDefine({ appDir }),
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
-  },
+  resolve: { alias },
   test: {
-    // Unit tests only; tests/*.spec.ts are Playwright suites run separately.
-    include: ['prerender.test.ts', 'src/**/*.{test,spec}.{ts,tsx}'],
-    environment: 'node',
+    projects: [
+      {
+        extends: true,
+        test: { name: 'pure', include: PURE_TESTS, environment: 'node' },
+      },
+      ...(appDefine
+        ? [
+            {
+              extends: true as const,
+              define: appDefine,
+              test: {
+                name: 'app',
+                include: ['prerender.test.ts', 'src/**/*.test.{ts,tsx}'],
+                exclude: PURE_TESTS,
+                environment: 'node',
+              },
+            },
+          ]
+        : []),
+    ],
+    coverage: {
+      provider: 'v8',
+      // The logic that decides scores and access is held to a high bar.
+      include: ['src/domain/**/*.ts', 'src/contracts/**/*.ts', 'src/actions/implement.ts'],
+      exclude: ['**/*.test.ts'],
+      thresholds: { lines: 90, branches: 85, functions: 90, statements: 90 },
+    },
   },
 })

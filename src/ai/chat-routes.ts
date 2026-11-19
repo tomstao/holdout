@@ -210,9 +210,9 @@ export function registerAiChatRoutes(
     // consecutive user messages to the LLM.
     const allTurns: ChatTurn[] = [...rawTurns, { id: userMessageId, role: 'user', content }]
     const turns: ChatTurn[] = []
-    for (let i = 0; i < allTurns.length; i++) {
-      if (allTurns[i].role === 'user' && allTurns[i + 1]?.role === 'user') continue
-      turns.push(allTurns[i])
+    for (const [i, turn] of allTurns.entries()) {
+      if (turn.role === 'user' && allTurns[i + 1]?.role === 'user') continue
+      turns.push(turn)
     }
 
     const cachedSummary =

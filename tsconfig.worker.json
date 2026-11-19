@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": [
+    "worker.ts",
+    "src/actions",
+    "src/ai",
+    "src/server",
+    "src/cron.ts",
+    "src/jobs.ts",
+    "src/integrations.ts",
+    "src/schemas.ts",
+    "src/schemas",
+    "src/domain",
+    "src/contracts",
+    "src/**/*.worker.test.ts"
+  ]
+}

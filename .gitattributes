@@ -1,0 +1,5 @@
+# Store and check out text as LF on every OS (this machine sets core.autocrlf=true;
+# Prettier enforces LF, so CRLF checkouts would fail `npm run format:check`).
+* text=auto eol=lf
+*.png binary
+*.ico binary

@@ -1,6 +1,6 @@
 /** Modal / ConfirmModal — app-level wrappers around Dialog primitives. */
 
-import React, { ReactNode, JSX } from 'react'
+import React, { type ReactNode, type JSX } from 'react'
 import {
   Dialog,
   DialogContent,

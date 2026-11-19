@@ -1,0 +1,15 @@
+# Build and tool output
+dist
+coverage
+.wrangler
+.deepspace
+test-results
+playwright-report
+node_modules
+
+# Generated or vendored: never reformat
+package-lock.json
+src/router.ts
+skills-lock.json
+.agents
+.claude/skills
