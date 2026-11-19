@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom'
 import {
   Button,
   Input,
-  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -19,6 +18,7 @@ import {
   Textarea,
   useToast,
 } from '@/components/ui'
+import { Field } from '../../components/Field'
 import { FileDrop } from '../../components/FileDrop'
 import { callAction } from '../../client/actions'
 import { actionContracts } from '../../contracts/actions'
@@ -66,33 +66,6 @@ function toLocalInput(time: number): string {
   const date = new Date(time)
   const pad = (value: number) => String(value).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:00`
-}
-
-function Field({
-  id,
-  label,
-  hint,
-  error,
-  children,
-}: {
-  id: string
-  label: string
-  hint?: string
-  error?: string
-  children: ReactNode
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-      {hint && !error && <p className="text-sm text-muted-foreground">{hint}</p>}
-      {error && (
-        <p id={`${id}-error`} className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
-    </div>
-  )
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
