@@ -1,10 +1,10 @@
 /**
  * Theme catalog.
  *
- * The scaffold ships two placeholder themes: `slate` (dark default, defined
- * in styles.css) and `paper` (light example, defined in themes.css). They
- * are scaffolding, not a design — give the app its own theme before first
- * deploy:
+ * `holdout` is the app's theme (src/themes.css, docs/design/frontend.md).
+ * The scaffold's two placeholders stay as examples of the token contract:
+ * `slate` (dark, defined in styles.css) and `paper` (light, in themes.css).
+ * To add another:
  *   1. Add a `[data-theme="my-id"] { ... }` block in src/themes.css with
  *      the shadcn token overrides (include `color-scheme: light;` for
  *      light themes).
@@ -18,14 +18,19 @@
 
 export const THEMES = [
   {
+    id: 'holdout',
+    label: 'Holdout',
+    description: 'Warm paper, ink and one burnt signal orange. The app theme.',
+  },
+  {
     id: 'slate',
     label: 'Slate',
-    description: 'Neutral dark placeholder default. Replace with your own theme.',
+    description: 'Neutral dark scaffold baseline. An example only.',
   },
   {
     id: 'paper',
     label: 'Paper',
-    description: 'Light example theme showing the token contract. Replace or delete.',
+    description: 'Light scaffold example of the token contract. An example only.',
   },
 ] as const
 
@@ -33,9 +38,9 @@ export type ThemeId = (typeof THEMES)[number]['id']
 
 /** Read the currently active theme id from <html data-theme>. */
 export function getActiveTheme(): ThemeId {
-  if (typeof document === 'undefined') return 'slate'
+  if (typeof document === 'undefined') return 'holdout'
   const id = document.documentElement.getAttribute('data-theme') as ThemeId | null
-  return id ?? 'slate'
+  return id ?? 'holdout'
 }
 
 /** Look up a theme entry by id, or fall back to the first theme. */

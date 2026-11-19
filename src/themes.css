@@ -1,10 +1,9 @@
 /*
  * Theme overrides — applied via <html data-theme="<id>">.
  *
- * Default values live in `styles.css` (@theme block, slate — a neutral
- * placeholder, not a design choice). Every app should define its OWN theme
- * before first deploy: copy the example block below, rename the selector,
- * and set colors that fit the product. Shape comes from `--radius`.
+ * The app's theme is `holdout`, below. Baseline values live in `styles.css`
+ * (@theme block, the scaffold's slate); `paper` is the scaffold's light
+ * example. Both stay only as examples of the token contract.
  *
  * To add a theme:
  *   1. Add a `[data-theme="my-id"] { ... }` block overriding the shadcn
@@ -16,8 +15,56 @@
  *   4. Switch to it via `data-theme` on <html> in index.html.
  */
 
-/* Paper — light example theme; shows the full token contract incl.
- * `color-scheme: light`. Replace or delete it once the app has its own. */
+/*
+ * Holdout: warm paper, ink, and one burnt signal orange (docs/design/frontend.md).
+ *
+ *   - Paper and ink carry the page; the tables are the content.
+ *   - Orange is for primary actions and the deadline only.
+ *   - Status colours are deep enough to read as text on paper: the scaffold's
+ *     are tuned for a dark background and reach about 2.5:1 here.
+ *   - `input` is darker than `border`: a control's outline has to reach 3:1,
+ *     a table rule does not.
+ *
+ * Every text pair the app uses reaches WCAG AA. scripts/theme-contrast.test.ts
+ * checks that from this block, so change a value here and run the unit tests.
+ */
+[data-theme='holdout'] {
+  color-scheme: light;
+  --color-background: #f5f1e8;
+  --color-foreground: #1d1a16;
+  --color-card: #fbf9f3;
+  --color-card-foreground: #1d1a16;
+  --color-popover: #fffdf9;
+  --color-popover-foreground: #1d1a16;
+  --color-primary: #ad3f0c;
+  --color-primary-foreground: #fffaf3;
+  --color-secondary: #e9e3d5;
+  --color-secondary-foreground: #1d1a16;
+  --color-muted: #ebe6d9;
+  --color-muted-foreground: #5a5448;
+  --color-accent: #e2dbc9;
+  --color-accent-foreground: #1d1a16;
+  --color-destructive: #a3123a;
+  --color-destructive-foreground: #fffaf3;
+  --color-border: #d9d2c1;
+  --color-input: #8c8573;
+  --color-ring: #ad3f0c;
+  --color-success: #1c6b47;
+  --color-success-foreground: #fffaf3;
+  --color-warning: #7d5700;
+  --color-warning-foreground: #fffaf3;
+  --color-info: #1f5c86;
+  --color-info-foreground: #fffaf3;
+  /* Precise, not playful: 4px, so `rounded-md` is 2px and `rounded-lg` 4px. */
+  --radius: 0.25rem;
+  --shadow-card: 0 1px 2px 0 rgba(29, 26, 22, 0.04);
+  --shadow-card-hover: 0 2px 8px 0 rgba(29, 26, 22, 0.08);
+  --color-shell: #efeadf;
+  --color-shell-panel: #fbf9f3;
+}
+
+/* Paper — the scaffold's light example theme; shows the full token contract
+ * incl. `color-scheme: light`. Not used by the app. */
 [data-theme='paper'] {
   color-scheme: light;
   --color-background: #ffffff;
