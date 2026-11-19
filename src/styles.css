@@ -1,6 +1,18 @@
 @import 'tailwindcss' source(none);
 @import './themes.css';
 
+/*
+ * IBM Plex Sans and Mono, served from this app (no third-party font host).
+ * Each file lists every script the family has with its unicode-range, so a
+ * browser downloads only what a page uses: Latin is about 20 KB a weight.
+ */
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
 /* Scan local source + SDK components for Tailwind class usage */
 @source './**/*.{ts,tsx}';
 @source '../node_modules/deepspace/dist/**/*.js';
@@ -13,8 +25,9 @@
  * themes = changing the data-theme attribute on <html> in index.html. No
  * JS, no FOUC.
  *
- * Status colors (success, warning, info) are intentionally NOT themed —
- * they stay consistent across every preset.
+ * The scaffold keeps the status colors (success, warning, info) out of its
+ * presets. The holdout theme sets its own: these are tuned for a dark page
+ * and fail AA as text on paper (docs/decisions/0015).
  */
 @theme {
   /* shadcn core tokens — slate (default): neutral gray on near-black, indigo accent */
@@ -38,6 +51,13 @@
   --color-input: rgba(60, 64, 67, 0.6);
   --color-ring: #818cf8;
   --radius: 0.5rem;
+
+  /*
+   * Type (docs/design/frontend.md): Plex Sans for prose and headings, Plex
+   * Mono for scores, IDs and CSV cells, so columns of numbers line up.
+   */
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
   /*
    * Map the rounded-* utilities onto --radius so a theme (or you) can change
@@ -199,13 +219,7 @@
   }
 
   body {
-    font-family:
-      'SF Pro Text',
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
+    font-family: var(--font-sans);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
