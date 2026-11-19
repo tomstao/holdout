@@ -84,6 +84,39 @@ and set on `<html>` in `index.html`; `color-scheme: light`. The scaffold's `slat
 Every text pair must reach WCAG AA (4.5:1; 3:1 for large text), checked while the values
 are chosen. The theme ships before the landing page, because both read its tokens.
 
+### As built
+
+| Token                          | Value                           | Notes                                         |
+| ------------------------------ | ------------------------------- | --------------------------------------------- |
+| `background`                   | `#f5f1e8`                       | paper                                         |
+| `card`, `popover`              | `#fbf9f3`, `#fffdf9`            | each a step lighter                           |
+| `foreground`                   | `#1d1a16`                       | ink; 15.4:1 on paper                          |
+| `muted`, `secondary`, `accent` | `#ebe6d9` to `#e2dbc9`          | three neutral steps                           |
+| `muted-foreground`             | `#5a5448`                       | 6.7:1 on paper, 5.4:1 on the darkest step     |
+| `primary`, `ring`              | `#ad3f0c`                       | 5.3:1 as text on paper; 5.8:1 under its label |
+| `destructive`                  | `#a3123a`                       | a crimson, so it is not read as the orange    |
+| `success`, `warning`, `info`   | `#1c6b47`, `#7d5700`, `#1f5c86` | deep enough to be text on paper               |
+| `border`, `input`              | `#d9d2c1`, `#8c8573`            | hairline rules; control outlines at 3.3:1     |
+| `--radius`                     | `0.25rem`                       | `rounded-md` is 2 px, `rounded-lg` 4 px       |
+
+- `scripts/theme-contrast.test.ts` reads the block from `src/themes.css` and asserts AA
+  for every pair the app uses, including hovered fills (`bg-primary/90`) and tinted
+  banners (`bg-warning/10`). Why the status colours are themed and the fonts are served
+  by the app: [ADR 0015](../decisions/0015-theme-status-colours-and-self-hosted-fonts.md).
+- Type: `--font-sans` is IBM Plex Sans, `--font-mono` IBM Plex Mono (weights 400, 500,
+  600). Mono is for scores, ranks, IDs, column names, file names and CSV cells.
+  Durations and sizes in a sentence stay in the sans face with tabular figures.
+- Orange appears on primary buttons, the focus ring, the wordmark's band and the
+  countdown to the deadline. The status badge is an outline, and tooltips are ink.
+- Surfaces are flat: the kit's buttons, inputs, selects and tabs lost their shadows;
+  menus, popovers, dialogs and toasts keep theirs, because they float.
+- Wordmark (`src/components/Wordmark.tsx`): a three-row board whose middle row is the
+  sealed band, and "holdout" in the mono face. `public/favicon.svg` is the same drawing
+  on ink; `scripts/favicon.py` draws the `.ico` from the same numbers.
+- Navigation: wordmark, "Competitions", "Host a competition"; the current section has an
+  ink underline. Settings and Sign out are in the account menu. The bar and the
+  competition pages share one 56 rem column.
+
 ## Screens
 
 Routes and files are in [architecture.md](../architecture.md#layers-and-folders).
