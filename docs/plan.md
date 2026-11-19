@@ -66,7 +66,7 @@ been run.
 - [x] **PR 2, `domain/csv.ts`:** RFC 4180 parser (BOM, CRLF, quoted commas, quotes and
       newlines, trailing newline), header lookup, byte and row limits. Property test:
       formatting rows and parsing them back gives the same rows.
-- [ ] **PR 3, `domain/metrics.ts`:** accuracy, macro-F1, RMSE, MAE and their direction.
+- [x] **PR 3, `domain/metrics.ts`:** accuracy, macro-F1, RMSE, MAE and their direction.
       Fixtures with expected values computed once by scikit-learn
       (`scripts/fixtures/metrics.py`, output committed as JSON) and asserted to 1e-12.
 - [ ] **PR 4, `domain/split.ts` and `domain/dataset.ts`:** `Usage` parsing; deterministic,

@@ -155,3 +155,13 @@ account. S3 used the real platform file storage. The questions are in
   ESLint's `no-irregular-whitespace` caught the one in the regex and missed the ones
   inside strings. After writing a file that mentions a BOM or any other invisible
   character, search it for the raw bytes (`grep -c $'\xef\xbb\xbf' <file>`).
+- **`noUncheckedIndexedAccess` turns every `array[i]` into a branch.** Writing
+  `truth[i] ?? ''` to satisfy it adds a fallback no test can reach, and branch coverage
+  drops (76% on the first draft of `metrics.ts`). Iterate with `forEach` or `for…of`, and
+  where two arrays are walked together, check the lengths once and cast in one helper.
+- **Property tests find floating-point edges that are not bugs.** "MAE never exceeds
+  RMSE" failed for an error of 5e-324, whose square underflows to 0. Generate values the
+  app can actually receive (here: six decimals) instead of loosening the assertion.
+- **scikit-learn is not installed on this machine.** The fixtures were generated from a
+  throwaway virtual environment: `python -m venv <dir>`, then
+  `pip install --index-url https://pypi.org/simple -r scripts/fixtures/requirements.txt`.

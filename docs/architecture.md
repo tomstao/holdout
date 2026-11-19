@@ -62,7 +62,7 @@ holdout/
 │  │  ├─ dataset.ts          validate train/test/solution; build the answer key; sample submission
 │  │  ├─ split.ts            Usage column, or deterministic stratified split by public share
 │  │  ├─ predictions.ts      validate a predictions file against an answer key
-│  │  ├─ metrics.ts          accuracy, macro-F1, RMSE, MAE; which direction is better
+│  │  ├─ metrics.ts          accuracy, macro-F1, RMSE, MAE; which direction is better    (built)
 │  │  ├─ scoring.ts          score predictions on the public and the private rows
 │  │  ├─ ranking.ts          leaderboard, tie-breaks, auto-selection of finals, shake-up
 │  │  ├─ time.ts             UTC day key, daily reset time, deadline checks

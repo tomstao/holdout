@@ -35,8 +35,11 @@ branches 85%) apply to `src/domain`, `src/contracts` and `src/actions/implement.
 | `contracts`                     | Result envelope, action client error handling, wire round trip with `implement`, schema drift |
 | `actions`                       | Each handler with fake `tools`: authorisation, refusals, the slot retry, output stripped      |
 
-Metric fixtures come from `scripts/fixtures/metrics.py` (scikit-learn 1.6 or later), run
-once by hand; its JSON output is committed and the script is kept for regenerating.
+Metric fixtures come from `scripts/fixtures/metrics.py` (scikit-learn 1.6 or later; the
+committed file was made with 1.9.1). It is run by hand, is seeded, and rewrites
+`src/domain/metrics.fixtures.json`: 11 classification and 10 regression cases with
+scikit-learn's values, which the test asserts to 1e-12. The JSON is in `.prettierignore`,
+so regenerating it needs nothing but Python.
 
 ## Playwright specs (`tests/`, `npx deepspace test run`)
 
