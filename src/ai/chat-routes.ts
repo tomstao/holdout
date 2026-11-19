@@ -301,7 +301,9 @@ export function registerAiChatRoutes(
             }
             return true
           } catch (err) {
-            console.error(`[ai-chat] ${label} ${attempt === 1 ? 'failed, retrying once' : 'retry failed'}: ${loggableError(err)}`)
+            console.error(
+              `[ai-chat] ${label} ${attempt === 1 ? 'failed, retrying once' : 'retry failed'}: ${loggableError(err)}`,
+            )
           }
         }
         return false
@@ -368,7 +370,10 @@ export function registerAiChatRoutes(
       onAbort: ({ steps }) => {
         const last = steps.at(-1)
         if (!last) return
-        return persistTurn(last.text, steps.flatMap((step) => step.response.messages) as ModelMessage[])
+        return persistTurn(
+          last.text,
+          steps.flatMap((step) => step.response.messages) as ModelMessage[],
+        )
       },
     })
 

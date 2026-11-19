@@ -6,7 +6,7 @@ import { build, type ResolvedConfig } from 'vite'
 import { prerender } from './prerender'
 
 vi.mock('vite', async (original) => ({
-  ...await original<typeof import('vite')>(),
+  ...(await original<typeof import('vite')>()),
   build: vi.fn(),
 }))
 
@@ -21,13 +21,18 @@ async function buildPages(noindex: boolean) {
   dirs.push(root)
   const client = join(root, 'dist/client')
   mkdirSync(client, { recursive: true })
-  writeFileSync(join(client, 'index.html'), '<html><head><title>Fallback</title></head><body><div id="root"></div></body></html>')
+  writeFileSync(
+    join(client, 'index.html'),
+    '<html><head><title>Fallback</title></head><body><div id="root"></div></body></html>',
+  )
   // Simulate a prior sitemap, or one copied from public/.
   writeFileSync(join(client, 'sitemap.xml'), '<urlset><loc>https://old.test/</loc></urlset>')
   vi.mocked(build).mockImplementation(async () => {
     const ssrDir = join(root, 'dist/prerender')
     mkdirSync(ssrDir, { recursive: true })
-    writeFileSync(join(ssrDir, 'entry.mjs'), `
+    writeFileSync(
+      join(ssrDir, 'entry.mjs'),
+      `
       export const seo = { origin: 'https://example.test', noindex: ${noindex} };
       export const PRERENDER_ROUTES = ['/', '/excluded'];
       export function render(route) {
@@ -35,7 +40,8 @@ async function buildPages(noindex: boolean) {
           (route === '/excluded' ? '<meta content="noindex, nofollow" name="robots"/>' : '') +
           '<div data-testid="app-root"><h1>Page content</h1></div>';
       }
-    `)
+    `,
+    )
     return []
   })
 
@@ -57,7 +63,9 @@ describe('prerender indexing policy', () => {
     expect(sitemap).not.toContain('/excluded')
     expect(readFileSync(join(client, 'excluded.html'), 'utf8')).toContain('noindex, nofollow')
     expect(readFileSync(join(client, 'index.html'), 'utf8')).not.toContain('noindex')
-    expect(readFileSync(join(client, 'robots.txt'), 'utf8')).toContain('Sitemap: https://example.test/sitemap.xml')
+    expect(readFileSync(join(client, 'robots.txt'), 'utf8')).toContain(
+      'Sitemap: https://example.test/sitemap.xml',
+    )
     expect(readFileSync(join(client, '_spa.html'), 'utf8')).not.toContain('Page content')
   })
 

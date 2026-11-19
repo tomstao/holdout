@@ -52,9 +52,7 @@ interface DocumentRecordForAccess {
 }
 
 type DocumentAccessLookup =
-  | { kind: 'found'; doc: DocumentRecordForAccess }
-  | { kind: 'not-docs-room' }
-  | { kind: 'error' }
+  { kind: 'found'; doc: DocumentRecordForAccess } | { kind: 'not-docs-room' } | { kind: 'error' }
 
 function parseAccessList(raw: string | undefined): string[] {
   if (!raw) return []

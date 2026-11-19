@@ -50,7 +50,11 @@ export function Seo({
   noindex = false,
 }: SeoProps): ReactElement {
   const canonical = origin && path ? `${origin}${path}` : undefined
-  const image = ogImage ? (ogImage.startsWith('/') && origin ? `${origin}${ogImage}` : ogImage) : undefined
+  const image = ogImage
+    ? ogImage.startsWith('/') && origin
+      ? `${origin}${ogImage}`
+      : ogImage
+    : undefined
   return (
     <>
       <title>{title}</title>

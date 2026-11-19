@@ -24,7 +24,8 @@ export default function ApiStatusPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">API status</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          A scaffolded pattern for server-backed resources with explicit loading, error, empty, and retry states.
+          A scaffolded pattern for server-backed resources with explicit loading, error, empty, and
+          retry states.
         </p>
       </div>
 
@@ -37,7 +38,10 @@ export default function ApiStatusPage() {
 
       {catalog.status === 'loading' ? (
         <div className="flex items-center justify-center gap-3 rounded-lg border border-border bg-card p-8 text-sm text-muted-foreground">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />
+          <span
+            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+            aria-hidden
+          />
           Loading integration catalog...
         </div>
       ) : catalog.status === 'error' ? (
@@ -46,7 +50,10 @@ export default function ApiStatusPage() {
           <div className="mt-1 flex flex-col gap-3 text-sm text-muted-foreground">
             <span>{catalog.error}</span>
             {catalog.retryCount > 0 && (
-              <span>Retried {catalog.retryCount} time{catalog.retryCount === 1 ? '' : 's'} automatically.</span>
+              <span>
+                Retried {catalog.retryCount} time{catalog.retryCount === 1 ? '' : 's'}{' '}
+                automatically.
+              </span>
             )}
             <button
               type="button"

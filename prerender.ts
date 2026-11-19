@@ -57,7 +57,9 @@ interface Entry {
  */
 function siteOrigin(): string {
   if (process.env.DEEPSPACE_SITE_ORIGIN) return process.env.DEEPSPACE_SITE_ORIGIN
-  const name = /^name\s*=\s*"([^"]+)"/m.exec(readFileSync(join(appDir, 'wrangler.toml'), 'utf8'))?.[1]
+  const name = /^name\s*=\s*"([^"]+)"/m.exec(
+    readFileSync(join(appDir, 'wrangler.toml'), 'utf8'),
+  )?.[1]
   return name ? `https://${name}.app.space` : 'http://localhost'
 }
 
@@ -82,13 +84,20 @@ export function prerender(): Plugin {
       // output dir, the thing this plugin actually depends on).
       const clientDir = join(config.root, 'dist', 'client')
       const envOutDir = this.environment?.config?.build?.outDir
-      if (envOutDir ? resolve(config.root, envOutDir) !== clientDir : this.environment?.name !== 'client') return
+      if (
+        envOutDir
+          ? resolve(config.root, envOutDir) !== clientDir
+          : this.environment?.name !== 'client'
+      )
+        return
       ran = true
 
       const templatePath = join(clientDir, 'index.html')
       const template = readFileSync(templatePath, 'utf8')
       if (!template.includes(ROOT_PLACEHOLDER)) {
-        throw new Error(`[prerender] dist/client/index.html has no '${ROOT_PLACEHOLDER}' to fill — keep the scaffold's empty root container.`)
+        throw new Error(
+          `[prerender] dist/client/index.html has no '${ROOT_PLACEHOLDER}' to fill — keep the scaffold's empty root container.`,
+        )
       }
 
       // 1. Isolated SSR pass with the same defines (app id, site origin) and
@@ -128,14 +137,21 @@ export function prerender(): Plugin {
       for (const route of routes) {
         const html = entry.render(route)
         const at = html.indexOf(BODY_ANCHOR)
-        if (at < 0) throw new Error(`[prerender] ${route} rendered no '${BODY_ANCHOR}' — src/pages/_app.tsx root markup changed?`)
+        if (at < 0)
+          throw new Error(
+            `[prerender] ${route} rendered no '${BODY_ANCHOR}' — src/pages/_app.tsx root markup changed?`,
+          )
         const head = html.slice(0, at)
         const body = html.slice(at)
         if (!head.includes('<title>') || !head.includes('name="description"')) {
-          throw new Error(`[prerender] ${route} rendered no <title>/description — render <Seo {...seo} path="${route}" /> first in the page.`)
+          throw new Error(
+            `[prerender] ${route} rendered no <title>/description — render <Seo {...seo} path="${route}" /> first in the page.`,
+          )
         }
         if (!body.includes('<h') && !body.includes('<p')) {
-          throw new Error(`[prerender] ${route} rendered an empty page — public pages must return markup without a browser.`)
+          throw new Error(
+            `[prerender] ${route} rendered an empty page — public pages must return markup without a browser.`,
+          )
         }
         let page = stampHead(template, head).replace(
           ROOT_PLACEHOLDER,
@@ -149,7 +165,9 @@ export function prerender(): Plugin {
         if (noindex) page = withNoindexMeta(page)
         if (!hasNoindexMeta(page)) indexableRoutes.push(route)
         if (page.includes('__DEEPSPACE_APP_ID__')) {
-          throw new Error(`[prerender] ${route} contains the literal __DEEPSPACE_APP_ID__; the deploy would refuse it.`)
+          throw new Error(
+            `[prerender] ${route} contains the literal __DEEPSPACE_APP_ID__; the deploy would refuse it.`,
+          )
         }
         const file = join(clientDir, route === '/' ? 'index.html' : `${route.slice(1)}.html`)
         // `/legal/privacy` → legal/privacy.html; writeFileSync does not create the folder.
@@ -166,8 +184,11 @@ export function prerender(): Plugin {
         writeFileSync(robotsPath, 'User-agent: *\nAllow: /\n')
         rmSync(join(clientDir, 'sitemap.xml'), { force: true })
       } else {
-        const robots = existsSync(robotsPath) ? readFileSync(robotsPath, 'utf8') : 'User-agent: *\nAllow: /\n'
-        if (!/^Sitemap:/m.test(robots)) writeFileSync(robotsPath, `${robots.trimEnd()}\n\nSitemap: ${origin}/sitemap.xml\n`)
+        const robots = existsSync(robotsPath)
+          ? readFileSync(robotsPath, 'utf8')
+          : 'User-agent: *\nAllow: /\n'
+        if (!/^Sitemap:/m.test(robots))
+          writeFileSync(robotsPath, `${robots.trimEnd()}\n\nSitemap: ${origin}/sitemap.xml\n`)
         writeFileSync(
           join(clientDir, 'sitemap.xml'),
           `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexableRoutes
@@ -177,7 +198,9 @@ export function prerender(): Plugin {
       }
 
       rmSync(ssrDir, { recursive: true, force: true })
-      console.log(`[prerender] wrote ${routes.length} page(s) [${routes.join(', ')}], ${SHELL_FILE}, robots.txt${noindex ? ' (noindex)' : ', sitemap.xml'}`)
+      console.log(
+        `[prerender] wrote ${routes.length} page(s) [${routes.join(', ')}], ${SHELL_FILE}, robots.txt${noindex ? ' (noindex)' : ', sitemap.xml'}`,
+      )
     },
   }
 }
@@ -197,7 +220,9 @@ function stampHead(template: string, head: string): string {
     .replace(/<meta\s+(?:property|name)="(?:og|twitter):[^>]*>\s*/g, '')
   for (const leftover of ['<title', 'name="description"', 'rel="canonical"', 'property="og:']) {
     if (stripped.includes(leftover)) {
-      throw new Error(`[prerender] could not strip '${leftover}' from index.html — keep its head to the scaffold's shape and put SEO tags in <Seo>.`)
+      throw new Error(
+        `[prerender] could not strip '${leftover}' from index.html — keep its head to the scaffold's shape and put SEO tags in <Seo>.`,
+      )
     }
   }
   return stripped.replace('</head>', () => `${head}\n  </head>`)
@@ -205,13 +230,17 @@ function stampHead(template: string, head: string): string {
 
 function withNoindexMeta(template: string): string {
   if (hasNoindexMeta(template)) return template
-  return template.replace('</head>', () => `<meta name="robots" content="noindex, nofollow"/>\n  </head>`)
+  return template.replace(
+    '</head>',
+    () => `<meta name="robots" content="noindex, nofollow"/>\n  </head>`,
+  )
 }
 
 /** React's <Seo> serializes quoted attributes; accept either quote and order. */
 function hasNoindexMeta(html: string): boolean {
-  return (html.match(/<meta\b[^>]*>/gi) ?? []).some((tag) =>
-    /\bname\s*=\s*["']robots["']/i.test(tag) &&
-    /\bcontent\s*=\s*["'][^"']*\b(?:noindex|none)\b[^"']*["']/i.test(tag),
+  return (html.match(/<meta\b[^>]*>/gi) ?? []).some(
+    (tag) =>
+      /\bname\s*=\s*["']robots["']/i.test(tag) &&
+      /\bcontent\s*=\s*["'][^"']*\b(?:noindex|none)\b[^"']*["']/i.test(tag),
   )
 }

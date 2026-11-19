@@ -82,7 +82,7 @@ export default function Navigation() {
           {!isLoaded ? null : isSignedIn && !profileReady ? (
             /* Signed in, profile still loading — skeleton pill, never the
                Sign in button (that would offer sign-in to a signed-in user). */
-            <div className="flex items-center gap-2 rounded-full border border-border bg-card/60 py-1 pl-1 pr-2.5">
+            <div className="flex items-center gap-2 rounded-full border border-border bg-card/60 py-1 pr-2.5 pl-1">
               <div className="h-6 w-6 animate-pulse rounded-full bg-muted" />
               <div className="hidden h-4 w-20 animate-pulse rounded-md bg-muted sm:block" />
             </div>
@@ -92,9 +92,9 @@ export default function Navigation() {
                 render={
                   <button
                     aria-label="Account menu"
-                    className="group flex items-center gap-2 rounded-full border border-border bg-card/60 py-1 pl-1 pr-2.5 text-sm transition-colors hover:bg-card"
+                    className="group flex items-center gap-2 rounded-full border border-border bg-card/60 py-1 pr-2.5 pl-1 text-sm transition-colors hover:bg-card"
                   >
-                    <Avatar className="h-6 w-6 ring-1 ring-inset ring-border">
+                    <Avatar className="h-6 w-6 ring-1 ring-border ring-inset">
                       <AvatarImage src={user.imageUrl ?? undefined} referrerPolicy="no-referrer" />
                       <AvatarFallback className="text-[11px]">
                         {(user.name?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
@@ -148,7 +148,11 @@ export default function Navigation() {
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X className="h-4 w-4" aria-hidden /> : <Menu className="h-4 w-4" aria-hidden />}
+            {mobileMenuOpen ? (
+              <X className="h-4 w-4" aria-hidden />
+            ) : (
+              <Menu className="h-4 w-4" aria-hidden />
+            )}
           </button>
         </div>
 

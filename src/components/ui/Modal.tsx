@@ -43,10 +43,15 @@ export function Modal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose()
+      }}
+    >
       <DialogContent
         aria-describedby={undefined}
-        className={cn(sizes[size], 'flex flex-col max-h-[85vh]', className)}
+        className={cn(sizes[size], 'flex max-h-[85vh] flex-col', className)}
         {...props}
       >
         {children}
@@ -65,11 +70,7 @@ interface ModalHeaderProps {
 }
 
 function ModalHeader({ children, className = '' }: ModalHeaderProps): JSX.Element {
-  return (
-    <DHeader className={className}>
-      {children}
-    </DHeader>
-  )
+  return <DHeader className={className}>{children}</DHeader>
 }
 
 // ============================================================================
@@ -84,11 +85,7 @@ interface ModalTitleProps {
 function ModalTitle({ children, className = '' }: ModalTitleProps): JSX.Element {
   // min-w-0 + truncate: long unbroken strings (filenames, URLs) ellipsize
   // instead of stretching the dialog.
-  return (
-    <DTitle className={cn('min-w-0 truncate', className)}>
-      {children}
-    </DTitle>
-  )
+  return <DTitle className={cn('min-w-0 truncate', className)}>{children}</DTitle>
 }
 
 // ============================================================================
@@ -101,11 +98,7 @@ interface ModalDescriptionProps {
 }
 
 function ModalDescription({ children, className = '' }: ModalDescriptionProps): JSX.Element {
-  return (
-    <DDescription className={className}>
-      {children}
-    </DDescription>
-  )
+  return <DDescription className={className}>{children}</DDescription>
 }
 
 // ============================================================================
@@ -124,7 +117,7 @@ function ModalBody({ children, className = '' }: ModalBodyProps): JSX.Element {
   // align with Header / Footer. break-words keeps long unbroken strings
   // (filenames, URLs) from forcing horizontal overflow.
   return (
-    <div className={cn('flex-1 overflow-y-auto -mx-1 px-1 py-4 break-words', className)}>
+    <div className={cn('-mx-1 flex-1 overflow-y-auto px-1 py-4 break-words', className)}>
       {children}
     </div>
   )
@@ -140,11 +133,7 @@ interface ModalFooterProps {
 }
 
 function ModalFooter({ children, className = '' }: ModalFooterProps): JSX.Element {
-  return (
-    <DFooter className={className}>
-      {children}
-    </DFooter>
-  )
+  return <DFooter className={className}>{children}</DFooter>
 }
 
 // ============================================================================

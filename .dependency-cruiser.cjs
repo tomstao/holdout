@@ -19,7 +19,8 @@ module.exports = {
     {
       name: 'no-circular',
       severity: 'error',
-      comment: 'Runtime import cycles. Type-only cycles (e.g. `import type { Env } from worker`) are allowed.',
+      comment:
+        'Runtime import cycles. Type-only cycles (e.g. `import type { Env } from worker`) are allowed.',
       from: {},
       to: { circular: true, viaOnly: { dependencyTypesNot: ['type-only'] } },
     },

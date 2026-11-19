@@ -82,7 +82,10 @@ test('API status page renders loading success and error states', async ({ users 
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ success: true, data: { integrations: { openai: {}, wikipedia: {} } } }),
+      body: JSON.stringify({
+        success: true,
+        data: { integrations: { openai: {}, wikipedia: {} } },
+      }),
     })
   })
 

@@ -26,7 +26,10 @@ const SelectGroup = SelectPrimitive.Group
  * cleared/no-selection state (Base UI reports `null`; this wrapper coerces
  * it to `''`), so an `<SelectItem value="">` would render as the placeholder.
  */
-function collectItems(node: React.ReactNode, acc: Record<string, React.ReactNode>): Record<string, React.ReactNode> {
+function collectItems(
+  node: React.ReactNode,
+  acc: Record<string, React.ReactNode>,
+): Record<string, React.ReactNode> {
   React.Children.forEach(node, (child) => {
     if (!React.isValidElement(child)) return
     const props = child.props as { value?: string; children?: React.ReactNode }
@@ -51,7 +54,10 @@ function Select({
   children,
   items,
   ...props
-}: Omit<SelectPrimitive.Root.Props<string, false>, 'value' | 'defaultValue' | 'onValueChange' | 'multiple'> & {
+}: Omit<
+  SelectPrimitive.Root.Props<string, false>,
+  'value' | 'defaultValue' | 'onValueChange' | 'multiple'
+> & {
   value?: string
   defaultValue?: string
   onValueChange?: (value: string) => void
@@ -95,16 +101,12 @@ function SelectValue({
   )
 }
 
-function SelectTrigger({
-  className,
-  children,
-  ...props
-}: SelectPrimitive.Trigger.Props) {
+function SelectTrigger({ className, children, ...props }: SelectPrimitive.Trigger.Props) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "border-input data-[popup-open]:border-ring focus-visible:border-ring focus-visible:ring-ring/50 flex h-10 w-full items-center justify-between gap-2 rounded-lg border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-sm transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground [&>span]:min-w-0 [&>span]:flex-1 [&>span]:text-left [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-sm transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground data-[popup-open]:border-ring [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&>span]:min-w-0 [&>span]:flex-1 [&>span]:text-left",
         className,
       )}
       {...props}
@@ -140,8 +142,8 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           className={cn(
-            'bg-popover text-popover-foreground relative z-50 max-h-(--available-height) min-w-(--anchor-width) origin-(--transform-origin) overflow-y-auto overflow-x-hidden rounded-lg border border-border p-1 shadow-md',
-            'data-[open]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[open]:fade-in-0 data-[closed]:zoom-out-95 data-[open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2',
+            'relative z-50 max-h-(--available-height) min-w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md',
+            'data-[closed]:animate-out data-[closed]:fade-out-0 data-[closed]:zoom-out-95 data-[open]:animate-in data-[open]:fade-in-0 data-[open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2',
             className,
           )}
           {...props}
@@ -159,7 +161,7 @@ function SelectLabel({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="select-label"
-      className={cn('text-muted-foreground px-2 py-1.5 text-xs font-semibold', className)}
+      className={cn('px-2 py-1.5 text-xs font-semibold text-muted-foreground', className)}
       {...props}
     />
   )
@@ -170,7 +172,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default select-none items-center gap-2 rounded-md py-2 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex w-full cursor-default items-center gap-2 rounded-md py-2 pr-8 pl-2 text-sm outline-none select-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
@@ -189,7 +191,7 @@ function SelectSeparator({ className, ...props }: SelectPrimitive.Separator.Prop
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn('bg-border pointer-events-none -mx-1 my-1 h-px', className)}
+      className={cn('pointer-events-none -mx-1 my-1 h-px bg-border', className)}
       {...props}
     />
   )

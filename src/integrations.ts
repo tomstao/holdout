@@ -20,11 +20,9 @@
  * `callComposio(env, ..., { asUser })` from 'deepspace/worker' instead.
  */
 
-export const integrations: Record<
-  string,
-  { billing: 'developer' | 'user'; anonymous?: boolean }
-> = {
-  google: { billing: 'user' },
-  composio: { billing: 'user' },
-  // openai: { billing: 'developer', anonymous: true },
-}
+export const integrations: Record<string, { billing: 'developer' | 'user'; anonymous?: boolean }> =
+  {
+    google: { billing: 'user' },
+    composio: { billing: 'user' },
+    // openai: { billing: 'developer', anonymous: true },
+  }

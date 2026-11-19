@@ -40,12 +40,14 @@ const REACT_ERROR_TABLE: Record<number, Omit<DecodedReactError, 'code' | 'docsUr
   },
   301: {
     title: 'Too many re-renders',
-    explanation: 'React hit its render limit because the component updated state while rendering, which triggers an infinite render loop.',
+    explanation:
+      'React hit its render limit because the component updated state while rendering, which triggers an infinite render loop.',
     hint: 'Don’t call setState (or a mutation) directly in the render body. Move it into an event handler or an effect with the right dependencies.',
   },
   321: {
     title: 'A hook was called in an invalid place',
-    explanation: 'Hooks can only be called at the top level of a function component or another hook.',
+    explanation:
+      'Hooks can only be called at the top level of a function component or another hook.',
     hint: 'Move the hook out of any condition, loop, callback, or plain (non-component) function. This can also mean two copies of React are installed.',
   },
 }
@@ -136,7 +138,9 @@ export function ErrorScreen({ error, onReset }: ErrorScreenProps) {
 
         {stack && (
           <details className="mt-2 text-left">
-            <summary className="cursor-pointer text-xs text-muted-foreground">Show stack trace</summary>
+            <summary className="cursor-pointer text-xs text-muted-foreground">
+              Show stack trace
+            </summary>
             <pre className="mt-1 max-h-60 overflow-auto rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
               {stack}
             </pre>

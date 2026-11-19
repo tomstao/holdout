@@ -6,8 +6,10 @@ import { cn } from '@/lib/utils'
 
 type CheckedState = boolean | 'indeterminate'
 
-interface CheckboxProps
-  extends Omit<CheckboxPrimitive.Root.Props, 'checked' | 'defaultChecked' | 'onCheckedChange' | 'indeterminate'> {
+interface CheckboxProps extends Omit<
+  CheckboxPrimitive.Root.Props,
+  'checked' | 'defaultChecked' | 'onCheckedChange' | 'indeterminate'
+> {
   checked?: CheckedState
   defaultChecked?: CheckedState
   onCheckedChange?: (checked: boolean) => void
@@ -20,7 +22,13 @@ interface CheckboxProps
  * accepts `'indeterminate'`, mapping it onto Base UI's separate `indeterminate`
  * flag.
  */
-function Checkbox({ className, checked, defaultChecked, onCheckedChange, ...props }: CheckboxProps) {
+function Checkbox({
+  className,
+  checked,
+  defaultChecked,
+  onCheckedChange,
+  ...props
+}: CheckboxProps) {
   // Mixed state, both modes (Radix semantics): controlled comes straight from
   // `checked`; uncontrolled starts mixed via `defaultChecked="indeterminate"`
   // and clears on the first user toggle. Deriving it from `checked` alone
@@ -42,7 +50,7 @@ function Checkbox({ className, checked, defaultChecked, onCheckedChange, ...prop
       }}
       className={cn(
         'peer grid h-4 w-4 shrink-0 place-content-center rounded-[5px] border border-input shadow-sm transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background',
+        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background focus-visible:outline-none',
         'disabled:cursor-not-allowed disabled:opacity-50',
         'data-[checked]:border-primary data-[checked]:bg-primary data-[checked]:text-primary-foreground',
         'data-[indeterminate]:border-primary data-[indeterminate]:bg-primary data-[indeterminate]:text-primary-foreground',

@@ -76,7 +76,9 @@ export function registerAuthAndIntegrationRoutes(app: Hono<AppContext>): void {
   // Native routes must precede the Better Auth wildcard below. The exact
   // browser callback handler branches only when the native bridge's validated
   // redirect_uri is present, so a generated worker cannot shadow native OAuth.
-  app.get('/api/auth/native-start', (c) => nativeAuthStart(c.req.raw, c.env, nativeAuthOptions(c.env)))
+  app.get('/api/auth/native-start', (c) =>
+    nativeAuthStart(c.req.raw, c.env, nativeAuthOptions(c.env)),
+  )
   app.post('/api/auth/native-exchange', (c) => nativeAuthExchange(c.req.raw, c.env))
   app.post('/api/auth/native-token', (c) => nativeAuthToken(c.req.raw, c.env))
   app.get('/api/auth/native-me', (c) => nativeAuthMe(c.req.raw, c.env))
