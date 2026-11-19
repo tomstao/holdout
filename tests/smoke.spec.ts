@@ -32,9 +32,46 @@ test.describe('Smoke tests', () => {
     // canonical, because React 19 would not dedupe against them on mount.
     await page.goto('/')
     await expect(page.getByTestId('static-landing')).toBeVisible()
-    await expect(page).toHaveTitle(/\S/)
+    await expect(page).toHaveTitle(/^Holdout \| /)
     expect(await page.locator('head meta[name="description"]').count()).toBe(1)
     expect(await page.locator('head link[rel="canonical"]').count()).toBe(1)
+  })
+
+  test('the landing is the designed page, within the design rules', async ({ page }) => {
+    await page.goto('/')
+    const headline = page.getByRole('heading', { level: 1 })
+    await expect(headline).toHaveText('Your public score is not your grade.')
+    await expect(page.getByText(/static front door|placeholder/i)).toHaveCount(0)
+    // The hero's visual is the code-built leaderboard, not an image.
+    await expect(page.getByRole('img', { name: /example leaderboard/i })).toBeVisible()
+    await expect(page.locator('img')).toHaveCount(0)
+
+    // DeepSpace's hard rules 1 and 2: a headline of 3 to 8 words, under 150 words of copy.
+    const count = (text: string) => text.trim().split(/\s+/).filter(Boolean).length
+    const words = count(await headline.innerText())
+    expect(words).toBeGreaterThanOrEqual(3)
+    expect(words).toBeLessThanOrEqual(8)
+    const copy = await page.locator('main p:not(figure p), main ol li, footer p').allInnerTexts()
+    expect(copy.length).toBeGreaterThan(5)
+    expect(count(copy.join(' '))).toBeLessThan(150)
+
+    await page.getByTestId('landing-cta').click()
+    await expect(page).toHaveURL(/\/home$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Competitions' })).toBeVisible({
+      timeout: 15000,
+    })
+  })
+
+  test('the landing leaderboard moves, and stays still when asked to', async ({ page }) => {
+    await page.goto('/')
+    const row = page.locator('.board-row').first()
+    await expect(row).toHaveCSS('animation-name', 'board-row')
+    await expect(page.locator('.board-seal')).toHaveCSS('animation-name', 'board-seal')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await expect(row).toHaveCSS('animation-name', 'none')
+    await expect(page.locator('.board-seal')).toHaveCSS('animation-name', 'none')
+    // Still, the board shows what it shows before the deadline.
+    await expect(page.locator('.board-final')).toHaveCSS('opacity', '0')
   })
 
   test('static contract: landing fires no auth request, opens no websocket', async ({ page }) => {
