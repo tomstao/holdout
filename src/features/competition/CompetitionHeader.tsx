@@ -4,39 +4,40 @@
  */
 import { Badge } from '@/components/ui'
 import type { CompetitionRecord } from '../../contracts/competitions'
-import { acceptsSubmissions, timeLeft } from '../../domain/time'
-import { useNow } from './hooks'
+import { timeLeft, type Phase } from '../../domain/time'
 
-const STATUS_TEXT = { open: 'Open', closing: 'Closing', closed: 'Closed' } as const
+const PHASE_TEXT: Record<Phase, string> = { open: 'Open', closing: 'Closing', closed: 'Closed' }
 
-export function CompetitionHeader({ competition }: { competition: CompetitionRecord }) {
-  const now = useNow()
+interface CompetitionHeaderProps {
+  competition: CompetitionRecord
+  phase: Phase
+  now: number
+}
+
+export function CompetitionHeader({ competition, phase, now }: CompetitionHeaderProps) {
   const deadline = new Date(competition.deadline)
-  const open = competition.status === 'open' && acceptsSubmissions(competition.deadline, now)
-
   return (
     <header className="border-b border-border pb-6">
       <div className="flex flex-wrap items-center gap-3">
         <h1 data-testid="competition-title" className="text-2xl font-semibold text-foreground">
           {competition.title}
         </h1>
-        <Badge variant={open ? 'default' : 'secondary'} data-testid="competition-status">
-          {open
-            ? 'Open'
-            : competition.status === 'open'
-              ? 'Closing'
-              : STATUS_TEXT[competition.status]}
+        <Badge
+          variant={phase === 'open' ? 'default' : 'secondary'}
+          data-testid="competition-status"
+        >
+          {PHASE_TEXT[phase]}
         </Badge>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Hosted by {competition.hostName}. {open ? 'Closes' : 'Closed'}{' '}
+        Hosted by {competition.hostName}. {phase === 'open' ? 'Closes' : 'Closed'}{' '}
         <time
           dateTime={deadline.toISOString()}
           title={`${deadline.toISOString().slice(0, 16)} UTC`}
         >
           {deadline.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
         </time>
-        {open && (
+        {phase === 'open' && (
           <>
             {', in '}
             <span data-testid="countdown" className="font-mono text-foreground tabular-nums">
