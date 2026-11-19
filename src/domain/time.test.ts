@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import fc from 'fast-check'
 import {
+  acceptsSubmissions,
   DAY_MS,
   DEADLINE_MAX_LEAD_MS,
   DEADLINE_MIN_LEAD_MS,
   deadlineProblem,
   HOUR_MS,
+  nextUtcMidnight,
+  utcDay,
 } from './time'
 
 const NOW = 1_795_000_000_000
@@ -37,5 +41,43 @@ describe('deadlineProblem', () => {
   it('uses the limits of the spec', () => {
     expect(DEADLINE_MIN_LEAD_MS).toBe(3_600_000)
     expect(DEADLINE_MAX_LEAD_MS).toBe(7_776_000_000)
+  })
+})
+
+describe('utcDay', () => {
+  it('names the UTC day, whatever the time within it', () => {
+    expect(utcDay(0)).toBe('1970-01-01')
+    expect(utcDay(1_795_132_800_000 - 1)).toBe('2026-11-19')
+    expect(utcDay(1_795_132_800_000)).toBe('2026-11-20')
+    expect(utcDay(951_782_400_000)).toBe('2000-02-29')
+    expect(utcDay(4_107_456_000_000)).toBe('2100-02-28')
+    expect(utcDay(4_107_542_400_000)).toBe('2100-03-01')
+  })
+
+  it('agrees with the platform calendar on any day from 1970 to 2200', () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 0, max: 7_258_118_400_000 }), (now) => {
+        // Only the test compares against Date; the domain code may not use it.
+        // eslint-disable-next-line no-restricted-globals
+        expect(utcDay(now)).toBe(new Date(now).toISOString().slice(0, 10))
+      }),
+      { numRuns: 2000 },
+    )
+  })
+})
+
+describe('nextUtcMidnight', () => {
+  it('is the start of the next UTC day, even at midnight itself', () => {
+    expect(nextUtcMidnight(1_795_046_400_000)).toBe(1_795_132_800_000)
+    expect(nextUtcMidnight(1_795_132_800_000 - 1)).toBe(1_795_132_800_000)
+    expect(nextUtcMidnight(1_795_132_800_000)).toBe(1_795_132_800_000 + DAY_MS)
+  })
+})
+
+describe('acceptsSubmissions', () => {
+  it('accepts until the deadline, not at it', () => {
+    expect(acceptsSubmissions(NOW, NOW - 1)).toBe(true)
+    expect(acceptsSubmissions(NOW, NOW)).toBe(false)
+    expect(acceptsSubmissions(NOW, NOW + 1)).toBe(false)
   })
 })

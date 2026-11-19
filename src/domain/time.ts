@@ -26,3 +26,39 @@ export function deadlineProblem(deadline: number, now: number): string | undefin
   }
   return undefined
 }
+
+/**
+ * The UTC calendar day of `now`, as `YYYY-MM-DD`: the day a submission counts
+ * against. Computed from days since 1970-01-01 (Hinnant's civil-from-days),
+ * because domain code does not use `Date`.
+ */
+export function utcDay(now: number): string {
+  const days = Math.floor(now / DAY_MS) + 719_468
+  const era = Math.floor(days / 146_097)
+  const dayOfEra = days - era * 146_097
+  const yearOfEra = Math.floor(
+    (dayOfEra -
+      Math.floor(dayOfEra / 1460) +
+      Math.floor(dayOfEra / 36_524) -
+      Math.floor(dayOfEra / 146_096)) /
+      365,
+  )
+  const dayOfYear =
+    dayOfEra - (365 * yearOfEra + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100))
+  const shiftedMonth = Math.floor((5 * dayOfYear + 2) / 153)
+  const day = dayOfYear - Math.floor((153 * shiftedMonth + 2) / 5) + 1
+  const month = shiftedMonth < 10 ? shiftedMonth + 3 : shiftedMonth - 9
+  const year = yearOfEra + era * 400 + (month <= 2 ? 1 : 0)
+  const pad = (value: number, width: number) => String(value).padStart(width, '0')
+  return `${pad(year, 4)}-${pad(month, 2)}-${pad(day, 2)}`
+}
+
+/** When the daily submission count after `now` resets: the next 00:00 UTC (spec F2). */
+export function nextUtcMidnight(now: number): number {
+  return (Math.floor(now / DAY_MS) + 1) * DAY_MS
+}
+
+/** Submissions are accepted strictly before the deadline. */
+export function acceptsSubmissions(deadline: number, now: number): boolean {
+  return now < deadline
+}
