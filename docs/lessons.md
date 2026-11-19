@@ -67,28 +67,51 @@ agent repeats them. Newest at the bottom. Each entry: what happened, what to do 
 
 ## 2026-11-19, day-1 spikes (S1 to S8)
 
-Run from the throwaway branch `spike/day-1` (kept locally, not merged) against
-`npx deepspace dev start` on SDK 0.44.2, driven by a Playwright spec signed in as a test
-account. S3 used the real platform file storage. The questions are in
-[plan.md](plan.md#de-risking-spikes-day-1).
+Run from the throwaway branch `spike/day-1` (kept locally, not merged) on SDK 0.44.2,
+driven by a Playwright spec signed in as a test account: first against
+`npx deepspace dev start`, then against the deployed app (the owner deployed the spike
+branch once, as release #2, to be rolled back afterwards). S3 used the real platform file
+storage both times. The questions are in [plan.md](plan.md#de-risking-spikes-day-1).
 
-| #   | Result                  | Measured                                                                                                                                                                                                     | Still open                                           |
-| --- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
-| S1  | Pass, locally           | A 1.5 MB `rows` array (47,324 rows) comes back intact: create 35 to 47 ms, get 20 to 32 ms, whole action about 100 ms                                                                                        | The 2 MB row limit: local accepts an 8 MB record     |
-| S2  | Pass, locally           | 50,000 rows in a 2.3 MB all-quoted file, answer key read from a record: 53 to 67 ms per request (an empty action: 10 to 23 ms). About 35 to 46 ms of CPU in Node for body parse, key parse, CSV parse, score | The CPU limit of the deployed Worker                 |
-| S3  | Decided: keep the route | Member B replaced and then deleted member A's `app`-scope file. The Worker wrote 5 MB into the host's `self` folder (1.7 to 2.0 s) and a public route streamed it back intact in 0.3 s with `Content-Length` | Nothing                                              |
-| S4  | Pass                    | 5 creates in one request and 20 two-request races: exactly one create wins every time. The loser has no `code`; its `error` starts with `Duplicate: a record with`                                           | Nothing (SDK code, the same once deployed)           |
-| S5  | Pass, locally           | Job: 200 writes in one run (0.9 s), 5 chunks of 40 with `ctx.continue` (1.0 s in total), 1,200 in one run (5.3 s; 1.6 s with 20 in flight). Cron task: 200 writes in 0.9 s                                   | The subrequest limit: local does not enforce one     |
-| S6  | Pass, locally           | 4,999 rows arrive as one 1.95 MB WebSocket frame, ready in 82 ms; a new row appears live. With no `limit`, all 5,003 rows arrive                                                                             | The WebSocket message size limit on the deployed app |
-| S7  | Pass                    | With `authorizeWrite: () => false`, `enqueueJob` from the cron task and from an action still ran the job; a signed-in member's `useJobs().enqueue` rejected with `JobRoom write access denied`               | Nothing (SDK code)                                   |
-| S8  | Not run                 | Needs two owner-controlled addresses; one send costs $0.013                                                                                                                                                  | Everything                                           |
+| #   | Result                  | Locally                                                                                                                                                            | On the deployed app                                                                                                                                                                                                   |
+| --- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1  | Pass                    | A 1.5 MB `rows` array (47,324 rows) comes back intact: create 35 to 47 ms, get 20 to 32 ms, whole action about 100 ms                                              | Intact: create 110 to 147 ms, get 41 to 65 ms, whole action about 370 ms. An 8 MB record was also stored and read back, so the 2 MB row limit did not show up                                                         |
+| S2  | Pass                    | 50,000 rows in a 2.3 MB all-quoted file, answer key read from a record: 53 to 67 ms per request. About 35 to 46 ms of CPU in Node                                  | 24 of 24 requests scored, 270 to 550 ms each including the upload of 1 to 2.6 MB (an empty action: 82 ms). Every outcome `ok`, no `exceededCpu`                                                                       |
+| S3  | Decided: keep the route | Member B replaced and then deleted member A's `app`-scope file. The Worker wrote 5 MB into the host's `self` folder and a public route streamed it back intact     | The same, with the route streaming 5 MB in 0.27 s with `Content-Length`                                                                                                                                               |
+| S4  | Pass                    | 5 creates in one request and 20 two-request races: exactly one create wins every time. The loser has no `code`; its `error` starts with `Duplicate: a record with` | The same: one winner in 20 of 20 races                                                                                                                                                                                |
+| S5  | Pass                    | Job: 200 writes in one run (0.9 s), 5 chunks of 40 with `ctx.continue` (1.0 s), 1,200 in one run. Cron task: 200 writes in 0.9 s                                   | Job: 200 writes in one run (5.7 s), 5 chunks of 40 (5.7 s), 1,200 in one run (32.9 s; 3.0 s with 20 in flight). Cron task: 200 writes in 5.4 s (0.45 s with 20 in flight), 1,100 in one run. An action stops at 1,000 |
+| S6  | Pass                    | 4,999 rows arrive as one 1.95 MB WebSocket frame, ready in 82 ms; a new row appears live. With no `limit`, all 5,003 rows arrive                                   | The same frame, ready in 560 ms; a new row appears live                                                                                                                                                               |
+| S7  | Pass                    | With `authorizeWrite: () => false`, `enqueueJob` from the cron task and from an action still ran the job; a member's `useJobs().enqueue` was refused               | The same                                                                                                                                                                                                              |
+| S8  | Not run                 | Moved to day 4 with the close-out email (the owner's choice); needs two owner-controlled addresses and costs $0.013                                                | Not run                                                                                                                                                                                                               |
+
+After the deployed run the four spike collections were empty and the file storage showed
+0 B. The two test accounts now have `users` rows in the production room.
 
 **What the spikes taught**
 
-- **Local `workerd` does not enforce the platform's limits.** A record with 8 MB of JSON
-  wrote and read back, and one job run made 1,200 record writes. A local pass says nothing
-  about the 2 MB row limit, the CPU limit, the subrequest limit or the WebSocket message
-  limit. Confirm those on the deployed app before relying on them.
+- **Local `workerd` does not enforce the platform's limits, and it is about six times
+  faster.** Locally a record with 8 MB of JSON wrote and read back and one action made
+  1,100 record writes in 1.4 s. A local pass says nothing about a limit or a duration.
+  Measure both on the deployed app.
+- **A Worker request may make 1,000 record writes.** The next one throws
+  `Too many API requests by single Worker invocation`. Every `tools.*` call is one. An
+  action that loops over rows must stay far below that or hand the work to a job. The
+  jobs and the cron task, which run in a Durable Object alarm, went past it: 1,200 and
+  1,100 writes in one run.
+- **A record write takes about 28 ms on the deployed app** (4 ms locally). One at a
+  time, 200 writes are 5.6 s; with 20 in flight they are 0.45 s. Write rows in parallel
+  batches (`Promise.all` over 20), in the close job above all.
+- **The 2 MB Durable Object row limit did not show up.** Records of 2.2, 3 and 8 MB were
+  stored and read back on the deployed app. The 1.5 MB cap on the answer key stays:
+  nothing documents a higher limit, and every submission reads the whole key (8 MB took
+  0.33 s to read and 0.63 s to write).
+- **`npx deepspace logs` shows a request's outcome, not its CPU time.** A request event
+  has `outcome` (`ok`, `canceled`, `exceededCpu`), method, path and status. So a CPU
+  limit can be seen being hit, but the margin below it cannot be read. A page that closes
+  shows as `canceled` WebSocket requests; those are not errors.
+- **The Playwright `users` fixture works against the deployed app.** Point the config's
+  `baseURL` at `https://holdout.app.space` and leave out `webServer`. A test account that
+  signs in there gets a `users` row in the production room.
 - **`app`-scope files are writable and deletable by every signed-in member,** not only by
   the uploader. Never put anything there that another member must not replace. Datasets
   stay in the host's `self` folder behind the Worker route
@@ -141,8 +164,8 @@ account. S3 used the real platform file storage. The questions are in
 - **Playwright empties `test-results/` at the start of every run.** Write logs that must
   survive somewhere else.
 - **Locally the clock moves during CPU work; on Cloudflare it does not.** `Date.now()`
-  around pure computation reads 0 in production. Time a request from the caller, or read
-  the CPU time in `npx deepspace logs`.
+  around pure computation read 0 on the deployed app, as expected. Time a request from
+  the caller.
 - **The file allocation shows as 1.0 GiB** (`npx deepspace app files list`), not the
   128 MiB the docs give for the free plan. The usage figure lagged a delete by a few
   minutes.
