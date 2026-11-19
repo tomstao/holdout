@@ -112,3 +112,17 @@ The job then finds a `closing` competition that is not due. It sets it back to `
 and stops (`reason: 'reopened'`). Without that, the competition would have stayed
 `closing`, refusing submissions, until the new deadline. Covered by a unit test of the
 job; the order itself was not reproduced against the real rooms.
+
+## Addendum, 2026-11-19: attempts are steps
+
+"Three attempts", above, was wrong for a close of any size. The job room adds one to a
+job's attempts each time it runs it, a step that ends in `continue` included, and retries
+a failure only while the count is below `maxAttempts`. With three, a failure in the third
+step or later ended the job, and the competition stayed `closing` until the ten-minute
+sweep enqueued a new one. The job is now enqueued with `CLOSE_MAX_ATTEMPTS` (12): six
+steps for 200 participants and six for failures. A larger close still finishes; past the
+twelfth step it relies on the sweep after a failure.
+
+Since [ADR 0016](0016-serve-only-what-the-app-uses.md) no client can reach the cron or
+the job room, so "members can trigger the task" no longer applies. The task and the job
+still check the deadline themselves.

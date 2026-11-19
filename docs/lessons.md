@@ -524,3 +524,19 @@ After the deployed run the four spike collections were empty and the file storag
   request into a 24 MB answer. The helper is shared now.
 - **A test double has to be able to fail the call under test.** The fake room could not
   fail a `remove`, so "the clean-up fails too" could not be written until it could.
+
+## 2026-11-19: the rest of the review
+
+- **A job's `maxAttempts` counts steps, not failures.** The job room adds one each time
+  it runs the job, also after a `continue`. Budget it as "steps of the largest run, plus
+  retries" ([ADR 0009](decisions/0009-close-with-cron-and-a-job.md), addendum).
+- **A public row is public in full.** What a page chooses to show is not what a client
+  can read: the submission row carries the file's name and the unrounded score. Decide
+  what goes in a public row field by field
+  ([ADR 0007](decisions/0007-derive-the-leaderboard-from-submissions.md)).
+- **A trust model should list only defences that exist in code.** "Scores shown at the
+  host's decimals" described the page. Each line of that table should name where the
+  check is made.
+- **Comments are claims too.** Four comments said members can trigger a task or read job
+  rows; after ADR 0016 they cannot reach those rooms. A decision that removes a surface
+  should be followed by a search for the sentences that relied on it.
