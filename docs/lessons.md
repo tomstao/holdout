@@ -319,3 +319,23 @@ After the deployed run the four spike collections were empty and the file storag
 - **Worker code that is not an action needs its own record tools.** The scaffold builds
   them inside its action route. `src/server/room-tools.ts` makes the same call for the
   cron task, the job and the files route, so they can use `typedRecords`.
+
+## 2026-11-19, day 4: the theme
+
+- **The scaffold's status colours fail AA on a light theme.** Its success green is about
+  2.5:1 as text on paper. The scaffold says they are not themed; a light theme has to
+  set them anyway ([ADR 0015](decisions/0015-theme-status-colours-and-self-hosted-fonts.md)).
+- **Compute contrast before looking at a screen.** A test that reads the theme block and
+  checks each pair found one failure in the first palette (orange text on the darkest
+  neutral) before anything was rendered, and keeps finding them when a value changes.
+- **`@fontsource/<family>/<weight>.css` is the file to import**, not the
+  `latin-<weight>.css` ones. Only the first carries `unicode-range`, which lets a
+  browser skip the scripts a page does not use.
+- **Node will not run a `.ts` file under `node_modules/`**
+  (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`), so a throwaway TypeScript script
+  cannot live in `node_modules/.tmp/`. Python edit scripts there are fine.
+- **A Git Bash heredoc halves the backslashes in a regular expression too.** The same
+  rule as before: write files that contain backslashes with the editor tools.
+- **`deepspace test screenshot` needs a server that is already running.** For signed-in
+  screens with data, a temporary Playwright spec that calls `page.screenshot()` is
+  simpler: `deepspace test run` starts the server and signs the accounts in.

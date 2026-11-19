@@ -88,14 +88,14 @@ holdout/
 │  │  ├─ create/             host form, local check of the files                           (built)
 │  │  └─ home/               competition list for /home (later)
 │  ├─ components/ui/         Base UI primitives kit (scaffold, restyled by the theme)
-│  ├─ components/            App chrome: Navigation, ErrorScreen, Seo; FileDrop (shared CSV drop zone)
+│  ├─ components/            App chrome: Navigation, Wordmark, ErrorScreen, Seo; FileDrop (shared CSV drop zone)
 │  ├─ pages/                 Routes (generouted, file-based)
 │  │  ├─ index.tsx           /            static landing, prerendered
 │  │  ├─ (app)/home.tsx      /home        competition list
 │  │  ├─ (app)/c/[id].tsx    /c/:id       competition page, public: header and four tabs (built)
 │  │  └─ (app)/(protected)/host/new.tsx  /host/new   create form, sign-in required    (built)
-│  └─ themes.css, themes.ts  the Holdout theme
-├─ scripts/                  design-gate.ts                                                 (built)
+│  └─ themes.css, themes.ts  the Holdout theme                                          (built)
+├─ scripts/                  design-gate.ts; contrast.ts and its test (theme AA); favicon.py (built)
 ├─ tests/                    Playwright specs run by `npx deepspace test run`
 └─ docs/
 ```

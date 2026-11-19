@@ -34,6 +34,7 @@ branches 85%) apply to `src/domain`, `src/contracts` and `src/actions/implement.
 | `domain/time`                   | UTC day boundaries, reset time, deadline comparison                                           |
 | `contracts`                     | Result envelope, action client error handling, wire round trip with `implement`, schema drift |
 | `actions`                       | Each handler with fake `tools`: authorisation, refusals, the slot retry, output stripped      |
+| `scripts/theme-contrast`        | The Holdout theme reaches WCAG AA for every token pair the app uses, read from `themes.css`   |
 
 Metric fixtures come from `scripts/fixtures/metrics.py` (scikit-learn 1.6 or later; the
 committed file was made with 1.9.1). It is run by hand, is seeded, and rewrites
