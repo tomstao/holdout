@@ -46,10 +46,8 @@ const SCAFFOLD_FILES = [
   'src/prerender-entry.tsx',
   'src/prerender-entry.test.tsx',
   'src/lib/utils.ts',
-  'src/ai/**',
   'src/server/action-routes.ts',
   'src/server/http-routes.ts',
-  'src/server/realtime-routes.ts',
   'src/components/ui/**',
   'src/components/ErrorScreen.tsx',
   'src/components/Seo.tsx',
@@ -267,14 +265,7 @@ export default defineConfig(
 
   // 4c. Worker code: no browser SDK, no React.
   {
-    files: [
-      'worker.ts',
-      'src/actions/**',
-      'src/ai/**',
-      'src/server/**',
-      'src/cron.ts',
-      'src/jobs.ts',
-    ],
+    files: ['worker.ts', 'src/actions/**', 'src/server/**', 'src/cron.ts', 'src/jobs.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

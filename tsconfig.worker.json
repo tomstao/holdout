@@ -10,7 +10,6 @@
   "include": [
     "worker.ts",
     "src/actions",
-    "src/ai",
     "src/server",
     "src/cron.ts",
     "src/jobs.ts",

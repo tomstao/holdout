@@ -9,7 +9,7 @@
 // ESLint bans the wrong *packages* per layer; this file bans the wrong
 // *directories*, which needs resolved paths. Tests may cross layers.
 
-const WORKER = '^(worker\\.ts$|src/(actions|server|ai)/|src/(cron|jobs|integrations)\\.ts$)'
+const WORKER = '^(worker\\.ts$|src/(actions|server)/|src/(cron|jobs|integrations)\\.ts$)'
 const BROWSER = '^src/(pages|components|features|client|lib)/|^src/main\\.tsx$'
 const TESTS = '\\.test\\.tsx?$'
 
