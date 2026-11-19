@@ -34,6 +34,13 @@ describe('deadlineProblem', () => {
     )
   })
 
+  it('takes another minimum where a test needs one, and names it', () => {
+    expect(deadlineProblem(NOW + 30_000, NOW, 15_000)).toBeUndefined()
+    expect(deadlineProblem(NOW + 10_000, NOW, 15_000)).toBe(
+      'The deadline must be at least 15 s from now.',
+    )
+  })
+
   it('refuses a value that is not a time', () => {
     expect(deadlineProblem(Number.NaN, NOW)).toBe('The deadline is not a date.')
     expect(deadlineProblem(Number.POSITIVE_INFINITY, NOW)).toBe('The deadline is not a date.')
