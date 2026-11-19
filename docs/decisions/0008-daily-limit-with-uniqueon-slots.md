@@ -53,3 +53,12 @@ The check and the insert are synchronous SQL inside the Durable Object (SDK code
 same once deployed), so this result does not depend on a platform limit.
 
 The deployed app gave the same result: one winner in 20 of 20 races.
+
+## Built, 2026-11-19
+
+`submitPredictions` (`src/actions/submit-predictions.ts`) claims the slot as decided above.
+The refusal is recognised by `isUniqueConflict` in `src/actions/shared.ts`, the one place
+that knows the room's `Duplicate:` wording. Against the real room, two submissions sent at
+the same moment to a competition with a limit of 1 give one score and one
+`limit_reached` (`tests/submit.spec.ts`); the unit tests cover the retry onto the next slot
+and the `conflict` after a second collision.
