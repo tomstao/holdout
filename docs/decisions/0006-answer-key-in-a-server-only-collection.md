@@ -80,3 +80,13 @@ representation: the deployed app stored 8 MB, so the cap is a choice and not a w
 `validateDataset` already measures the key as it will be stored and tells the host what
 to change; and a competition for a class is far below 47,000 test rows. The spec's
 "50,000 rows" stays as the upper bound for short IDs.
+
+## Closed means no `immutable` columns, 2026-11-19
+
+"All four permissions `false` for every role" was not the whole of it. The record room
+checks an `immutable` column against the stored value before it checks permission, so a
+refused update answered differently for a right guess and a wrong one. `answer_keys` and
+`private_scores` therefore declare no immutable column, and `tests/rbac.spec.ts` asserts
+that a member's right and wrong guesses get the same refusal
+([lessons](../lessons.md#2026-11-19-day-2-data-model)). Immutability bought nothing
+there: only Worker code writes those collections.
