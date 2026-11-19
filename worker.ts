@@ -70,7 +70,12 @@ export class AppCronRoom extends CronRoom<Env> {
 export class AppJobRoom extends JobRoom<Env> {
   constructor(state: DurableObjectState, env: Env) {
     super(state, env, {
-      authorizeWrite: async (user) => {
+      // No client may enqueue, cancel or retry: the only job closes a
+      // competition, and the cron task enqueues it from Worker code, which
+      // this check does not apply to (docs/decisions/0009, spike S7).
+      authorizeWrite: () => false,
+      // Reading is set on its own, or it would default to the rule above.
+      authorizeRead: async (user) => {
         if (user.userId.startsWith('anon-')) return false
         const role = await resolveAppRole(env, user.userId)
         return role === 'member' || role === 'admin'

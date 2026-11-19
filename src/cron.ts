@@ -1,35 +1,35 @@
 /**
- * Cron task definitions — registered into the AppCronRoom DO at construction
- * time (worker.ts). The DO alarm fires `runTask(name, env)` on the schedule
- * declared here; the DO itself records executions, tracks history, and
- * pushes status to admin clients via the `/ws/cron/:roomId` WebSocket.
+ * Scheduled tasks, run by AppCronRoom (worker.ts) from a Durable Object alarm.
  *
- * Each task declares EITHER `intervalMinutes` (run every N minutes) OR
- * `schedule` + `timezone` (5-field cron expression). CronRoom validates
- * the config at construction time and throws on ambiguous declarations.
- *
- * Example:
- *
- *   import type { CronTask } from 'deepspace/worker'
- *   import { buildCronContext } from 'deepspace/worker'
- *
- *   export const tasks: CronTask[] = [
- *     { name: 'heartbeat', intervalMinutes: 1 },
- *     { name: 'daily-report', schedule: '0 9 * * *', timezone: 'America/New_York' },
- *   ]
- *
- *   export async function runTask(name: string, env: Env): Promise<void> {
- *     const ctx = buildCronContext(env, env.OWNER_USER_ID, `app:${env.DEEPSPACE_APP_ID}`)
- *     if (name === 'heartbeat') {
- *       // …
- *     }
- *   }
+ * One task: every minute, find the competitions whose deadline has passed and
+ * start closing them (src/server/close.ts). Members can trigger a task by
+ * hand, so it does nothing for a competition that is not due.
  */
-
+import { enqueueJob } from 'deepspace/worker'
 import type { CronTask } from 'deepspace/worker'
+import type { Env } from '../worker.js'
+import { CLOSE_JOB } from './jobs.js'
+import { closeDueCompetitions } from './server/close.js'
+import { roomTools } from './server/room-tools.js'
 
-export const tasks: CronTask[] = []
+const CLOSE_DUE = 'close-due-competitions'
 
-export async function runTask(_name: string, _env: unknown): Promise<void> {
-  // No-op — implement your cron tasks here. Dispatch on `_name`.
+export const tasks: CronTask[] = [{ name: CLOSE_DUE, intervalMinutes: 1 }]
+
+export async function runTask(name: string, env: Env): Promise<void> {
+  if (name !== CLOSE_DUE) throw new Error(`Unknown cron task: ${name}`)
+  const started = await closeDueCompetitions({
+    tools: roomTools(env),
+    now: () => Date.now(),
+    // The payload is the id only: members can read job rows.
+    enqueue: (competitionId) =>
+      enqueueJob(
+        env.JOB_ROOMS,
+        `app:${env.DEEPSPACE_APP_ID}`,
+        CLOSE_JOB,
+        { competitionId },
+        { maxAttempts: 3 },
+      ),
+  })
+  if (started.length > 0) console.info(`[close] enqueued ${started.join(', ')}`)
 }
