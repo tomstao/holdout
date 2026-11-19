@@ -49,7 +49,7 @@ function Checkbox({
         onCheckedChange?.(value)
       }}
       className={cn(
-        'peer grid h-4 w-4 shrink-0 place-content-center rounded-[5px] border border-input shadow-sm transition-colors',
+        'peer grid h-4 w-4 shrink-0 place-content-center rounded-[5px] border border-input transition-colors',
         'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background focus-visible:outline-none',
         'disabled:cursor-not-allowed disabled:opacity-50',
         'data-[checked]:border-primary data-[checked]:bg-primary data-[checked]:text-primary-foreground',

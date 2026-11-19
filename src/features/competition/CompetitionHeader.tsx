@@ -23,7 +23,7 @@ export function CompetitionHeader({ competition, phase, now }: CompetitionHeader
           {competition.title}
         </h1>
         <Badge
-          variant={phase === 'open' ? 'default' : 'secondary'}
+          variant={phase === 'open' ? 'outline' : 'secondary'}
           data-testid="competition-status"
         >
           {PHASE_TEXT[phase]}
@@ -40,7 +40,7 @@ export function CompetitionHeader({ competition, phase, now }: CompetitionHeader
         {phase === 'open' && (
           <>
             {', in '}
-            <span data-testid="countdown" className="font-mono text-foreground tabular-nums">
+            <span data-testid="countdown" className="font-medium text-primary tabular-nums">
               {timeLeft(competition.deadline - now)}
             </span>
           </>
