@@ -49,7 +49,9 @@ Enforced by ESLint and dependency-cruiser; details in
 3. Add it to `handlers` in `src/actions/index.ts`. The compiler refuses a missing or
    extra one.
 4. Call it from the browser with `callAction('<name>', input)`.
-5. Unit-test the handler with fake `tools`; add the failure cases to `tests/api.spec.ts`.
+5. Unit-test the handler with `fakeRoom()` from `src/actions/fakes.ts`; take the clock, ids
+   and anything from the platform as dependencies, as `create-competition.ts` does. Add the
+   failure cases to `tests/api.spec.ts`.
 
 ## How to add a collection
 

@@ -46,7 +46,7 @@ so regenerating it needs nothing but Python.
 | Spec             | Asserts                                                                                                                                                                                                                                                                                        |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `smoke.spec.ts`  | Real H1, no placeholder copy, app-specific `<title>`, a primitive opens, navigation test ids intact                                                                                                                                                                                            |
-| `api.spec.ts`    | Action envelopes: 401 without a token, `invalid_input` with issues, `invalid_file`                                                                                                                                                                                                             |
+| `api.spec.ts`    | `createCompetition`: 401 without a token, `invalid_input` and `invalid_file` with their issues, then a real competition a visitor can read and whose three files the route serves; unknown file kinds and competitions answer 404                                                              |
 | `rbac.spec.ts`   | Asked of the record room directly over its WebSocket: a visitor and a member are refused a create in each of the five collections and are sent no `answer_keys` or `private_scores` rows. From PR 6: the same reads once a competition exists, and no action response contains a private score |
 | `collab.spec.ts` | Two participants: a submission appears on the other's open leaderboard without a reload                                                                                                                                                                                                        |
 | `limits.spec.ts` | Invalid file does not use a slot; the slot after the limit is refused with the reset time; a closed competition refuses                                                                                                                                                                        |
@@ -57,7 +57,9 @@ collection without a page that mounts the hooks.
 
 Accounts: `npx deepspace test accounts create` (at most 10 per machine); the multi-user
 fixture signs them in ([DeepSpace testing guide](https://docs.deep.space/guides/testing.md)).
-Seeded records are removed in `finally`.
+No action deletes a competition, so a spec's competitions (titled `__test-<time>__ …`) stay
+in the local room; delete `.wrangler/state` to start clean. Their files go to the real
+platform storage and are removed in `finally`.
 
 **Paid calls in tests:** none. The close job sends email only when
 `ALLOW_DEBUG_ROUTES` is not `"true"` (the flag `deepspace dev` and `deepspace test` set),

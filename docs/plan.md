@@ -78,11 +78,12 @@ needed. S8 moved to day 4, where the close-out email is built.
       Playwright `rbac.spec.ts`: a visitor and a member can create nothing in any
       collection. The room answers an empty collection and a closed one alike, so the
       read half of the spec waits for PR 6, which can create rows.
-- [ ] **PR 6, `createCompetition` and the files route:** action contract and handler,
-      `rbac.spec.ts` extended: another user is sent no row of the new answer key, through
-      the room or the agent tools;
+- [x] **PR 6, `createCompetition` and the files route:** action contract and handler,
       files to the host's `self` folder, `GET /api/competitions/:id/files/:kind`. API spec
-      for invalid input, invalid files and success.
+      for invalid input, invalid files and success. `rbac.spec.ts` extended: once a
+      competition exists, a visitor, another member and the host are sent no row of its
+      answer key, cannot change or delete it, and learn nothing by guessing. Not covered:
+      the same reads through the agent tools, which need an agent token.
 - [ ] **PR 7, `/host/new`:** form with kit components, three file drops validated locally
       with the same domain code, issues shown per file; redirect on success.
 
