@@ -97,7 +97,7 @@ needed. S8 moved to day 4, where the close-out email is built.
 - [x] **PR 9, `/c/:id`:** header and tabs; Leaderboard from `useCollection('submissions')`
       and `domain/ranking.ts`; Overview; Data with downloads; Submit with local check and
       my submissions. Not yet: the viewer's row pinned when it is below the fold (a line
-      above the table gives their rank instead), and the Edit tab (F5).
+      above the table gives their rank instead). The Edit tab came in PR 14.
 - [x] **PR 10, multi-user spec:** two participants in two browsers; B's page shows A's new
       row without a reload; the daily limit refuses the next submission with the reset time.
       In `collab.spec.ts`, with a host as the third account; it also checks the reorder and
@@ -127,6 +127,10 @@ needed. S8 moved to day 4, where the close-out email is built.
         competition at `/host/new` with the values the script prints.
   - [ ] **13c:** point the landing's first call to action at it ("Try the demo
         competition").
+
+- [x] **PR 14, edit (F5):** `updateCompetition` (host only, while open; a deadline only
+      moves later), the Edit tab with a confirmation for the deadline, and the close job
+      opening a competition again if its deadline moved as it was being marked.
 
 ## Day 5: verify, review, ship
 
