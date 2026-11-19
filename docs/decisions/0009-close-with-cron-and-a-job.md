@@ -1,7 +1,8 @@
 # 0009. Close competitions with a cron task that enqueues a job
 
-**Status:** Accepted, 2026-11-19. Write budget and job permissions to confirm in spikes
-S5 and S7 ([plan](../plan.md)).
+**Status:** Accepted, 2026-11-19. Job permissions confirmed by spike S7. Spike S5 passed
+locally; the subrequest limit is still to confirm on the deployed app
+([result](#spikes-s5-and-s7-2026-11-19)).
 
 ## Context
 
@@ -41,3 +42,24 @@ this platform. Members can trigger cron tasks and enqueue jobs by default.
   progress.
 - **Close lazily on the first visit after the deadline:** no email, and it puts the
   write load on a visitor's request.
+
+## Spikes S5 and S7, 2026-11-19
+
+S7, confirmed. With `authorizeWrite: () => false` on the JobRoom, `enqueueJob` from the
+cron task and from an action still ran the job, and a signed-in member's
+`useJobs().enqueue` was rejected with `JobRoom write access denied` ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)). So the
+close (PR 11) closes the queue to every client:
+
+- `authorizeWrite` refuses everyone. A member can then no longer enqueue, cancel or retry
+  a `close-competition` job; the deadline re-check in the job stays as a second defence.
+- `authorizeRead` is set on its own (it defaults to `authorizeWrite`, which would hide
+  the queue from every client). Members may read; payloads and results stay free of
+  private data.
+- Members can still trigger the cron task by default. That was not part of S7 and the
+  task's own deadline check covers it.
+
+S5, passed locally. A job wrote 200 records in one run (0.9 s), in five chunks of 40 with
+`ctx.continue` (1.0 s in total, about 50 ms between chunks) and 1,200 in one run. The
+cron task wrote 200 in 0.9 s. Local `workerd` enforces no subrequest limit, so the
+ceiling has to be seen on the deployed app. The design keeps chunks of 40, which cost
+about 50 ms each.

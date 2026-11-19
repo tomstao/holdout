@@ -1,6 +1,7 @@
 # 0010. Score inside the submit action, not in a background job
 
-**Status:** Accepted, 2026-11-19. CPU budget to confirm in spike S2 ([plan](../plan.md)).
+**Status:** Accepted, 2026-11-19. Spike S2 passed locally; the CPU limit is still to confirm
+on the deployed app ([result](#spike-s2-2026-11-19)).
 
 ## Context
 
@@ -28,3 +29,18 @@ Validate and score synchronously in `submitPredictions` and answer with the scor
 
 - **Always use a job:** worth it for minutes-long work. For milliseconds it adds latency,
   a progress UI and a privacy setting to get right.
+
+## Spike S2, 2026-11-19
+
+An action read a 50,000-row answer key from a record, parsed a 50,000-row predictions file
+and scored both halves with two metrics ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)):
+
+- The largest case, a 2.3 MB file with every field quoted: 53 to 67 ms per request on the
+  local dev server, against 10 to 23 ms for an action that does nothing.
+- CPU, measured in Node where the clock is not frozen: 35 to 46 ms for parsing the request
+  body, parsing the key, parsing the CSV and scoring. The estimate of tens of milliseconds
+  holds.
+
+Not confirmed: the CPU limit of the deployed Worker. Local `workerd` enforces none. Run
+the same request on the deployed app and read `npx deepspace logs` for `exceededCpu`; the
+job fallback stays until then.

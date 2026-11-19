@@ -1,6 +1,7 @@
 # 0012. One integration: the close-out email
 
-**Status:** Accepted, 2026-11-19
+**Status:** Accepted, 2026-11-19. Delivery with `bcc` and `reply_to` (spike S8) is not yet
+tested: it needs two owner-controlled addresses.
 
 ## Context
 

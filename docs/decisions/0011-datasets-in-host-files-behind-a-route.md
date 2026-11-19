@@ -1,6 +1,7 @@
 # 0011. Datasets in the host's private file folder, served by a Worker route
 
-**Status:** Accepted, 2026-11-19. Fallback to decide in spike S3 ([plan](../plan.md)).
+**Status:** Accepted, 2026-11-19. Confirmed by spike S3; the `app`-scope alternative is
+rejected ([result](#spike-s3-2026-11-19)).
 
 ## Context
 
@@ -34,3 +35,19 @@ capped at 1 GiB each and 128 MiB for the whole app on the free plan.
   second member cannot overwrite or delete another's `app` key, switch to this and drop
   the route.
 - **Files as records:** a 5 MB `train.csv` does not fit a 2 MB row.
+
+## Spike S3, 2026-11-19
+
+Two test accounts and the real platform file storage ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)):
+
+- **`app` scope is not safe for datasets.** Member B uploaded to the key member A had
+  used and the public URL then served B's bytes; B then deleted the file. The alternative
+  below is rejected.
+- **The route design works.** The Worker wrote a 5 MB file into the host's `self` folder
+  with `appFiles` (1.7 to 2.0 s). Another member's read was refused, a signed-out read
+  answered 401, and a public Worker route streamed the file back intact in 0.3 s with
+  `Content-Length`, `Content-Disposition` and cache headers.
+- `download` and `delete` take the stored key that `upload` returns, so the competition
+  record stores that key, not the one passed to `upload`.
+- The host can replace or delete a file in their own folder with `useR2Files`. That is
+  the host changing their own competition's data; the route answers 404 if it is gone.

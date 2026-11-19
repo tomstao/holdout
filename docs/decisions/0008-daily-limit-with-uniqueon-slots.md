@@ -1,7 +1,6 @@
 # 0008. Enforce the daily limit by claiming numbered slots with `uniqueOn`
 
-**Status:** Accepted, 2026-11-19. Conflict behaviour to confirm in spike S4
-([plan](../plan.md)).
+**Status:** Accepted, 2026-11-19. Confirmed by spike S4 ([result](#spike-s4-2026-11-19)).
 
 ## Context
 
@@ -35,3 +34,19 @@ write that would duplicate a composite key, on every write path.
   but the platform has a correct primitive for this.
 - **Serialise submissions through the JobRoom:** correct, but slower for every
   submission and members can read job payloads by default.
+
+## Spike S4, 2026-11-19
+
+Five creates with the same composite key fired together from one request, and twenty
+races between two requests: exactly one create succeeded every time ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)).
+
+- The refusal carries no `code`. It is `success: false` with an `error` that begins
+  `Duplicate: a record with`. `submitPredictions` detects it by that prefix, in one
+  helper with a unit test, so an SDK change to the wording fails a test and not a
+  submission.
+- An update that would move a row onto a taken key is refused the same way.
+- `tools.create` with an existing `recordId` merges instead of refusing, so the claim
+  must use a generated id and rely on `uniqueOn` alone.
+
+The check and the insert are synchronous SQL inside the Durable Object (SDK code, the
+same once deployed), so this result does not depend on a platform limit.

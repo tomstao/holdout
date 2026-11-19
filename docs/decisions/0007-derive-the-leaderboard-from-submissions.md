@@ -1,6 +1,7 @@
 # 0007. Derive the live leaderboard from submissions; keep private scores apart
 
-**Status:** Accepted, 2026-11-19. Query size to confirm in spike S6 ([plan](../plan.md)).
+**Status:** Accepted, 2026-11-19. Spike S6 passed locally; the size of the snapshot frame is
+still to confirm on the deployed app ([result](#spike-s6-2026-11-19)).
 
 ## Context
 
@@ -39,3 +40,20 @@ scores must stay hidden until the close, and read permissions are per row, not p
 - **Entries recomputed by a job** (the JobRoom runs one handler at a time, so it would
   serialise them): correct, but adds a queue hop to every submission and puts the
   scoring in a place members can read by default.
+
+## Spike S6, 2026-11-19
+
+A signed-out browser subscribed to 4,999 rows shaped like `submissions`. All of them
+arrived, in one WebSocket frame, 82 ms after the page mounted; a row created by an action
+appeared without a reload ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)).
+
+Corrections to the estimate above:
+
+- A row is about 390 bytes on the wire, not 100: the record envelope and the JSON keys
+  outweigh the data. 5,000 submissions are 1.95 MB per viewer, not 0.5 MB.
+- That snapshot is one frame. Local `workerd` enforces no message size limit, so a
+  1.95 MB frame has to be seen on the deployed app. If it is refused, the fallbacks in
+  the plan apply: page in the hook, or keep one best row per participant.
+- Subscribe without `limit`. There is no default cap, and a `limit` also stops live rows
+  once it is reached: with `limit: 5000` and 5,000 rows shown, later inserts never
+  appeared.

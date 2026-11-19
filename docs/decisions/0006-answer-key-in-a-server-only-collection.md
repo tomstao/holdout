@@ -1,6 +1,7 @@
 # 0006. The answer key lives in a closed collection
 
-**Status:** Accepted, 2026-11-19. Size limit to confirm in spike S1 ([plan](../plan.md)).
+**Status:** Accepted, 2026-11-19. Spike S1 passed locally; the 2 MB row limit is still to
+confirm on the deployed app ([result](#spike-s1-2026-11-19)).
 
 ## Context
 
@@ -41,3 +42,21 @@ file.
   development needs a deploy first, and every submission downloads and parses a file.
 - **Custom R2 bucket:** strongest isolation, but a custom binding and more code for no
   extra protection at this size.
+
+## Spike S1, 2026-11-19
+
+A record whose `rows` array is 1.5 MB of JSON (47,324 rows) wrote and read back intact on
+the local dev server: create 35 to 47 ms, get 20 to 32 ms ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)).
+
+Not confirmed: local `workerd` also accepted an 8 MB record, so it does not enforce the
+2 MB row limit this decision depends on. The limit has to be seen on the deployed app.
+The chunking fallback stays until then.
+
+To carry into the record contract (PR 5):
+
+- The byte cap binds before the row cap. 50,000 rows of `[id, target, split]` with
+  7-character ids are 1.58 to 1.73 MB. Either store `split` as one character (about
+  8 bytes less per row) or state the limit in bytes only.
+- Count UTF-8 bytes, which is what SQLite limits, not `string.length`.
+- `tools.create` returns the stored record, so the action receives the whole key back
+  once. `implement()` keeps it out of the response.
