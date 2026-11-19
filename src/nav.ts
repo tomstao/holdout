@@ -11,14 +11,16 @@ import type { Role } from './constants'
 export interface NavItem {
   path: string
   label: string
+  /** Other path prefixes this item is the current page for. */
+  also?: string[]
   roles?: Role[]
   devOnly?: boolean
 }
 
 export const nav: NavItem[] = [
-  { path: '/home', label: 'Home' },
+  { path: '/home', label: 'Competitions', also: ['/c/'] },
   { path: '/host/new', label: 'Host a competition' },
-  { path: '/settings', label: 'Settings' },
+  // Settings is in the account menu (src/components/Navigation.tsx).
   // The /api-status debug page still exists — add
   // `{ path: '/api-status', label: 'API Status', devOnly: true }` to surface it.
   // ── Features add nav items below this line ──
