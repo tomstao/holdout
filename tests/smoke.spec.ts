@@ -63,6 +63,26 @@ test.describe('Smoke tests', () => {
     await expect(page.getByTestId('nav-user-name')).toHaveCount(0)
   })
 
+  test('the app paints in the Holdout theme with its own fonts', async ({ page }) => {
+    await page.goto('/home')
+    await expect(page.getByTestId('app-navigation')).toBeVisible({ timeout: 15000 })
+    await expect(page).toHaveTitle('Holdout')
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'holdout')
+    // --color-background and --font-sans of [data-theme='holdout'] (src/themes.css).
+    await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(245, 241, 232)')
+    await expect(page.locator('body')).toHaveCSS('font-family', /IBM Plex Sans/)
+    // The font files are served by the app and load (docs/decisions/0015).
+    const loaded = await page.evaluate(
+      `document.fonts.load('14px "IBM Plex Sans"').then((faces) => faces.length)`,
+    )
+    expect(loaded).toBeGreaterThan(0)
+    await expect(page.getByTestId('app-navigation').getByRole('link')).toHaveText([
+      'holdout',
+      'Competitions',
+      'Host a competition',
+    ])
+  })
+
   test('unknown route shows 404', async ({ page }) => {
     await page.goto('/nonexistent-page-xyz')
     await waitForApp(page)
