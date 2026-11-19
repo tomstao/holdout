@@ -23,6 +23,7 @@ import {
 } from './csv'
 import type { TaskType } from './metrics'
 import { issueLog, type FileIssue, type IssueLog } from './result'
+import { MAX_MAGNITUDE, shown, shownList, tooLarge } from './text'
 import { assignSplit, parseUsage, USAGE_COLUMN, type Split } from './split'
 
 export const DATASET_FILES = ['train', 'test', 'solution'] as const
@@ -94,11 +95,6 @@ export function parseNumber(text: string): number | undefined {
   return Number.isFinite(value) ? value : undefined
 }
 
-/** A value as it appears in a message: quoted, and cut if it is long. */
-function shown(value: string): string {
-  return value.length > 40 ? `"${value.slice(0, 40)}…"` : `"${value}"`
-}
-
 /** The limits `parseCsv` applies to each of the three files. */
 export const DATASET_FILE_LIMITS: Record<DatasetFile, CsvLimits> = {
   train: { maxBytes: DATASET_LIMITS.trainBytes },
@@ -126,12 +122,10 @@ function readTable(text: string, limits: CsvLimits, log: IssueLog): CsvTable | u
 function readColumn(table: CsvTable, name: string, report: Report): string[] | undefined {
   const at = findColumn(table.header, name)
   if (at === -1) {
-    const columns = table.header.slice(0, 12).map(shown).join(', ')
-    const more = table.header.length > 12 ? ', …' : ''
     report({
       row: 1,
       column: name,
-      message: `The file has no column with this name. Its columns are: ${columns}${more}.`,
+      message: `The file has no column with this name. Its columns are: ${shownList(table.header)}.`,
     })
     return undefined
   }
@@ -163,8 +157,10 @@ function checkTargets(
   targets.forEach((target, index) => {
     const row = fileRow(index)
     if (target === '') report({ row, column, message: 'The target is empty.' })
-    else if (taskType === 'regression' && parseNumber(target) === undefined) {
-      report({ row, column, message: `${shown(target)} is not a number.` })
+    else if (taskType === 'regression') {
+      const value = parseNumber(target)
+      if (value === undefined) report({ row, column, message: `${shown(target)} is not a number.` })
+      else if (Math.abs(value) > MAX_MAGNITUDE) report({ row, column, message: tooLarge(target) })
     }
   })
 }

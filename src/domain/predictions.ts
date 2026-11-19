@@ -15,6 +15,7 @@ import { fileRow, findColumn, parseCsv, type CsvLimits } from './csv'
 import { DATASET_LIMITS, parseNumber, type AnswerKeyRow } from './dataset'
 import type { TaskType } from './metrics'
 import { issueLog, ok, type Result } from './result'
+import { MAX_MAGNITUDE, shown, shownList, tooLarge } from './text'
 
 /** A predictions file is at most 2 MB (spec, "Limits and numbers"). */
 export const PREDICTIONS_LIMITS: CsvLimits = {
@@ -37,11 +38,6 @@ export interface PredictionsFormat {
 export interface PredictionRows {
   ids: string[]
   predictions: string[]
-}
-
-/** A value as it appears in a message: quoted, and cut if it is long. */
-function shown(value: string): string {
-  return value.length > 40 ? `"${value.slice(0, 40)}…"` : `"${value}"`
 }
 
 function labelList(labels: readonly string[]): string {
@@ -73,7 +69,7 @@ export function checkPredictionsFile(
       issues.add({
         row: 1,
         column: name,
-        message: `The file has no column with this name. Its columns are: ${header.map(shown).join(', ')}.`,
+        message: `The file has no column with this name. Its columns are: ${shownList(header)}.`,
       })
     }
   }
@@ -112,12 +108,15 @@ export function checkPredictionsFile(
     if (prediction === '') {
       issues.add({ row: at, column: targetColumn, message: 'The prediction is empty.' })
     } else if (format.taskType === 'regression') {
-      if (parseNumber(prediction) === undefined) {
+      const value = parseNumber(prediction)
+      if (value === undefined) {
         issues.add({
           row: at,
           column: targetColumn,
           message: `${shown(prediction)} is not a number.`,
         })
+      } else if (Math.abs(value) > MAX_MAGNITUDE) {
+        issues.add({ row: at, column: targetColumn, message: tooLarge(prediction) })
       }
     } else if (allowed && !allowed.has(prediction)) {
       issues.add({
