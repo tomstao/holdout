@@ -112,3 +112,18 @@ describe('phaseAt', () => {
     expect(phaseAt('closed', NOW, NOW + 1)).toBe('closed')
   })
 })
+
+describe('timeLeft to the minute', () => {
+  it('drops the seconds until the last minute', () => {
+    expect(timeLeft(12 * 60_000 + 40_000, 'minute')).toBe('12 min')
+    expect(timeLeft(60_000, 'minute')).toBe('1 min')
+    expect(timeLeft(59_999, 'minute')).toBe('59 s')
+    expect(timeLeft(0, 'minute')).toBe('0 s')
+  })
+
+  it('reads the same as the precise form from an hour up', () => {
+    for (const ms of [HOUR_MS, 3 * HOUR_MS + 12 * 60_000 + 5_000, 2 * DAY_MS + 4 * HOUR_MS]) {
+      expect(timeLeft(ms, 'minute')).toBe(timeLeft(ms))
+    }
+  })
+})
