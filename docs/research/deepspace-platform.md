@@ -33,7 +33,7 @@ Record<string, unknown>` are untyped (`dist/index.d.ts`,
 
 Sources and citation format:
 
-- `L1234` = line in the local docs copy `scratchpad/ds/llms-full.txt` (23,795 lines). The docs' own SDK version stamps: guides "written for `deepspace@0.43.0` ... Docs checked: October 29, 2026" (L3028); `maxLength` is "not in the published 0.42.3 SDK" (L20716).
+- `L1234` = line in <https://docs.deep.space/llms-full.txt> as downloaded on 2026-11-19 (23,795 lines). The docs' own SDK version stamps: guides "written for `deepspace@0.43.0` ... Docs checked: October 29, 2026" (L3028); `maxLength` is "not in the published 0.42.3 SDK" (L20716).
 - `SKILL.md:N` = `deepdotspace/deepspace-skill` `skills/deepspace/SKILL.md` (the only real file in that repo; `references/README.md` is a placeholder).
 - `tally:` / `threadhunt:` = example apps `deepdotspace/tally` and `deepdotspace/threadhunt` (both pinned to the much older `"deepspace": "^0.23.2"`). Treat them as evidence of how real apps work, not as docs.
 - "Not documented" means I grepped the full corpus and found nothing. "Inference" marks my reasoning, not doc text.
