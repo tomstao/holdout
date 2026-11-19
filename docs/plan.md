@@ -1,0 +1,123 @@
+# Build plan
+
+Five working days after the setup day. Each step is one small pull request the owner
+reviews. Tick boxes as work lands; this file is the running task list
+(DeepSpace, [building an app](https://docs.deep.space/guides/building-an-app.md): "state lives on disk").
+Gotchas go to [lessons.md](lessons.md) the moment they are found.
+
+## Day 0: setup (done 2026-11-19)
+
+- [x] Research: domain and platform ([research/](research/))
+- [x] Spec, architecture, decisions, frontend design brief
+- [x] Scaffold (create-deepspace 0.44.2), official DeepSpace skill installed
+- [x] Tooling: split tsconfigs, type-aware ESLint with product-polish rules, Prettier,
+      dependency-cruiser, Vitest projects with coverage, lefthook + commitlint, CI
+- [x] Typed contract layer (`defineAction`, `implement`, `callAction`, `useCollection`,
+      schema drift check) with tests
+
+## Before day 1: the owner's steps
+
+Only the owner can do these: they need a browser login or are hard to reverse.
+
+1. `npx deepspace auth login`, then `npx deepspace auth whoami` shows the intended account.
+2. Decide the source mode ([ADR 0014](decisions/0014-source-control-github.md); proposed:
+   GitHub). For GitHub: create the repository, `git remote add origin <url>`,
+   `git push -u origin main`.
+3. `npx deepspace app init` registers the app and writes its id to `wrangler.toml`
+   (the placeholder is already committed, so first use will not register on its own).
+   If the name `holdout` is taken, change `name` in `wrangler.toml` and `APP_NAME` in
+   `src/constants.ts`, then run it again. Commit `wrangler.toml`.
+4. `npx deepspace status --json`: `sourceInference` must say GitHub before any deploy.
+   Never run `deepspace push`.
+5. First deploy of the empty app: `npx deepspace deploy`. App files and the email
+   integration only work after one deploy.
+6. `npm run test:unit` now also runs the `app` Vitest project; `npm run build` works.
+
+## De-risking spikes (day 1)
+
+Timebox: half a day in total, on a throwaway branch against the deployed app. Each result
+goes into [lessons.md](lessons.md) and updates its decision's status.
+
+| #   | Question                                                                                                  | Method                                                                   | Pass                                           | If it fails                                                                                                                       |
+| --- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| S1  | Does a 1.5 MB JSON record write and read through action tools?                                            | Action creates and gets a record with a 1.5 MB `rows` array              | Round trip intact, under 1 s                   | Chunk the key across records ([0006](decisions/0006-answer-key-in-a-server-only-collection.md))                                   |
+| S2  | Can an action parse and score 50,000 rows within the CPU budget?                                          | Score a generated 2 MB file in an action; read `logs` for `exceededCpu`  | No CPU errors, response under 2 s              | Score in a job with restricted reads ([0010](decisions/0010-score-inside-the-submit-action.md))                                   |
+| S3  | Can member B overwrite or delete member A's `app`-scope file? Can the Worker stream a host's `self` file? | Two test accounts with `useR2Files`; `appFiles(...).download` in a route | B is refused; download streams                 | Keep the route design; if B is refused, simplify to `app` scope ([0011](decisions/0011-datasets-in-host-files-behind-a-route.md)) |
+| S4  | What does `tools.create` return when `uniqueOn` refuses?                                                  | Two concurrent creates with the same composite key                       | One succeeds; the other's code is identifiable | Detect by message; or serialise the claim in a job ([0008](decisions/0008-daily-limit-with-uniqueon-slots.md))                    |
+| S5  | How many record writes fit in one cron run or job step?                                                   | A job writing 200 records with and without `ctx.continue`                | 200 writes across chunks of 40                 | Smaller chunks ([0009](decisions/0009-close-with-cron-and-a-job.md))                                                              |
+| S6  | How many rows does one `useQuery` subscription return?                                                    | Seed 5,000 small rows; subscribe with `limit: 5000`                      | All rows arrive and live updates flow          | Page in the hook, or keep a per-participant best row ([0007](decisions/0007-derive-the-leaderboard-from-submissions.md))          |
+| S7  | Does `enqueueJob` from Worker code bypass `authorizeWrite`?                                               | Set `authorizeWrite` to refuse everyone; enqueue from the cron task      | The job runs; clients cannot enqueue           | Allow `admin` only                                                                                                                |
+| S8  | Does `email/send` from a job deliver with `bcc` and `reply_to`?                                           | One send to two owner-controlled addresses                               | Both arrive, neither sees the other            | Send one message per recipient (cost × n)                                                                                         |
+
+## Day 1: domain core
+
+- [ ] **PR 1, spikes S1 to S8** (throwaway branch; results only, no app code merged)
+- [ ] **PR 2, `domain/csv.ts`:** RFC 4180 parser (BOM, CRLF, quoted commas, quotes and
+      newlines, trailing newline), header lookup, byte and row limits. Property test:
+      formatting rows and parsing them back gives the same rows.
+- [ ] **PR 3, `domain/metrics.ts`:** accuracy, macro-F1, RMSE, MAE and their direction.
+      Fixtures with expected values computed once by scikit-learn
+      (`scripts/fixtures/metrics.py`, output committed as JSON) and asserted to 1e-12.
+- [ ] **PR 4, `domain/split.ts` and `domain/dataset.ts`:** `Usage` parsing; deterministic,
+      label-stratified split from a seed; train/test/solution validation with
+      file-row-column issues; sample submission. Property tests: the split is a partition,
+      is stable for a seed, and keeps every class in both halves when it has two or more
+      rows.
+
+## Day 2: data model and creating competitions
+
+- [ ] **PR 5, schemas, record contracts and RBAC:** five collections in `src/schemas/`, their
+      Zod contracts in `src/contracts/competitions.ts`, registered; drift test green.
+      Playwright `rbac.spec.ts`: a participant's `useQuery` on `answer_keys` and
+      `private_scores` returns nothing, and so does `records.query` through the agent tools.
+- [ ] **PR 6, `createCompetition` and the files route:** action contract and handler,
+      files to the host's `self` folder, `GET /api/competitions/:id/files/:kind`. API spec
+      for invalid input, invalid files and success.
+- [ ] **PR 7, `/host/new`:** form with kit components, three file drops validated locally
+      with the same domain code, issues shown per file; redirect on success.
+
+## Day 3: submitting and the live leaderboard
+
+- [ ] **PR 8, `submitPredictions`:** `domain/predictions.ts` and `domain/scoring.ts`;
+      host refused; deadline check; slot claim with `uniqueOn` and one retry; private score
+      written second, submission removed if that fails.
+- [ ] **PR 9, `/c/:id`:** header and tabs; Leaderboard from `useCollection('submissions')`
+      and `domain/ranking.ts`; Overview; Data with downloads; Submit with local check and
+      my submissions.
+- [ ] **PR 10, multi-user spec:** two participants in two browsers; B's page shows A's new
+      row without a reload; the daily limit refuses the next submission with the reset time.
+
+## Day 4: the close and the design
+
+- [ ] **PR 11, close:** `domain/ranking.ts` final selection and standings; cron task and
+      job per [ADR 0009](decisions/0009-close-with-cron-and-a-job.md); final standings view
+      with shake-up; email sent outside test mode. Spec: a competition due in two minutes
+      closes on its own.
+- [ ] **PR 12, design:** Holdout theme, Navigation, `/home` with its declared pattern, the
+      landing with its Design Direction block; `design:gate` added to `npm run check`.
+- [ ] **PR 13, demo competition:** script that shuffles and renumbers Palmer Penguins into
+      train/test/solution files (`scripts/demo/`), then created through `/host/new` on
+      production.
+
+## Day 5: verify, review, ship
+
+- [ ] DeepSpace's six verification gates
+      ([building an app](https://docs.deep.space/guides/building-an-app.md), step 6):
+      `npm run check` and `npx deepspace test run all`; screenshots of every changed
+      screen; side by side with `docs/design/refs/`; the core loop on the deployed app with
+      a fresh test account; two real sessions for the leaderboard; every failure state
+      (invalid file, limit reached, closed, signed out, not found).
+- [ ] Independent review by a fresh agent context of the actions, RBAC and the close;
+      adjudicate each finding against the code.
+- [ ] Walk the spec's acceptance criteria one by one on production.
+- [ ] README and [submission-notes.md](submission-notes.md) finished; deploy from a clean
+      `main`; tag `v1.0.0`.
+
+## If behind schedule, cut in this order
+
+1. F5 (editing a competition)
+2. The public/final toggle on the closed leaderboard
+3. The close-out email (the page still shows the results)
+4. The landing hero animation (a static leaderboard instead)
+
+Never cut: the closed answer key and its RBAC test, the private split, the automatic close.
