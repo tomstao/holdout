@@ -1,7 +1,7 @@
 # 0011. Datasets in the host's private file folder, served by a Worker route
 
-**Status:** Accepted, 2026-11-19. Confirmed by spike S3; the `app`-scope alternative is
-rejected ([result](#spike-s3-2026-11-19)).
+**Status:** Accepted, 2026-11-19. Confirmed by spike S3, locally and on the deployed app;
+the `app`-scope alternative is rejected ([result](#spike-s3-2026-11-19)).
 
 ## Context
 
@@ -51,3 +51,5 @@ Two test accounts and the real platform file storage ([lessons](../lessons.md#20
   record stores that key, not the one passed to `upload`.
 - The host can replace or delete a file in their own folder with `useR2Files`. That is
   the host changing their own competition's data; the route answers 404 if it is gone.
+
+The deployed app gave the same results; its route streamed the 5 MB file in 0.27 s.

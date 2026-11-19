@@ -1,7 +1,7 @@
 # 0010. Score inside the submit action, not in a background job
 
-**Status:** Accepted, 2026-11-19. Spike S2 passed locally; the CPU limit is still to confirm
-on the deployed app ([result](#spike-s2-2026-11-19)).
+**Status:** Accepted, 2026-11-19. Confirmed by spike S2 on the deployed app
+([result](#spike-s2-2026-11-19)).
 
 ## Context
 
@@ -44,3 +44,13 @@ and scored both halves with two metrics ([lessons](../lessons.md#2026-11-19-day-
 Not confirmed: the CPU limit of the deployed Worker. Local `workerd` enforces none. Run
 the same request on the deployed app and read `npx deepspace logs` for `exceededCpu`; the
 job fallback stays until then.
+
+### On the deployed app
+
+24 of 24 requests scored a 50,000-row file on holdout.app.space, the 2.3 MB all-quoted one
+included ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)). A request took 270 to 550 ms, which includes uploading 1 to 2.6 MB
+from a home connection; an action that does nothing took 82 ms. The logs show the outcome
+`ok` for these requests and no `exceededCpu`. The job fallback is not needed.
+
+The logs do not report CPU time, so how far below the limit this is remains unknown. The
+spec's sizes are the tested ones; raising them means running this spike again.

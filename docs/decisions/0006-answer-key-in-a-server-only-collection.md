@@ -1,7 +1,7 @@
 # 0006. The answer key lives in a closed collection
 
-**Status:** Accepted, 2026-11-19. Spike S1 passed locally; the 2 MB row limit is still to
-confirm on the deployed app ([result](#spike-s1-2026-11-19)).
+**Status:** Accepted, 2026-11-19. Confirmed by spike S1 on the deployed app
+([result](#spike-s1-2026-11-19)).
 
 ## Context
 
@@ -60,3 +60,12 @@ To carry into the record contract (PR 5):
 - Count UTF-8 bytes, which is what SQLite limits, not `string.length`.
 - `tools.create` returns the stored record, so the action receives the whole key back
   once. `implement()` keeps it out of the response.
+
+### On the deployed app
+
+The same 1.5 MB record wrote and read back intact on holdout.app.space: create 110 to
+147 ms, get 41 to 65 ms ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)). The chunking fallback is not needed.
+
+The 2 MB row limit this record was sized for did not show up: records of 2.2, 3 and 8 MB
+were stored and read back as well. The 1.5 MB cap stays. Nothing documents a higher
+limit, and every submission reads the whole key: an 8 MB key took 0.33 s to read.

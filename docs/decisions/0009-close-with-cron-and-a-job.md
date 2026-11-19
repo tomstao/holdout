@@ -1,7 +1,6 @@
 # 0009. Close competitions with a cron task that enqueues a job
 
-**Status:** Accepted, 2026-11-19. Job permissions confirmed by spike S7. Spike S5 passed
-locally; the subrequest limit is still to confirm on the deployed app
+**Status:** Accepted, 2026-11-19. Confirmed by spikes S5 and S7 on the deployed app
 ([result](#spikes-s5-and-s7-2026-11-19)).
 
 ## Context
@@ -63,3 +62,17 @@ S5, passed locally. A job wrote 200 records in one run (0.9 s), in five chunks o
 cron task wrote 200 in 0.9 s. Local `workerd` enforces no subrequest limit, so the
 ceiling has to be seen on the deployed app. The design keeps chunks of 40, which cost
 about 50 ms each.
+
+### On the deployed app
+
+Both spikes ran again on holdout.app.space ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)).
+
+- **No write limit was hit in a job or in the cron task.** A job run wrote 200 records
+  and 1,200 records; the cron task wrote 1,100. The limit of 1,000 subrequests that stops
+  a Worker request did not apply to these Durable Object alarms.
+- **A write takes about 28 ms there,** six times the local figure. One at a time, 200
+  standings take 5.6 s; with 20 in flight they take 0.45 s. The close job writes each
+  chunk with `Promise.all`.
+- **Chunks cost nothing measurable.** Five chunks of 40 with `ctx.continue` took the same
+  5.7 s as one run of 200. The design keeps them, for progress and a restart point.
+- S7 gave the same result as locally.
