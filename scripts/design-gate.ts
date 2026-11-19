@@ -84,7 +84,9 @@ expect(
   'src/pages/(app)/home.tsx',
 )
 expect(
-  activeTheme !== '' && read(join('src', 'themes.css')).includes(`[data-theme="${activeTheme}"]`),
+  // Prettier writes the selector with single quotes; the docs show double.
+  activeTheme !== '' &&
+    new RegExp(`\\[data-theme=['"]${activeTheme}['"]\\]`).test(read(join('src', 'themes.css'))),
   'active theme has no block in src/themes.css',
   `[data-theme="${activeTheme}"]`,
 )
