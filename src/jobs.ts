@@ -3,7 +3,7 @@
  *
  * One job type: close a competition (src/server/close.ts). It is enqueued by
  * the cron task only; the room refuses every client write (worker.ts). Its
- * payload and its result hold nothing private, because members can read job
+ * payload and its result hold nothing private, because a member may read job
  * rows.
  */
 import type { Job, JobContext } from 'deepspace/worker'
