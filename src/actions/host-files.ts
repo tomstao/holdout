@@ -6,7 +6,22 @@
 import { appFiles } from 'deepspace/worker'
 import { DEADLINE_MIN_LEAD_MS } from '../domain/time'
 import type { CreateCompetitionDeps } from './create-competition'
+import { isStorageBusy, withRetry, type RetryOptions } from './retry'
 import type { SubmitPredictionsDeps } from './submit-predictions'
+
+/**
+ * Up to four attempts, about 1.5 s of waiting in all. The waits are spread
+ * at random, so uploads that collided do not collide again in step.
+ */
+const WHEN_STORAGE_IS_BUSY: RetryOptions = {
+  waits: [150, 400, 900],
+  retryable: isStorageBusy,
+  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms * (0.5 + Math.random()))),
+  onRetry: (error, wait) => {
+    const reason = error instanceof Error ? error.message : String(error)
+    console.warn(`[files] ${reason} Trying again in about ${wait} ms.`)
+  },
+}
 
 export const createCompetitionDeps: CreateCompetitionDeps = {
   hostFiles(env, hostId) {
@@ -15,11 +30,15 @@ export const createCompetitionDeps: CreateCompetitionDeps = {
     const files = appFiles(env, { scope: 'self', userId: hostId })
     return {
       async put(key, name, text) {
-        const stored = await files.upload(new Blob([text], { type: 'text/csv' }), { key, name })
+        // The key is fixed, so a repeated upload writes the same object.
+        const stored = await withRetry(
+          () => files.upload(new Blob([text], { type: 'text/csv' }), { key, name }),
+          WHEN_STORAGE_IS_BUSY,
+        )
         return stored.key
       },
       async remove(storedKey) {
-        await files.delete(storedKey)
+        await withRetry(() => files.delete(storedKey), WHEN_STORAGE_IS_BUSY)
       },
     }
   },
