@@ -208,6 +208,12 @@ export function findColumn(header: readonly string[], name: string): number {
   return header.indexOf(name)
 }
 
+/** Every row's value in column `at`, top to bottom. `at` must be a column of the table. */
+export function columnValues(table: CsvTable, at: number): string[] {
+  // parseCsv only returns rectangular tables, so the fallback is never used.
+  return table.rows.map((row) => row[at] ?? '')
+}
+
 const NEEDS_QUOTES = /[",\r\n]|^\uFEFF/
 
 function formatField(value: string): string {

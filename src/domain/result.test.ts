@@ -39,6 +39,25 @@ describe('issueLog', () => {
     expect(rejected.omitted).toBe(5)
   })
 
+  it('absorbs another rejection, tagging its problems and keeping its count', () => {
+    const inner = issueLog(2)
+    for (const row of [2, 3, 4, 5, 6]) inner.add({ row, message: 'Bad.' })
+    const log = issueLog(3)
+    log.add({ message: 'First.' })
+    log.absorb(inner.rejection(), { file: 'train' })
+    log.absorb(reject({ file: 'kept', message: 'Its own file wins.' }), { file: 'train' })
+    expect(log.count).toBe(7)
+    expect(log.rejection()).toEqual({
+      ok: false,
+      issues: [
+        { message: 'First.' },
+        { file: 'train', row: 2, message: 'Bad.' },
+        { file: 'train', row: 3, message: 'Bad.' },
+      ],
+      omitted: 4,
+    })
+  })
+
   it('hands out a copy, so later problems do not change an earlier rejection', () => {
     const log = issueLog()
     log.add({ message: 'First.' })

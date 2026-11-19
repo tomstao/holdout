@@ -1,6 +1,7 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import {
+  columnValues,
   fileRow,
   findColumn,
   formatCsv,
@@ -227,6 +228,12 @@ describe('helpers', () => {
     expect(findColumn(header, 'Species')).toBe(1)
     expect(findColumn(header, 'species')).toBe(-1)
     expect(findColumn(header, 'spaced')).toBe(-1)
+  })
+
+  it('reads one column top to bottom', () => {
+    const penguins = table('id,species\n1,Adelie\n2,Gentoo\n')
+    expect(columnValues(penguins, 1)).toEqual(['Adelie', 'Gentoo'])
+    expect(columnValues(penguins, findColumn(penguins.header, 'id'))).toEqual(['1', '2'])
   })
 
   it('prints megabytes, rounding up', () => {

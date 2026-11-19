@@ -52,6 +52,8 @@ export function reject(issue: FileIssue): Rejected {
  */
 export interface IssueLog {
   add(issue: FileIssue): void
+  /** Take over another check's problems, adding `extra` (such as the file) to each. */
+  absorb(rejected: Rejected, extra?: Partial<FileIssue>): void
   /** Every problem added, including the ones left out. */
   readonly count: number
   /** The collected problems as a rejection. Call it only when `count > 0`. */
@@ -61,10 +63,15 @@ export interface IssueLog {
 export function issueLog(limit: number = MAX_ISSUES): IssueLog {
   const issues: FileIssue[] = []
   let count = 0
+  const add = (issue: FileIssue): void => {
+    count++
+    if (issues.length < limit) issues.push(issue)
+  }
   return {
-    add(issue) {
-      count++
-      if (issues.length < limit) issues.push(issue)
+    add,
+    absorb(rejected, extra) {
+      for (const issue of rejected.issues) add({ ...extra, ...issue })
+      count += rejected.omitted
     },
     get count() {
       return count
