@@ -13,9 +13,10 @@ capped at 1 GiB each and 128 MiB for the whole app on the free plan.
 
 ## Decision
 
-- `createCompetition` receives the CSV texts, validates them, and the Worker writes the
-  three files to **the host's `self` folder** with `appFiles(env, { scope: 'self', userId:
-hostId })`. Only the host and the Worker can write there.
+- `createCompetition` receives the CSV texts and validates them. The Worker then writes
+  the three files to **the host's `self` folder**, through `appFiles` with
+  `scope: 'self'` and the host's verified user id. Only the host and the Worker can
+  write there.
 - A public route, `GET /api/competitions/:id/files/:kind`, looks up the key on the
   competition and streams the file with `appFiles(...).download(key)`, with
   `Content-Disposition` and cache headers.
