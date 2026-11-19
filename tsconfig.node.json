@@ -16,6 +16,7 @@
     "prerender.ts",
     "prerender.test.ts",
     "tests",
-    "scripts"
+    "scripts",
+    "src/domain"
   ]
 }
