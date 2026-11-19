@@ -10,5 +10,18 @@
 import type { CollectionSchema } from 'deepspace/schema'
 import { usersSchema } from './schemas/users-schema'
 import { settingsSchema } from './schemas/admin-schema'
+import { answerKeysSchema } from './schemas/answer-keys-schema'
+import { competitionsSchema } from './schemas/competitions-schema'
+import { finalStandingsSchema } from './schemas/final-standings-schema'
+import { privateScoresSchema } from './schemas/private-scores-schema'
+import { submissionsSchema } from './schemas/submissions-schema'
 
-export const schemas: CollectionSchema[] = [usersSchema, settingsSchema]
+export const schemas: CollectionSchema[] = [
+  usersSchema,
+  settingsSchema,
+  competitionsSchema,
+  answerKeysSchema,
+  submissionsSchema,
+  privateScoresSchema,
+  finalStandingsSchema,
+]

@@ -99,8 +99,6 @@ describe('the app schemas and record contracts', () => {
   const registry: Readonly<Record<string, z.ZodObject>> = recordSchemas
   const contracts = Object.entries(registry)
 
-  if (contracts.length === 0) it.todo('register the record contracts (docs/plan.md, day 1)')
-
   it.each(contracts)('%s matches its CollectionSchema', (name, contract) => {
     const schema = byName.get(name)
     expect(schema, `src/schemas.ts has no schema named "${name}"`).toBeDefined()
