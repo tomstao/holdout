@@ -67,7 +67,8 @@ export function FinalStandings({ competition, standings, viewerId }: FinalStandi
           </>
         )}
       </p>
-      <div className="overflow-x-auto">
+      {/* No scrolling wrapper: the viewer's row sticks to the page (`my-row`). */}
+      <div>
         <table data-testid="final-standings" className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted-foreground">
@@ -80,7 +81,7 @@ export function FinalStandings({ competition, standings, viewerId }: FinalStandi
               <th scope="col" className="py-2 pr-3 text-right font-medium">
                 Final score
               </th>
-              <th scope="col" className="py-2 pr-3 text-right font-medium">
+              <th scope="col" className="hidden py-2 pr-3 text-right font-medium sm:table-cell">
                 Public rank
               </th>
               <th scope="col" className="py-2 text-right font-medium">
@@ -97,10 +98,10 @@ export function FinalStandings({ competition, standings, viewerId }: FinalStandi
                   data-testid="final-row"
                   data-participant={row.participantId}
                   aria-current={isMine ? 'true' : undefined}
-                  className={cn('border-b border-border', isMine && 'bg-muted')}
+                  className={cn('border-b border-border', isMine && 'my-row')}
                 >
                   <td className="py-2.5 pr-3 text-right font-mono tabular-nums">{row.rank}</td>
-                  <td className="py-2.5 pr-3 text-foreground">
+                  <td className="py-2.5 pr-3 [overflow-wrap:anywhere] text-foreground">
                     {row.participantName}
                     {isMine && <span className="ml-2 text-xs text-muted-foreground">(you)</span>}
                   </td>
@@ -110,7 +111,7 @@ export function FinalStandings({ competition, standings, viewerId }: FinalStandi
                   >
                     {formatScore(row.finalScore, competition.scoreDecimals)}
                   </td>
-                  <td className="py-2.5 pr-3 text-right font-mono tabular-nums">
+                  <td className="hidden py-2.5 pr-3 text-right font-mono tabular-nums sm:table-cell">
                     {row.publicRank}
                   </td>
                   <td className="py-2.5 text-right font-mono tabular-nums">
