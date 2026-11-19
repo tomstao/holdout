@@ -26,7 +26,7 @@ each person moved. Spec: [spec.md](spec.md).
 | Job room                           | Closes each one: standings in chunks, idempotent, observable              |
 | App files                          | Dataset downloads, written only by the Worker                             |
 | Auth                               | Google or GitHub sign-in; signed-out visitors can read                    |
-| `email/send` (the one integration) | One close-out email per competition                                       |
+| `email/send` (the one integration) | One close-out email per competition. **Not built yet** (see the end)      |
 
 Left out on purpose, and why: [ADR 0012](decisions/0012-integrations-email-only.md).
 
@@ -50,8 +50,34 @@ _Kept up to date per session._
   - Scaffolded the app, installed the official skill, set up the tooling and the typed
     contract layer with tests.
   - Wrote the spec, architecture, decisions, design brief and plan.
-- **Where I directed or corrected it:** _fill in (e.g. asked for progressive commits;
-  asked for the official skill to guide the work)._
+- **2026-11-19, the build (Claude Code), in small pull requests, each merged when CI was green:**
+  - Tested the plan's open questions as spikes against the local and the deployed app
+    before building on them, and wrote down what the platform really does where it
+    differs from its docs ([lessons.md](lessons.md)).
+  - Built the pure core first (CSV, metrics checked against scikit-learn, the split, the
+    dataset and prediction rules, ranking), then the three typed actions, the pages, the
+    automatic close, the theme, the competition list, the landing page, the demo files
+    and editing.
+  - Found and fixed three things that tests alone would not have shown:
+    - a column marked `immutable` in a closed collection answered differently for a right
+      and a wrong guess, before the permission check. It would have let a participant
+      confirm a private score by guessing. No closed collection has such a column now,
+      and a spec guesses to prove it;
+    - the file storage refuses uploads that race for one account's usage counter (503).
+      The create action retries; a stress case reproduced it before the fix;
+    - the host's edit and the scheduled close can touch a competition in the same
+      instant. The close job repairs the one bad outcome.
+  - Left 370 unit tests and 38 Playwright tests (against the real room and file storage)
+    passing, and the design rules checked in CI.
+- **Where I directed or corrected it** (_a draft from the session; edit or delete_):
+  - Set the working rules up front: small conventional commits, hooks never skipped, one
+    reviewable pull request at a time, deploys only by me, the official DeepSpace docs
+    first and any departure recorded as a decision, and "what you verified" kept apart
+    from "what you did not".
+  - Chose to run the spikes on the deployed app and roll back, and to postpone the email
+    check rather than send to addresses I had not picked.
+  - Asked for branch protection on `main` once the first pull requests were in.
+  - Told it the plan's days were a timeline, not a pace.
 
 ## What I verified myself
 
@@ -66,4 +92,15 @@ _Fill in with what you checked by hand, not what the agent reported. Suggested:_
 
 ## Unfinished, and what I would do next
 
-_Fill in at the end, from [plan.md](plan.md) and the spec's out-of-scope table._
+From [plan.md](plan.md):
+
+- **The close-out email.** The job is ready for it; the one platform check left (a send
+  with `bcc` and `reply_to`) needs two inboxes of mine, so nothing is wired to real
+  recipients yet. The page shows the results either way.
+- **The demo competition on the deployed app**, and the landing's "Try the demo
+  competition" link, which needs that competition's id.
+- **Reference screenshots** for the design were never taken; the screens were checked
+  against the design direction and DeepSpace's checklists instead.
+- Out of scope for v1 by decision, each with what would come next: choosing final
+  submissions by hand, teams, log loss and ROC AUC, private competitions, code
+  submissions, deleting a competition ([spec.md](spec.md), "Out of scope for v1").
