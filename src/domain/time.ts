@@ -36,6 +36,24 @@ export function deadlineProblem(
 }
 
 /**
+ * Why a competition's deadline cannot move from `current` to `next` at `now`,
+ * as a sentence to show, or undefined when it can (spec F5). A deadline only
+ * moves later, and no further ahead than a new competition's could be. The
+ * same deadline is no change and always fine, however close it is.
+ */
+export function deadlineChangeProblem(
+  current: number,
+  next: number,
+  now: number,
+): string | undefined {
+  if (!Number.isFinite(next)) return 'The deadline is not a date.'
+  if (next === current) return undefined
+  if (next < current) return 'The deadline can only move later.'
+  if (next > now + DEADLINE_MAX_LEAD_MS) return 'The deadline must be within 90 days from now.'
+  return undefined
+}
+
+/**
  * The UTC calendar day of `now`, as `YYYY-MM-DD`: the day a submission counts
  * against. Computed from days since 1970-01-01 (Hinnant's civil-from-days),
  * because domain code does not use `Date`.
