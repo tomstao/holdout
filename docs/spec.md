@@ -71,7 +71,9 @@ their own competition (they hold the answer key).
 **Validation** (the same code runs in the browser for instant feedback and in the
 Worker as the authority):
 
-- Every file parses as CSV (RFC 4180; UTF-8 with or without BOM; LF or CRLF).
+- Every file parses as CSV (RFC 4180; UTF-8 with or without BOM; LF or CRLF). File sizes
+  are UTF-8 bytes, and 1 MB is 1,000,000 bytes. What the reader accepts where the RFC
+  leaves room is listed at the top of `src/domain/csv.ts`.
 - The named ID and target columns exist; `test.csv` has no target column.
 - IDs are non-empty and unique within each file; the IDs of `solution.csv` equal the IDs of
   `test.csv` exactly.

@@ -57,7 +57,8 @@ holdout/
 ├─ src/
 │  ├─ domain/                Pure TypeScript. No packages, no app imports, no Date.now/Math.random:
 │  │  │                      time and seeds are arguments. Runs in both runtimes.
-│  │  ├─ csv.ts              RFC 4180 parser: BOM, CRLF, quotes; header lookup; size and row limits
+│  │  ├─ result.ts           Result of a function that can reject its input; issue log   (built)
+│  │  ├─ csv.ts              RFC 4180 reader and writer; header lookup; size, row limits (built)
 │  │  ├─ dataset.ts          validate train/test/solution; build the answer key; sample submission
 │  │  ├─ split.ts            Usage column, or deterministic stratified split by public share
 │  │  ├─ predictions.ts      validate a predictions file against an answer key
@@ -100,8 +101,9 @@ holdout/
 Rules an agent should not have to guess:
 
 - Domain code is plain functions over plain data. A function that can reject its input
-  returns `{ ok: true, value } | { ok: false, issues }` (its own type in
-  `src/domain/result.ts`) and never throws for bad input; actions map that to a contract
+  returns `{ ok: true, value } | { ok: false, issues, omitted }` (its own type in
+  `src/domain/result.ts`: at most 20 issues, each with its row and column, and a count of
+  the rest) and never throws for bad input; actions map that to a contract
   failure.
 - A feature folder may import `src/client`, `src/contracts`, `src/domain` and
   `@/components/ui`; never `src/actions`, `src/server` or `deepspace/worker`.

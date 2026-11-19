@@ -63,7 +63,7 @@ been run.
   - [ ] S1, S2, S5, S6 on the deployed app (needs the owner to deploy the spike branch
         once, then roll back)
   - [ ] S8 (needs two owner-controlled addresses)
-- [ ] **PR 2, `domain/csv.ts`:** RFC 4180 parser (BOM, CRLF, quoted commas, quotes and
+- [x] **PR 2, `domain/csv.ts`:** RFC 4180 parser (BOM, CRLF, quoted commas, quotes and
       newlines, trailing newline), header lookup, byte and row limits. Property test:
       formatting rows and parsing them back gives the same rows.
 - [ ] **PR 3, `domain/metrics.ts`:** accuracy, macro-F1, RMSE, MAE and their direction.

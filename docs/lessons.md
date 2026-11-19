@@ -146,3 +146,12 @@ account. S3 used the real platform file storage. The questions are in
 - **The file allocation shows as 1.0 GiB** (`npx deepspace app files list`), not the
   128 MiB the docs give for the free plan. The usage figure lagged a delete by a few
   minutes.
+
+## 2026-11-19, day 1: domain core
+
+- **A `\uFEFF` escape can reach the file as a real byte order mark.** It happened when an
+  agent wrote `src/domain/csv.ts`: the tests still passed, because the character is the
+  same, but the source then held an invisible character inside a regular expression.
+  ESLint's `no-irregular-whitespace` caught the one in the regex and missed the ones
+  inside strings. After writing a file that mentions a BOM or any other invisible
+  character, search it for the raw bytes (`grep -c $'\xef\xbb\xbf' <file>`).
