@@ -108,9 +108,10 @@ test('a host creates a competition from three files', async ({ users }, testInfo
   const competitionId = page.url().split('/').pop() ?? ''
   try {
     await expect(page.getByTestId('competition-title')).toHaveText(title)
-    await expect(
-      page.getByText('Scored by Accuracy (higher is better) on 6 test rows.'),
-    ).toBeVisible()
+    // The host has no Submit tab; the data is one tab away.
+    await expect(page.getByRole('tab', { name: 'Submit' })).toHaveCount(0)
+    await page.getByRole('tab', { name: 'Data' }).click()
+    await expect(page).toHaveURL(/\?tab=data$/)
     const sample = await page.request.get(
       (await page.getByTestId('download-sample').getAttribute('href')) ?? '',
     )
