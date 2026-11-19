@@ -27,8 +27,9 @@ Only the owner can do these: they need a browser login or are hard to reverse.
        is taken, change `name` in `wrangler.toml` and `APP_NAME` in `src/constants.ts`.
 4. [x] `npx deepspace status --json` shows `sourceInference: "github"` (source not latched
        until the first deploy). Never run `deepspace push`.
-5. First deploy of the empty app: `npx deepspace deploy`. App files and the email
-   integration only work after one deploy.
+5. [x] First deploy (release #1, 2026-11-19, run by the owner): live at
+       <https://holdout.app.space>, GitHub source claimed. Checked: pages 200, actions 401
+       without a token, unknown API 404, no errors in the logs.
 6. [x] `npm run test:unit` now also runs the `app` Vitest project; `npm run build` works
        (both checked after registration).
 

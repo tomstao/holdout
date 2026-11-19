@@ -4,8 +4,8 @@ Draft of the note for the DeepSpace portal, filled in as the build goes. The por
 for: what was built, the DeepSpace integrations used, the main trade-off, what the agent
 did, and what the applicant verified.
 
-**Live URL:** _after the first deploy_
-**Repository:** _after the GitHub repository exists_
+**Live URL:** <https://holdout.app.space>
+**Repository:** <https://github.com/tomstao/holdout>
 
 ## What I built
 

@@ -24,6 +24,12 @@ agent repeats them. Newest at the bottom. Each entry: what happened, what to do 
 - **`app init` registers the id but does not claim the subdomain;** the first deploy
   does, so a taken name only shows up then. `app init` also suggests a commit message
   (`Register app_…`) that commitlint rejects; use a Conventional Commit.
+- **A deploy syncs secrets from `.dev.vars` and removes live secrets that are not
+  there** ("this deploy ships no user secrets and removes any live on the app"). Read
+  the secrets guide before adding the first secret.
+- **The agent's permission check blocks `npx deepspace deploy`** (hard to reverse,
+  outward-facing). The owner runs deploys (`! npx deepspace deploy` in Claude Code);
+  most spikes and all tests can run locally with `npx deepspace dev start`.
 - **`vite build` runs the type-aware ESLint through `vite-plugin-checker`** (about 9 of
   the build's 10 seconds); a lint error fails the build and so the deploy.
 - **Members can trigger cron tasks, enqueue jobs and read job payloads and results by

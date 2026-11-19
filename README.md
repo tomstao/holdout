@@ -11,7 +11,8 @@ and the page shows how far each person moved.
 
 > **Status:** setup is done: research, spec, architecture, decisions, design brief and
 > plan are written, and the tooling and the typed contract layer are in place with tests.
-> No features yet; the build follows [docs/plan.md](docs/plan.md). Not deployed.
+> No features yet; the build follows [docs/plan.md](docs/plan.md). The scaffold is
+> deployed at <https://holdout.app.space>.
 
 ## Quick start
 
