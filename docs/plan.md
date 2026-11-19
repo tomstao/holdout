@@ -123,10 +123,8 @@ needed. S8 moved to day 4, where the close-out email is built.
         Palmer Penguins into train, test and solution files. Its test runs them through
         the app's dataset rules.
   - [ ] **13b, on production (the owner):** run the script; create the competition at
-        `/host/new` with the values the script prints. The deploy is done: release #4,
-        2026-11-19, the code of `main` at `6d09dec`. It was made from a branch with two
-        uncommitted doc files, so the release records no commit
-        ([lessons](lessons.md)); the last deploy for v1.0.0 comes from a clean `main`.
+        `/host/new` with the values the script prints. The app is deployed; the releases
+        are listed below.
   - [ ] **13c:** point the landing's first call to action at it ("Try the demo
         competition").
 
@@ -152,6 +150,20 @@ needed. S8 moved to day 4, where the close-out email is built.
 - [ ] Walk the spec's acceptance criteria one by one on production.
 - [ ] README and [submission-notes.md](submission-notes.md) finished; deploy from a clean
       `main`; tag `v1.0.0`.
+
+### Releases
+
+A GitHub-source release records no commit, so this table is the record. Add a row with
+each deploy.
+
+| Release | When (UTC)       | Code                                                         | Checked on the live site                                                                                                                                                           |
+| ------- | ---------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #1      | 2026-11-19 16:30 | The scaffold                                                 | It loads                                                                                                                                                                           |
+| #2, #3  | 2026-11-19 17:38 | The day-1 spikes, then rolled back to #1                     | Spikes S1 to S7 ([lessons](lessons.md))                                                                                                                                            |
+| #4      | 2026-11-19 21:59 | `main` at `6d09dec`, from a folder with two uncommitted docs | As a visitor: landing, empty list, not-found, sign-in gate; no console errors; the close task runs every minute                                                                    |
+| #5      | 2026-11-19 22:46 | `main` at `2c2b17a`, from a clean `main`                     | The review's fixes: every `/ws` path but the app's room is 404; integrations and agent tools 404; upload 405; a visitor's write to `canvas-settings` refused; the list still loads |
+
+Not checked on any release: anything signed in (create, submit, edit, the close).
 
 ### The independent review, 2026-11-19
 

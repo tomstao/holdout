@@ -462,11 +462,19 @@ After the deployed run the four spike collections were empty and the file storag
 
 - **A deploy ships the folder as it is, not `main`.** The owner deployed while the agent
   had the folder on a docs branch with two uncommitted files. The deploy said so
-  ("shipping the working tree of docs/readme WITH uncommitted changes") and recorded no
-  commit. The two files were `README.md` and a doc, so the live code equals `main`, but
-  nothing proves it afterwards. Before handing a deploy to the owner: the folder on
-  `main`, `git status` clean, and say so. `npx deepspace releases` shows a release made
-  otherwise as "dirty worktree".
+  ("shipping the working tree of docs/readme WITH uncommitted changes"). The two files
+  were `README.md` and a doc, so the live code equals `main`. Before handing a deploy to
+  the owner: the folder on `main`, `git status` clean, and say so.
+  `npx deepspace releases` marks a release made otherwise as "dirty worktree".
+- **A GitHub-source release records no commit, clean or not.** The next deploy, from a
+  clean `main`, said "GitHub-source releases record no commit lineage". The agent had
+  told the owner it would be traceable; it is not. The record of which commit a release
+  is lives in [plan.md](plan.md#releases), written at each deploy.
+- **A copied command carries the sentence's full stop.** "`npx deepspace deploy`." was
+  run as `deploy.` and failed. Put a command for someone to run on its own line.
+- **The owner's `!` commands run where the session is.** After working in the second
+  worktree the session was still there. Return to the main folder before asking for a
+  deploy.
 - **What can be checked on the live site without writing to it:** the landing's HTML
   with `curl` (title, headline, canonical, theme); a signed-out browser visit through
   Playwright pointed at the live URL (the landing animates, its button reaches `/home`,
@@ -540,3 +548,14 @@ After the deployed run the four spike collections were empty and the file storag
 - **Comments are claims too.** Four comments said members can trigger a task or read job
   rows; after ADR 0016 they cannot reach those rooms. A decision that removes a surface
   should be followed by a search for the sentences that relied on it.
+
+## 2026-11-19: checking the fixes on the live site (release #5)
+
+- **A fix is not live until it is seen live.** After the redeploy: the removed routes
+  answer 404, an upload 405, the app's room 426 to a plain request; a visitor's write to
+  `canvas-settings` is refused and nothing is stored; the list still loads through the
+  one route that is left. Requests chosen to be harmless either way, and the write probe
+  sent only after the routes showed the new Worker was serving.
+- **Git Bash rewrites a path that starts with `/` in a command's arguments**
+  (`/home` became `C:/Program Files/Git/home`). `MSYS_NO_PATHCONV=1` stops it, and then
+  applies to every argument, output files included.
