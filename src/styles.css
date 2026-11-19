@@ -307,8 +307,35 @@
   animation: row-flash 1.2s ease-out;
 }
 
+/*
+ * The viewer's own row on a leaderboard stays in sight (spec F3). While its
+ * place is below the fold it rests on the bottom edge of the scrolling page;
+ * scrolled past, on the top edge; in between it is an ordinary row.
+ *
+ * Set on the cells, where every browser honours `position: sticky`. The rules
+ * above and below are shadows: a collapsed table's borders do not travel with
+ * a stuck cell. No ancestor between the table and the page may scroll, or the
+ * row would stick to that instead.
+ */
+.my-row > td {
+  position: sticky;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  background-color: var(--color-muted);
+  box-shadow:
+    inset 0 1px 0 var(--color-border),
+    inset 0 -1px 0 var(--color-border);
+}
+
+/* The cells are painted, so the row's own flash has to play on them. */
+.my-row.row-flash > td {
+  animation: row-flash 1.2s ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .row-flash {
+  .row-flash,
+  .my-row.row-flash > td {
     animation: none;
   }
 

@@ -135,19 +135,34 @@ function PublicBoard({
   const metric = METRIC_INFO[competition.metric]
   const mine = viewerId ? rows.find((row) => row.participantId === viewerId) : undefined
 
+  // Speaks the viewer's own rank when it changes, and nothing else: the text
+  // depends on their rank alone. Rendered from the start, empty, because a
+  // screen reader announces changes to a region it already knows.
+  const announcement = (
+    <p data-testid="my-rank-live" aria-live="polite" className="sr-only">
+      {mine && !intro ? `Your rank is ${mine.rank}.` : ''}
+    </p>
+  )
+
   if (rows.length === 0) {
     return (
-      <EmptyState
-        icon={<TrophyIcon />}
-        title="No submissions yet."
-        description={onSubmitClick ? 'The first one sets the bar.' : 'Nobody submitted.'}
-        action={onSubmitClick ? { label: 'Submit predictions', onClick: onSubmitClick } : undefined}
-      />
+      <>
+        {announcement}
+        <EmptyState
+          icon={<TrophyIcon />}
+          title="No submissions yet."
+          description={onSubmitClick ? 'The first one sets the bar.' : 'Nobody submitted.'}
+          action={
+            onSubmitClick ? { label: 'Submit predictions', onClick: onSubmitClick } : undefined
+          }
+        />
+      </>
     )
   }
 
   return (
     <div className="space-y-3">
+      {announcement}
       <p className="text-sm text-muted-foreground">
         {intro ?? (
           <>
@@ -166,7 +181,8 @@ function PublicBoard({
           </>
         )}
       </p>
-      <div className="overflow-x-auto">
+      {/* No scrolling wrapper: the viewer's row sticks to the page (`my-row`). */}
+      <div>
         <table data-testid="leaderboard" className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted-foreground">
@@ -199,12 +215,12 @@ function PublicBoard({
                   aria-current={isMine ? 'true' : undefined}
                   className={cn(
                     'border-b border-border',
-                    isMine && 'bg-muted',
+                    isMine && 'my-row',
                     row.latestAt > openedAt && 'row-flash',
                   )}
                 >
                   <td className="py-2.5 pr-3 text-right font-mono tabular-nums">{row.rank}</td>
-                  <td className="py-2.5 pr-3 text-foreground">
+                  <td className="py-2.5 pr-3 [overflow-wrap:anywhere] text-foreground">
                     {row.participantName}
                     {isMine && <span className="ml-2 text-xs text-muted-foreground">(you)</span>}
                   </td>
