@@ -33,9 +33,9 @@ agent repeats them. Newest at the bottom. Each entry: what happened, what to do 
   match the `(app)` route group with `?app?`.
 - **The product-polish colour rule must allow `shadow-[...rgba()]`:** DeepSpace's theme
   docs prescribe literal shadows, and the scaffold's Dialog uses one.
-- **typescript-eslint and `tsc` can disagree on an empty registry:** `Object.entries(x as
-T)` is "unnecessary" to the linter and necessary to the compiler. Annotate a variable
-  (`const r: T = x`) instead of asserting.
+- **typescript-eslint and `tsc` can disagree on an empty registry:** the linter calls
+  an `as` assertion inside `Object.entries()` unnecessary, the compiler needs it.
+  Annotate a variable (`const r: T = x`) instead of asserting.
 - **Composite TypeScript projects refuse imports from outside the project (TS6307).** Code
   both runtimes need, such as the action client's wire protocol, lives in
   `src/contracts`.
