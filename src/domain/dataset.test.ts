@@ -320,6 +320,24 @@ describe('validateDataset: refused files', () => {
     ])
   })
 
+  it('reports regression targets too large to score', () => {
+    const result = rejected(regression(['1', '1e200'], ['-2e150', '3']))
+    expect(result.issues).toEqual([
+      {
+        file: 'train',
+        row: 3,
+        column: 'price',
+        message: '"1e200" is too large to score. Use a number between -1e100 and 1e100.',
+      },
+      {
+        file: 'solution',
+        row: 2,
+        column: 'price',
+        message: '"-2e150" is too large to score. Use a number between -1e100 and 1e100.',
+      },
+    ])
+  })
+
   it('cuts a long value in a message', () => {
     const long = 'x'.repeat(60)
     const message = rejected(regression([long], ['1', '2'])).issues[0]?.message

@@ -157,6 +157,52 @@ describe('checkPredictionsFile', () => {
     ])
   })
 
+  it('refuses a number too large to score, by row', () => {
+    const format: PredictionsFormat = {
+      idColumn: 'id',
+      targetColumn: 'price',
+      taskType: 'regression',
+      testRows: 4,
+    }
+    const result = checkPredictionsFile(
+      file(
+        [
+          ['t1', '1e100'],
+          ['t2', '-1e100'],
+          ['t3', '1e200'],
+          ['t4', '-1.5e101'],
+        ],
+        ['id', 'price'],
+      ),
+      format,
+    )
+    expect(problems(result)).toEqual([
+      {
+        row: 4,
+        column: 'price',
+        message: '"1e200" is too large to score. Use a number between -1e100 and 1e100.',
+      },
+      {
+        row: 5,
+        column: 'price',
+        message: '"-1.5e101" is too large to score. Use a number between -1e100 and 1e100.',
+      },
+    ])
+  })
+
+  it('names at most twelve of the columns it found, whatever the file holds', () => {
+    // One line of commas: two million empty column names in a 2 MB file.
+    const result = checkPredictionsFile(','.repeat(1_999_999), FORMAT)
+    const found = problems(result)
+    expect(found).toHaveLength(2)
+    const twelve = Array.from({ length: 12 }, () => '""').join(', ')
+    for (const issue of found) {
+      expect(issue.message).toBe(
+        `The file has no column with this name. Its columns are: ${twelve}, ….`,
+      )
+    }
+  })
+
   it('counts the rows against the number of test rows', () => {
     expect(problems(checkPredictionsFile(file([['t1', 'Adelie']]), FORMAT))).toEqual([
       { message: 'The file has 1 row; the competition has 3 test rows.' },
