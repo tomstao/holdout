@@ -44,6 +44,13 @@ export function useSubmissions(competitionId: string) {
   return { submissions, loading: status === 'loading' }
 }
 
+/** The final standings the close job wrote; empty until the competition is closed. */
+export function useFinalStandings(competitionId: string) {
+  const { records, status } = useCollection('final_standings', { where: { competitionId } })
+  const standings = useMemo(() => records.map((record) => record.data), [records])
+  return { standings, loading: status === 'loading' }
+}
+
 /** The current time, updated every `intervalMs`. */
 export function useNow(intervalMs = 1000): number {
   const [now, setNow] = useState(() => Date.now())

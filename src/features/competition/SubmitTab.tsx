@@ -15,14 +15,20 @@ import { megabytes } from '../../domain/csv'
 import { compareScores } from '../../domain/metrics'
 import { checkPredictionsFile, PREDICTIONS_LIMITS } from '../../domain/predictions'
 import { formatScore } from '../../domain/ranking'
-import { acceptsSubmissions, nextUtcMidnight, timeLeft, utcDay } from '../../domain/time'
-import { useNow, type Submission } from './hooks'
+import type { ChosenSubmission } from '../../domain/ranking'
+import { nextUtcMidnight, timeLeft, utcDay, type Phase } from '../../domain/time'
+import type { Submission } from './hooks'
 
 interface SubmitTabProps {
   competitionId: string
   competition: CompetitionRecord
+  phase: Phase
+  now: number
   submissions: readonly Submission[]
+  /** After the close: the viewer's submissions that counted, with their private scores. */
+  chosen: readonly ChosenSubmission[]
   viewerId: string | null
+  onShowLeaderboard: () => void
 }
 
 interface Picked {
@@ -34,9 +40,17 @@ interface Picked {
 
 const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`
 
-export function SubmitTab({ competitionId, competition, submissions, viewerId }: SubmitTabProps) {
+export function SubmitTab({
+  competitionId,
+  competition,
+  phase,
+  now,
+  submissions,
+  chosen,
+  viewerId,
+  onShowLeaderboard,
+}: SubmitTabProps) {
   const toast = useToast()
-  const now = useNow()
   const [picked, setPicked] = useState<Picked | undefined>()
   const [submitting, setSubmitting] = useState(false)
   const [showSignIn, setShowSignIn] = useState(false)
@@ -86,7 +100,8 @@ export function SubmitTab({ competitionId, competition, submissions, viewerId }:
     )
   }
 
-  const open = competition.status === 'open' && acceptsSubmissions(competition.deadline, now)
+  const open = phase === 'open'
+  const privateScoreOf = new Map(chosen.map((choice) => [choice.submissionId, choice.privateScore]))
   const today = utcDay(now)
   const usedToday = mine.filter((submission) => submission.utcDay === today).length
   const left = competition.dailyLimit - usedToday
@@ -150,9 +165,18 @@ export function SubmitTab({ competitionId, competition, submissions, viewerId }:
   return (
     <div className="space-y-8 py-4">
       {!open ? (
-        <p data-testid="submit-closed" className="text-sm text-foreground">
-          This competition has closed. It no longer accepts submissions.
-        </p>
+        <div data-testid="submit-closed" className="space-y-3 text-sm text-foreground">
+          <p>
+            {phase === 'closed'
+              ? 'This competition has closed. It no longer accepts submissions.'
+              : 'The deadline has passed. Final standings are being computed.'}
+          </p>
+          {phase === 'closed' && (
+            <Button variant="outline" size="sm" onClick={onShowLeaderboard}>
+              See the final standings
+            </Button>
+          )}
+        </div>
       ) : (
         <section className="space-y-4">
           <p data-testid="submit-usage" className="text-sm text-foreground">
@@ -210,6 +234,11 @@ export function SubmitTab({ competitionId, competition, submissions, viewerId }:
                 <th scope="col" className="py-2 text-right font-medium">
                   Public score
                 </th>
+                {phase === 'closed' && (
+                  <th scope="col" className="py-2 pl-3 text-right font-medium">
+                    Private score
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -233,6 +262,23 @@ export function SubmitTab({ competitionId, competition, submissions, viewerId }:
                     )}
                     {formatScore(submission.publicScore, competition.scoreDecimals)}
                   </td>
+                  {phase === 'closed' && (
+                    <td
+                      className="py-2 pl-3 text-right font-mono text-foreground tabular-nums"
+                      title={
+                        privateScoreOf.has(submission.submissionId)
+                          ? 'One of your two submissions that counted.'
+                          : 'Not one of your two best public submissions, so it did not count.'
+                      }
+                    >
+                      {privateScoreOf.has(submission.submissionId)
+                        ? formatScore(
+                            privateScoreOf.get(submission.submissionId) ?? 0,
+                            competition.scoreDecimals,
+                          )
+                        : '–'}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

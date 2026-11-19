@@ -8,10 +8,16 @@ import { buttonVariants, Tabs, TabsContent, TabsList, TabsTrigger } from '@/comp
 import { APP_NAME } from '../../../constants'
 import { CompetitionHeader } from '../../../features/competition/CompetitionHeader'
 import { DataTab } from '../../../features/competition/DataTab'
-import { useCompetition, useSubmissions } from '../../../features/competition/hooks'
+import {
+  useCompetition,
+  useFinalStandings,
+  useNow,
+  useSubmissions,
+} from '../../../features/competition/hooks'
 import { LeaderboardTab } from '../../../features/competition/LeaderboardTab'
 import { OverviewTab } from '../../../features/competition/OverviewTab'
 import { SubmitTab } from '../../../features/competition/SubmitTab'
+import { phaseAt } from '../../../domain/time'
 
 const TABS = ['leaderboard', 'overview', 'data', 'submit'] as const
 type Tab = (typeof TABS)[number]
@@ -24,6 +30,8 @@ export default function CompetitionPage() {
   const { userId } = useAuth()
   const { competition, loading } = useCompetition(id)
   const { submissions, loading: submissionsLoading } = useSubmissions(id)
+  const { standings, loading: standingsLoading } = useFinalStandings(id)
+  const now = useNow()
 
   if (!competition) {
     return (
@@ -48,6 +56,7 @@ export default function CompetitionPage() {
   }
 
   const isHost = userId === competition.hostId
+  const phase = phaseAt(competition.status, competition.deadline, now)
   const requested = params.get('tab')
   const tab: Tab =
     isTab(requested) && !(requested === 'submit' && isHost) ? requested : 'leaderboard'
@@ -59,7 +68,7 @@ export default function CompetitionPage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-6 py-10">
       <title>{`${competition.title} · ${APP_NAME}`}</title>
-      <CompetitionHeader competition={competition} />
+      <CompetitionHeader competition={competition} phase={phase} now={now} />
       <Tabs value={tab} onValueChange={choose} className="mt-6">
         <TabsList>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
@@ -70,8 +79,10 @@ export default function CompetitionPage() {
         <TabsContent value="leaderboard">
           <LeaderboardTab
             competition={competition}
+            phase={phase}
             submissions={submissions}
-            loading={submissionsLoading}
+            standings={standings}
+            loading={submissionsLoading || standingsLoading}
             viewerId={userId}
             onSubmitClick={
               isHost
@@ -93,8 +104,14 @@ export default function CompetitionPage() {
             <SubmitTab
               competitionId={id}
               competition={competition}
+              phase={phase}
+              now={now}
               submissions={submissions}
+              chosen={standings.find((row) => row.participantId === userId)?.chosen ?? []}
               viewerId={userId}
+              onShowLeaderboard={() => {
+                choose('leaderboard')
+              }}
             />
           </TabsContent>
         )}
