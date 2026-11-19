@@ -1,10 +1,11 @@
 /**
- * The real things createCompetition needs from the platform: the host's
- * private file folder, the clock, randomness and ids. Kept apart from the
- * handler so its unit test never loads the Worker SDK.
+ * The real things the actions need from the platform: the host's private
+ * file folder, the clock, randomness and ids. Kept apart from the handlers so
+ * their unit tests never load the Worker SDK.
  */
 import { appFiles } from 'deepspace/worker'
 import type { CreateCompetitionDeps } from './create-competition'
+import type { SubmitPredictionsDeps } from './submit-predictions'
 
 export const createCompetitionDeps: CreateCompetitionDeps = {
   hostFiles(env, hostId) {
@@ -25,3 +26,5 @@ export const createCompetitionDeps: CreateCompetitionDeps = {
   seed: () => crypto.getRandomValues(new Uint32Array(1))[0] ?? 0,
   newId: () => crypto.randomUUID(),
 }
+
+export const submitPredictionsDeps: SubmitPredictionsDeps = { now: () => Date.now() }

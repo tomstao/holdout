@@ -10,10 +10,12 @@ import type { ActionHandler } from 'deepspace/worker'
 import type { Env } from '../../worker'
 import type { ActionName } from '../contracts/actions'
 import { makeCreateCompetition } from './create-competition'
-import { createCompetitionDeps } from './host-files'
+import { createCompetitionDeps, submitPredictionsDeps } from './host-files'
+import { makeSubmitPredictions } from './submit-predictions'
 
 const handlers = {
   createCompetition: makeCreateCompetition(createCompetitionDeps),
+  submitPredictions: makeSubmitPredictions(submitPredictionsDeps),
 } satisfies Record<ActionName, ActionHandler<Env>>
 
 /** The shape the scaffold's action route expects. */

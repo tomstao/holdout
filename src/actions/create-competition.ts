@@ -18,6 +18,7 @@ import { validateDataset } from '../domain/dataset'
 import { deadlineProblem } from '../domain/time'
 import { implement } from './implement'
 import { typedRecords } from './records'
+import { displayName } from './shared'
 
 /** The host's private file folder (`self` scope), as the Worker uses it. */
 export interface HostFiles {
@@ -98,10 +99,7 @@ export function makeCreateCompetition(deps: CreateCompetitionDeps) {
       if (!key.success) throw new Error(`answer_keys: ${key.error}`)
       keySaved = true
 
-      // The users row is the caller's own; only the display name leaves it.
-      const user = await tools.get<{ name?: string }>('users', userId)
-      const name = user.success ? (user.data.record.data.name ?? '').trim() : ''
-      const hostName = name === '' ? 'Host' : name
+      const hostName = await displayName(tools, userId, 'Host')
 
       const fileRef = ({ kind, name, text }: (typeof uploads)[number]) => ({
         key: refs[kind],
