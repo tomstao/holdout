@@ -29,6 +29,8 @@ export interface FakeRoom {
 export interface FakeRoomOptions {
   /** Composite unique keys to enforce on create, per collection, as the schemas declare. */
   uniqueOn?: Record<string, string[]>
+  /** When a record was created, by record id, as ISO text. Others share one fixed time. */
+  createdAt?: Record<string, string>
 }
 
 const unsupported = (name: string) => () => Promise.reject(new Error(`fake tools: no ${name}`))
@@ -79,13 +81,10 @@ export function fakeRoom(
       error: `Duplicate: a record with ${values} already exists in ${collection}`,
     }
   }
-  const envelope = (recordId: string, data: Row) => ({
-    recordId,
-    data,
-    createdBy: 'fake',
-    createdAt: '2026-11-19T00:00:00.000Z',
-    updatedAt: '2026-11-19T00:00:00.000Z',
-  })
+  const envelope = (recordId: string, data: Row) => {
+    const createdAt = options.createdAt?.[recordId] ?? '2026-11-19T00:00:00.000Z'
+    return { recordId, data, createdBy: 'fake', createdAt, updatedAt: createdAt }
+  }
 
   const tools: ActionTools = {
     create(collection, data, recordId) {
