@@ -211,6 +211,11 @@ species classification, 344 rows; [research](research/competition-domain.md#6-de
 Its labels are public on the internet, so it is labelled as practice and its row IDs are
 shuffled and renumbered. Its deadline is kept in the future during review.
 
+The three files come from `node scripts/demo/make-demo.ts`: 206 training rows and 136
+test rows, each species split 60/40, missing values left as empty cells. The seed of
+the shuffle and the files themselves stay out of the repository, because either one is
+the answer key.
+
 ## Limits and numbers
 
 | Thing                    | Limit                                                               | Why                                                                       |

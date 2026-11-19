@@ -97,7 +97,8 @@ holdout/
 │  │  ├─ (app)/c/[id].tsx    /c/:id       competition page, public: header and four tabs (built)
 │  │  └─ (app)/(protected)/host/new.tsx  /host/new   create form, sign-in required    (built)
 │  └─ themes.css, themes.ts  the Holdout theme                                          (built)
-├─ scripts/                  design-gate.ts; contrast.ts and its test (theme AA); favicon.py (built)
+├─ scripts/                  design-gate.ts; contrast.ts and its test (theme AA); favicon.py;
+│                            demo/: the demo competition's files from Palmer Penguins   (built)
 ├─ tests/                    Playwright specs run by `npx deepspace test run`
 └─ docs/
 ```
