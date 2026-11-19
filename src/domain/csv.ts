@@ -72,6 +72,13 @@ export function megabytes(bytes: number): string {
   return `${String(Math.ceil(bytes / 10_000) / 100)} MB`
 }
 
+/** A file's size for display: `132 B`, `1.3 kB`, `4.82 MB`. */
+export function fileSize(bytes: number): string {
+  if (bytes < 1000) return `${bytes} B`
+  if (bytes < 1_000_000) return `${(bytes / 1000).toFixed(1)} kB`
+  return `${(bytes / 1_000_000).toFixed(2)} MB`
+}
+
 function plural(count: number, noun: string): string {
   return `${count.toLocaleString('en-US')} ${noun}${count === 1 ? '' : 's'}`
 }

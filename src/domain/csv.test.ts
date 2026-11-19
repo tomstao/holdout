@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   columnValues,
   fileRow,
+  fileSize,
   findColumn,
   formatCsv,
   megabytes,
@@ -241,6 +242,15 @@ describe('helpers', () => {
     expect(megabytes(1_500_000)).toBe('1.5 MB')
     expect(megabytes(5_000_001)).toBe('5.01 MB')
     expect(megabytes(1)).toBe('0.01 MB')
+  })
+
+  it('prints a file size in the unit that fits', () => {
+    expect(fileSize(0)).toBe('0 B')
+    expect(fileSize(999)).toBe('999 B')
+    expect(fileSize(1000)).toBe('1.0 kB')
+    expect(fileSize(1340)).toBe('1.3 kB')
+    expect(fileSize(999_999)).toBe('1000.0 kB')
+    expect(fileSize(4_816_000)).toBe('4.82 MB')
   })
 
   it('measures UTF-8 length', () => {

@@ -99,7 +99,8 @@ function shown(value: string): string {
   return value.length > 40 ? `"${value.slice(0, 40)}…"` : `"${value}"`
 }
 
-const FILE_LIMITS: Record<DatasetFile, CsvLimits> = {
+/** The limits `parseCsv` applies to each of the three files. */
+export const DATASET_FILE_LIMITS: Record<DatasetFile, CsvLimits> = {
   train: { maxBytes: DATASET_LIMITS.trainBytes },
   test: { maxBytes: DATASET_LIMITS.testBytes },
   solution: { maxBytes: DATASET_LIMITS.solutionBytes, maxRows: DATASET_LIMITS.solutionRows },
@@ -253,9 +254,9 @@ export function validateDataset(input: DatasetInput): DatasetResult {
       logs[file].add(issue)
     }
 
-  const train = readTable(input.files.train, FILE_LIMITS.train, logs.train)
-  const test = readTable(input.files.test, FILE_LIMITS.test, logs.test)
-  const solution = readTable(input.files.solution, FILE_LIMITS.solution, logs.solution)
+  const train = readTable(input.files.train, DATASET_FILE_LIMITS.train, logs.train)
+  const test = readTable(input.files.test, DATASET_FILE_LIMITS.test, logs.test)
+  const solution = readTable(input.files.solution, DATASET_FILE_LIMITS.solution, logs.solution)
 
   // train.csv: IDs and targets.
   let trainTargets: string[] | undefined
