@@ -5,6 +5,7 @@ import {
   DAY_MS,
   DEADLINE_MAX_LEAD_MS,
   DEADLINE_MIN_LEAD_MS,
+  deadlineChangeProblem,
   deadlineProblem,
   HOUR_MS,
   nextUtcMidnight,
@@ -125,5 +126,38 @@ describe('timeLeft to the minute', () => {
     for (const ms of [HOUR_MS, 3 * HOUR_MS + 12 * 60_000 + 5_000, 2 * DAY_MS + 4 * HOUR_MS]) {
       expect(timeLeft(ms, 'minute')).toBe(timeLeft(ms))
     }
+  })
+})
+
+describe('deadlineChangeProblem', () => {
+  const CURRENT = NOW + 30 * 60_000
+
+  it('lets a deadline stay where it is, even when it is minutes away', () => {
+    expect(deadlineChangeProblem(CURRENT, CURRENT, NOW)).toBeUndefined()
+    expect(deadlineChangeProblem(CURRENT, CURRENT, CURRENT - 1)).toBeUndefined()
+  })
+
+  it('lets a deadline move later, up to 90 days from now', () => {
+    expect(deadlineChangeProblem(CURRENT, CURRENT + 1, NOW)).toBeUndefined()
+    expect(deadlineChangeProblem(CURRENT, NOW + 90 * DAY_MS, NOW)).toBeUndefined()
+    expect(deadlineChangeProblem(CURRENT, NOW + 90 * DAY_MS + 1, NOW)).toBe(
+      'The deadline must be within 90 days from now.',
+    )
+  })
+
+  it('never lets a deadline move earlier', () => {
+    expect(deadlineChangeProblem(CURRENT, CURRENT - 1, NOW)).toBe(
+      'The deadline can only move later.',
+    )
+    expect(deadlineChangeProblem(NOW + 30 * DAY_MS, NOW + 29 * DAY_MS, NOW)).toBe(
+      'The deadline can only move later.',
+    )
+  })
+
+  it('refuses what is not a time', () => {
+    expect(deadlineChangeProblem(CURRENT, Number.NaN, NOW)).toBe('The deadline is not a date.')
+    expect(deadlineChangeProblem(CURRENT, Number.POSITIVE_INFINITY, NOW)).toBe(
+      'The deadline is not a date.',
+    )
   })
 })
