@@ -3,9 +3,9 @@
  * handler can be unit-tested without a Worker. It keeps rows per collection,
  * records every call in order and can be told to fail one.
  *
- * It does not imitate permissions (action tools run with RBAC off) or
- * `uniqueOn`; tests that depend on those run against the real room in
- * tests/*.spec.ts.
+ * It does not imitate permissions: action tools run with RBAC off. It does
+ * imitate `uniqueOn` for the collections a test names, with the room's
+ * refusal text. Tests that depend on the real room run in tests/*.spec.ts.
  */
 import type { ActionResult, ActionTools } from 'deepspace/worker'
 
@@ -19,16 +19,30 @@ export interface FakeRoom {
   calls: string[]
   /** Make the next call with this name fail, for example `create:competitions`. */
   failOn(call: string): void
+  /**
+   * Run `effect` just before the next call with this name, once: a concurrent
+   * request that lands between two of the handler's calls.
+   */
+  before(call: string, effect: () => void): void
+}
+
+export interface FakeRoomOptions {
+  /** Composite unique keys to enforce on create, per collection, as the schemas declare. */
+  uniqueOn?: Record<string, string[]>
 }
 
 const unsupported = (name: string) => () => Promise.reject(new Error(`fake tools: no ${name}`))
 
-export function fakeRoom(seed: Record<string, Record<string, Row>> = {}): FakeRoom {
+export function fakeRoom(
+  seed: Record<string, Record<string, Row>> = {},
+  options: FakeRoomOptions = {},
+): FakeRoom {
   const collections = new Map<string, Map<string, Row>>(
     Object.entries(seed).map(([name, rows]) => [name, new Map(Object.entries(rows))]),
   )
   const calls: string[] = []
   const failing = new Set<string>()
+  const pending = new Map<string, () => void>()
   let generated = 0
 
   const rows = (collection: string): Map<string, Row> => {
@@ -39,8 +53,32 @@ export function fakeRoom(seed: Record<string, Record<string, Row>> = {}): FakeRo
     }
     return found
   }
-  const refused = (call: string): ActionResult<never> | undefined =>
-    failing.delete(call) ? { success: false, error: `fake failure of ${call}` } : undefined
+  const refused = (call: string): ActionResult<never> | undefined => {
+    const effect = pending.get(call)
+    if (effect) {
+      pending.delete(call)
+      effect()
+    }
+    return failing.delete(call) ? { success: false, error: `fake failure of ${call}` } : undefined
+  }
+  /** The room's `uniqueOn` refusal, if `data` repeats another row's key. */
+  const duplicate = (
+    collection: string,
+    id: string,
+    data: Row,
+  ): ActionResult<never> | undefined => {
+    const fields = options.uniqueOn?.[collection]
+    if (!fields) return undefined
+    const clash = [...rows(collection)].some(
+      ([otherId, other]) => otherId !== id && fields.every((field) => other[field] === data[field]),
+    )
+    if (!clash) return undefined
+    const values = fields.map((field) => `${field}=${String(data[field])}`).join(', ')
+    return {
+      success: false,
+      error: `Duplicate: a record with ${values} already exists in ${collection}`,
+    }
+  }
   const envelope = (recordId: string, data: Row) => ({
     recordId,
     data,
@@ -55,7 +93,10 @@ export function fakeRoom(seed: Record<string, Record<string, Row>> = {}): FakeRo
       calls.push(`create:${collection}:${id}`)
       const failure = refused(`create:${collection}`)
       if (failure) return Promise.resolve(failure)
-      rows(collection).set(id, { ...rows(collection).get(id), ...data })
+      const merged = { ...rows(collection).get(id), ...data }
+      const clash = duplicate(collection, id, merged)
+      if (clash) return Promise.resolve(clash)
+      rows(collection).set(id, merged)
       return Promise.resolve({ success: true, data: { recordId: id } })
     },
     update(collection, recordId, data) {
@@ -84,6 +125,8 @@ export function fakeRoom(seed: Record<string, Record<string, Row>> = {}): FakeRo
     }) as ActionTools['get'],
     query: ((collection: string, options?: { where?: Row; limit?: number }) => {
       calls.push(`query:${collection}`)
+      const failure = refused(`query:${collection}`)
+      if (failure) return Promise.resolve(failure)
       const where = Object.entries(options?.where ?? {})
       const records = [...rows(collection)]
         .filter(([, data]) => where.every(([field, value]) => data[field] === value))
@@ -96,5 +139,11 @@ export function fakeRoom(seed: Record<string, Record<string, Row>> = {}): FakeRo
     registerUser: unsupported('registerUser'),
   }
 
-  return { tools, rows, calls, failOn: (call) => failing.add(call) }
+  return {
+    tools,
+    rows,
+    calls,
+    failOn: (call) => failing.add(call),
+    before: (call, effect) => pending.set(call, effect),
+  }
 }
