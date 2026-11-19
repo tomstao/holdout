@@ -165,3 +165,22 @@ account. S3 used the real platform file storage. The questions are in
 - **scikit-learn is not installed on this machine.** The fixtures were generated from a
   throwaway virtual environment: `python -m venv <dir>`, then
   `pip install --index-url https://pypi.org/simple -r scripts/fixtures/requirements.txt`.
+
+**Pull requests and `main`**
+
+- **`main` has been protected since 2026-11-19** (after day 1 merged): a pull request is
+  required, the `quality` check must pass, conversations must be resolved, history is
+  linear, and none of it can be bypassed by the owner. No approval is required, because
+  a repository with one person has nobody to give it. Read the rules with
+  `gh api repos/tomstao/holdout/branches/main/protection`.
+- **A stacked pull request is merged when its head reaches its own base, not when its
+  commits reach `main`.** Day 1 was four pull requests, each based on the one before.
+  Fast-forwarding `main` to the top of the stack marked only the first as merged; the
+  others needed their base branches moved forward too. With `main` protected that
+  shortcut is gone, and "Rebase and merge" rewrites commit ids, so every later pull
+  request of a stack has to be rebased onto `main` and force-pushed before it merges.
+  Prefer pull requests that are each based on `main`.
+- **Two pull requests that both append to this file, or tick neighbouring lines of
+  `plan.md`, conflict.** That is why day 1 was stacked. To keep pull requests independent,
+  tick the plan and add lessons in the pull request that merges last, or in a small docs
+  pull request afterwards.

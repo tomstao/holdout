@@ -81,6 +81,11 @@ Enforced by ESLint and dependency-cruiser; details in
   pushed `main`.
 - **Commits:** Conventional Commits, one topic per commit and per pull request, small
   enough to review. Hooks must pass; never `--no-verify`.
+- **`main` is protected,** for the owner too. Every change arrives through a pull request
+  whose `quality` check has passed and whose review conversations are resolved. History
+  is linear: merge with "Rebase and merge" (or squash), never a merge commit. No direct
+  pushes, force pushes or deletion. Base each pull request on `main`; if one must build
+  on another, see [docs/lessons.md](docs/lessons.md) for what stacking costs.
 - **Docs move with code:** update the spec, architecture or decision a change touches in
   the same pull request; tick [docs/plan.md](docs/plan.md); add new gotchas to
   [docs/lessons.md](docs/lessons.md).
