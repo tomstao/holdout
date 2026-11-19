@@ -306,17 +306,17 @@ its input.
 
 ## Limits and failure modes
 
-| Limit                  | Value                                          | Where it is enforced                  |
-| ---------------------- | ---------------------------------------------- | ------------------------------------- |
-| Answer key record      | 1.5 MB of JSON (UTF-8 bytes), 50,000 rows      | domain validation, before any write   |
-| Action request body    | under 10 MB (train 5 + test 2 + solution 1.5)  | contracts (`max` on each CSV string)  |
-| App file allocation    | 1.0 GiB shown for this app (docs: 128 MiB)     | platform (`storage_quota_exceeded`)   |
-| Records per query      | no cap from action tools: 5,000 rows, 1.97 MB  | explicit `limit` and `offset` in code |
-| Worker CPU per request | not documented; a submission needs 35 to 46 ms | to see on the deployed app (S2)       |
-| Leaderboard snapshot   | about 390 bytes per submission, in one frame   | spec limit of 5,000 submissions       |
+| Limit                  | Value                                         | Where it is enforced                  |
+| ---------------------- | --------------------------------------------- | ------------------------------------- |
+| Answer key record      | 1.5 MB of JSON (UTF-8 bytes), 50,000 rows     | domain validation, before any write   |
+| Action request body    | under 10 MB (train 5 + test 2 + solution 1.5) | contracts (`max` on each CSV string)  |
+| App file allocation    | 1.0 GiB shown for this app (docs: 128 MiB)    | platform (`storage_quota_exceeded`)   |
+| Records per query      | no cap from action tools: 5,000 rows, 1.97 MB | explicit `limit` and `offset` in code |
+| Worker CPU per request | not documented; the largest submission scores | spec file sizes (spike S2)            |
+| Record writes          | 1,000 per Worker request; about 28 ms each    | few per action; parallel in the job   |
+| Leaderboard snapshot   | about 390 bytes per submission, in one frame  | spec limit of 5,000 submissions       |
 
-The day-1 spikes measured these ([lessons](lessons.md#2026-11-19-day-1-spikes-s1-to-s8)).
-Local `workerd` enforces none of the platform's limits, so the 2 MB row limit, the CPU
-limit, the subrequest limit and the WebSocket message size are confirmed only once they
-have been seen on the deployed app; each keeps its fallback in
-[plan.md](plan.md#de-risking-spikes-day-1) until then.
+The day-1 spikes measured these locally and on the deployed app
+([lessons](lessons.md#2026-11-19-day-1-spikes-s1-to-s8)). Local `workerd` enforces none of
+the platform's limits and is several times faster, so a number that matters has to come
+from the deployed app.
