@@ -209,6 +209,29 @@ test.describe('the live leaderboard', () => {
       expect(benParticipant).not.toBe(annParticipant)
       await expect(ann.page.getByTestId('my-rank')).toHaveText('You are 2 of 2.')
 
+      // A screen reader is told the viewer's own rank, politely, and only theirs.
+      await expect(ann.page.getByTestId('my-rank-live')).toHaveAttribute('aria-live', 'polite')
+      await expect(ann.page.getByTestId('my-rank-live')).toHaveText('Your rank is 2.')
+      await expect(ben.page.getByTestId('my-rank-live')).toHaveText('Your rank is 1.')
+
+      // The viewer's own row stays in sight. On a window so short that second place is
+      // below the fold, Ann still sees her row; on Ben's page the same row is out of view.
+      // The cells are what sticks; the row's own box stays where the table put it.
+      const annRow = (page: Page) =>
+        page.getByTestId('leaderboard').locator(`[data-participant="${annParticipant}"] td`).nth(1)
+      const first = await ann.page.getByTestId('leaderboard-row').first().boundingBox()
+      // The window ends halfway down first place, so second place is wholly below it.
+      const short = {
+        width: 1280,
+        height: Math.round((first?.y ?? 0) + (first?.height ?? 0) / 2),
+      }
+      await Promise.all([ann.page.setViewportSize(short), ben.page.setViewportSize(short)])
+      await expect(annRow(ann.page)).toBeInViewport({ ratio: 0.9 })
+      await expect(annRow(ben.page)).not.toBeInViewport()
+      await Promise.all(
+        [ann, ben].map((viewer) => viewer.page.setViewportSize({ width: 1280, height: 720 })),
+      )
+
       // Ann ties Ben at 1.0 with her second and last submission. Ben's best came first,
       // so he keeps first place on both pages.
       await submitThroughThePage(ann.page, SOLUTION_CSV)
