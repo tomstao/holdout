@@ -64,19 +64,34 @@ signedIn.describe('createCompetition', () => {
     ])
   })
 
-  signedIn('refuses a deadline less than an hour ahead', async ({ users }) => {
+  // A deployed app wants a deadline at least an hour ahead. Locally the minimum is 15
+  // seconds, so close.spec.ts can watch a competition close (src/actions/host-files.ts);
+  // the hour itself is covered by the action's unit test.
+  signedIn('refuses a deadline that is too close or too far', async ({ users }) => {
     const [host] = await users(1)
     await host.page.goto('/home')
-    const { body } = await callAction(
+    const token = await authToken(host.page)
+    const soon = await callAction(
       host.page,
       'createCompetition',
-      competitionInput({ deadline: Date.now() + 60_000 }),
-      await authToken(host.page),
+      competitionInput({ deadline: Date.now() + 5_000 }),
+      token,
     )
-    expect(body).toMatchObject({
+    expect(soon.body).toMatchObject({
       success: false,
       code: 'invalid_input',
-      issues: [{ path: ['deadline'], message: 'The deadline must be at least 1 hour from now.' }],
+      issues: [{ path: ['deadline'], message: 'The deadline must be at least 15 s from now.' }],
+    })
+    const far = await callAction(
+      host.page,
+      'createCompetition',
+      competitionInput({ deadline: Date.now() + 91 * 86_400_000 }),
+      token,
+    )
+    expect(far.body).toMatchObject({
+      success: false,
+      code: 'invalid_input',
+      issues: [{ path: ['deadline'], message: 'The deadline must be within 90 days from now.' }],
     })
   })
 
