@@ -31,6 +31,8 @@ export interface HostFiles {
 export interface CreateCompetitionDeps {
   hostFiles(env: Env, hostId: string): HostFiles
   now(): number
+  /** The shortest time a deadline may lie ahead: the spec's hour, or seconds in a local test. */
+  minDeadlineLeadMs(env: Env): number
   /** An unpredictable 32-bit seed for the public/private split (src/domain/split.ts). */
   seed(): number
   newId(): string
@@ -40,7 +42,7 @@ const SAMPLE_NAME = 'sample_submission.csv'
 
 export function makeCreateCompetition(deps: CreateCompetitionDeps) {
   return implement(actionContracts.createCompetition, async ({ input, userId, tools, env }) => {
-    const late = deadlineProblem(input.deadline, deps.now())
+    const late = deadlineProblem(input.deadline, deps.now(), deps.minDeadlineLeadMs(env))
     if (late) {
       return fail('invalid_input', 'The deadline is not valid.', [
         { path: ['deadline'], message: late },

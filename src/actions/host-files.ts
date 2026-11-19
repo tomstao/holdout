@@ -4,6 +4,7 @@
  * their unit tests never load the Worker SDK.
  */
 import { appFiles } from 'deepspace/worker'
+import { DEADLINE_MIN_LEAD_MS } from '../domain/time'
 import type { CreateCompetitionDeps } from './create-competition'
 import type { SubmitPredictionsDeps } from './submit-predictions'
 
@@ -23,6 +24,9 @@ export const createCompetitionDeps: CreateCompetitionDeps = {
     }
   },
   now: () => Date.now(),
+  // `deepspace dev` and `deepspace test` set ALLOW_DEBUG_ROUTES; a deploy never does.
+  // There a spec may create a competition due in seconds, to watch it close.
+  minDeadlineLeadMs: (env) => (env.ALLOW_DEBUG_ROUTES === 'true' ? 15_000 : DEADLINE_MIN_LEAD_MS),
   seed: () => crypto.getRandomValues(new Uint32Array(1))[0] ?? 0,
   newId: () => crypto.randomUUID(),
 }

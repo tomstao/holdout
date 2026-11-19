@@ -76,6 +76,7 @@ function fakeFiles(failAt = 0) {
 
 interface Setup {
   room?: FakeRoom
+  minLeadMs?: number
   files?: ReturnType<typeof fakeFiles>
 }
 
@@ -90,6 +91,7 @@ async function create(params: Record<string, unknown>, setup: Setup = {}) {
       return files.files
     },
     now: () => NOW,
+    minDeadlineLeadMs: () => setup.minLeadMs ?? HOUR_MS,
     seed: () => 7,
     newId: () => 'comp_1',
   })
@@ -248,6 +250,15 @@ describe('createCompetition refusals', () => {
 
     const far = await create({ ...VALID, deadline: NOW + 91 * 24 * HOUR_MS })
     expect(far.result.issues?.[0]?.message).toBe('The deadline must be within 90 days from now.')
+  })
+
+  it('accepts a deadline seconds away where the environment allows it, as local tests need', async () => {
+    const soon = await create({ ...VALID, deadline: NOW + 20_000 }, { minLeadMs: 15_000 })
+    expect(soon.result.success).toBe(true)
+    const tooSoon = await create({ ...VALID, deadline: NOW + 10_000 }, { minLeadMs: 15_000 })
+    expect(tooSoon.result.issues).toEqual([
+      { path: ['deadline'], message: 'The deadline must be at least 15 s from now.' },
+    ])
   })
 
   it('refuses files with problems and says where they are', async () => {
