@@ -242,3 +242,14 @@ After the deployed run the four spike collections were empty and the file storag
   after preparing. A rollback is recorded as a new release (release #3 re-deployed #1).
 - **A heredoc that contains an apostrophe fails in this Git Bash even when its
   delimiter is quoted.** Write generated files with an editor or a script file.
+- **commitlint refuses a commit body line over 100 characters.** A long sentence passed
+  with `git commit -m` is one line. Write the message to a file with wrapped lines and
+  use `git commit -F`.
+- **A spec that creates a competition leaves it behind.** There is no delete action, and
+  no client may delete a record. The record stays in the local room (titled
+  `__test-<time>__`); only its files, which are on the real platform storage, can be
+  removed, by the host through `DELETE /api/files/<stored key>?scope=self`.
+- **`appFiles` cannot be imported in a Vitest unit test's subject without loading the
+  Worker SDK.** `create-competition.ts` takes its file store, clock, seed and id source as
+  dependencies; `host-files.ts` holds the real ones and is the only file that imports
+  `deepspace/worker` at runtime.

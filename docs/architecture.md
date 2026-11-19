@@ -65,7 +65,7 @@ holdout/
 │  │  ├─ metrics.ts          accuracy, macro-F1, RMSE, MAE; which direction is better    (built)
 │  │  ├─ scoring.ts          score predictions on the public and the private rows
 │  │  ├─ ranking.ts          leaderboard, tie-breaks, auto-selection of finals, shake-up
-│  │  ├─ time.ts             UTC day key, daily reset time, deadline checks
+│  │  ├─ time.ts             deadline rule (built); UTC day key and daily reset time later
 │  │  └─ *.test.ts           unit and property tests; metric fixtures checked against scikit-learn
 │  ├─ contracts/             Zod contracts shared by both runtimes                         (built)
 │  │  ├─ define.ts result.ts action-client.ts schema-drift.ts                             (built)
@@ -74,9 +74,10 @@ holdout/
 │  │  └─ competitions.ts     record schemas of the five collections; action schemas later (built)
 │  ├─ schemas.ts, schemas/   DeepSpace CollectionSchemas: storage columns and RBAC (scaffold location)
 │  ├─ actions/               Server actions (Worker)
-│  │  ├─ implement.ts records.ts index.ts                                                 (built)
-│  │  ├─ create-competition.ts  submit-predictions.ts  update-competition.ts
-│  ├─ server/                Hono route registration (scaffold) + files-routes.ts
+│  │  ├─ implement.ts records.ts index.ts fakes.ts (in-memory tools for tests)          (built)
+│  │  ├─ create-competition.ts host-files.ts                                              (built)
+│  │  ├─ submit-predictions.ts  update-competition.ts
+│  ├─ server/                Hono route registration (scaffold) + files-routes.ts         (built)
 │  ├─ cron.ts                close-due-competitions task
 │  ├─ jobs.ts                close-competition job
 │  ├─ client/                Browser glue: callAction, useCollection                       (built)
@@ -230,8 +231,9 @@ sequenceDiagram
 ```
 
 The competition record is written last, so a failure part-way leaves no visible
-competition (an orphaned answer key or file is harmless and is listed in
-[plan.md](plan.md) as a cleanup task).
+competition. If a step fails, the action removes the answer key and the files it had
+already stored and answers `internal`; if that clean-up fails too, what is left is an
+answer key or a file nothing points to.
 
 ### Submit
 
