@@ -503,3 +503,24 @@ After the deployed run the four spike collections were empty and the file storag
 - **A guard that parses untrusted frames needs its own tests for nonsense.** The first
   version threw on `"payload": null`; in the Worker that would have been an exception on
   every such frame.
+
+## 2026-11-19: the submit action, after the review
+
+- **"Finite" at parse is not "finite" after arithmetic.** Every prediction was checked
+  to be a finite number, and `1e200` is one. Squared, it is not. Bound the inputs so
+  the arithmetic cannot overflow (`MAX_MAGNITUDE` in `src/domain/text.ts`), and check
+  the result as well.
+- **A typed write can throw where a room would refuse.** `typedRecords.create` parses
+  the row with its contract first, and a contract's `z.number()` rejects NaN by
+  throwing. The clean-up after a failed second write only ran for a returned failure.
+  Clean up in the `catch`, from a variable set by the first write.
+- **When two outcomes must look the same, test that they do.** A huge prediction on a
+  public row and on a private one have to get the same answer, the same number of room
+  calls and no stored row, or the difference says which rows are public.
+- **Order the refusals by cost.** The limit check is one small query; the answer key is
+  1.5 MB. A caller who cannot submit should not make the room read the key.
+- **Quote a little of an untrusted file, never all of it.** The dataset check listed
+  twelve column names; the predictions check listed every one, which turned a 2 MB
+  request into a 24 MB answer. The helper is shared now.
+- **A test double has to be able to fail the call under test.** The fake room could not
+  fail a `remove`, so "the clean-up fails too" could not be written until it could.
