@@ -8,6 +8,7 @@ import {
   deadlineProblem,
   HOUR_MS,
   nextUtcMidnight,
+  phaseAt,
   timeLeft,
   utcDay,
 } from './time'
@@ -98,5 +99,16 @@ describe('timeLeft', () => {
     expect(timeLeft(9_999)).toBe('9 s')
     expect(timeLeft(0)).toBe('0 s')
     expect(timeLeft(-5000)).toBe('0 s')
+  })
+})
+
+describe('phaseAt', () => {
+  it('is open until the deadline, closing until the record says closed', () => {
+    expect(phaseAt('open', NOW, NOW - 1)).toBe('open')
+    expect(phaseAt('open', NOW, NOW)).toBe('closing')
+    expect(phaseAt('closing', NOW, NOW - 1)).toBe('closing')
+    expect(phaseAt('closing', NOW, NOW + 60_000)).toBe('closing')
+    expect(phaseAt('closed', NOW, NOW - 1)).toBe('closed')
+    expect(phaseAt('closed', NOW, NOW + 1)).toBe('closed')
   })
 })
