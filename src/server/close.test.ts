@@ -4,6 +4,7 @@ import { finalStandingRecord } from '../contracts/competitions'
 import {
   CLOSE_CHUNK,
   CLOSE_GRACE_MS,
+  CLOSE_MAX_ATTEMPTS,
   closeCompetition,
   closeDueCompetitions,
   STUCK_AFTER_MS,
@@ -132,7 +133,7 @@ describe('closeDueCompetitions', () => {
     expect(room.rows('competitions').get('done')?.status).toBe('closed')
   })
 
-  it('does nothing when it is run early, as a member can do', async () => {
+  it('does nothing when it is run early', async () => {
     const room = fakeRoom({ competitions: { c1: competition() } })
     const { started } = await run(room, DEADLINE - 1)
     expect(started).toEqual([])
@@ -215,7 +216,7 @@ describe('closeCompetition', () => {
     expect(JSON.stringify([...room.rows('final_standings').values()])).not.toContain('0.99')
   })
 
-  it('does nothing before the deadline, as a member-triggered run would find it', async () => {
+  it('does nothing before the deadline, as an early run would find it', async () => {
     const room = scoredRoom()
     const { result } = await close(room, DEADLINE - 1)
     expect(result).toEqual({ status: 'skipped', reason: 'not_due' })
@@ -344,5 +345,14 @@ describe('closeCompetition', () => {
     const reading = scoredRoom()
     reading.failOn('query:private_scores')
     await expect(close(reading, SETTLED)).rejects.toThrow('private_scores')
+  })
+})
+
+describe('the close job’s attempts', () => {
+  it('cover every step of the largest close the spec is designed for, with failures to spare', () => {
+    // The job room counts a step that ends in "continue" as an attempt.
+    const steps = 1 + Math.ceil(200 / CLOSE_CHUNK)
+    expect(steps).toBe(6)
+    expect(CLOSE_MAX_ATTEMPTS).toBeGreaterThanOrEqual(steps + 3)
   })
 })

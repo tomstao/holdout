@@ -8,8 +8,8 @@
  *   - `closeCompetition` is that job: it computes the final standings from
  *     the private scores, writes them, and marks the competition `closed`.
  *
- * Both are safe to run early and twice. Members can trigger a cron task, and
- * a job can be retried: the task and the job check the deadline themselves,
+ * Both are safe to run early and twice. A task can run off schedule and a
+ * job can be retried: the task and the job check the deadline themselves,
  * the standings have fixed record ids, and a closed competition is left
  * alone. A competition marked `closing` whose deadline has since moved later
  * is opened again.
@@ -34,6 +34,17 @@ export const CLOSE_GRACE_MS = 10_000
 /** Standings written per job step, and how many of those writes are in flight at once. */
 export const CLOSE_CHUNK = 40
 export const CLOSE_PARALLEL = 20
+
+/**
+ * The attempts a close job is enqueued with. The job room counts every step
+ * as an attempt, the ones that end in "continue" included, and stops
+ * retrying a failure once the count reaches this number. A close of the 200
+ * participants the spec is designed for takes six steps: one to wait out the
+ * grace period and five of forty standings. Twelve leaves six for failures.
+ * With three, the first failed write after the second step ended the job and
+ * the competition waited for the ten-minute sweep.
+ */
+export const CLOSE_MAX_ATTEMPTS = 12
 
 export interface CloseDeps {
   tools: ActionTools
@@ -74,7 +85,7 @@ export async function closeDueCompetitions(
   return started
 }
 
-/** What the job hands the room between steps. Nothing private: members can read job rows. */
+/** What the job hands the room between steps. Nothing private: job rows are logged and listed. */
 interface CloseProgress {
   next: number
 }
@@ -93,7 +104,7 @@ export interface CloseStep {
   continueWith(state: CloseProgress, afterMs?: number): void
 }
 
-/** The job's result. Counts only: members can read it. */
+/** The job's result. Counts only: it is logged, and a job row may be read by members. */
 export type CloseResult =
   | { status: 'closed'; participants: number; submissions: number }
   | { status: 'skipped'; reason: 'not_found' | 'already_closed' | 'not_due' | 'reopened' }
