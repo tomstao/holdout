@@ -23,7 +23,7 @@ leaderboard updates, and at the deadline a private leaderboard decides.
 | `npm run validate`                   | `tsc -b` and unit tests (the pre-push hook)                                       |
 | `npm run test:watch`                 | Vitest in watch mode                                                              |
 | `npm run lint:fix`, `npm run format` | Fix what can be fixed automatically                                               |
-| `npm run design:gate`                | DeepSpace product-polish checks (fails until the design phase)                    |
+| `npm run design:gate`                | DeepSpace product-polish and landing checks; part of `npm run check`              |
 | `npx deepspace dev start`            | Local app (needs login and a registered app)                                      |
 | `npx deepspace test run all`         | Playwright specs (needs login and test accounts)                                  |
 

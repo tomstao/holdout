@@ -112,16 +112,17 @@ needed. S8 moved to day 4, where the close-out email is built.
 - [ ] **PR 11b, close-out email:** first spike S8 (one send with `bcc` and `reply_to` to two
       owner-controlled addresses), then the email from the job, outside test mode. Needs
       the owner's two addresses. First in the cut order below.
-- [ ] **PR 12, design**, in three parts so each can be reviewed on its own:
+- [x] **PR 12, design**, in three parts so each can be reviewed on its own:
   - [x] **12a, theme and chrome:** the Holdout theme with an AA check, IBM Plex served by
         the app, the wordmark and favicon, Navigation
         ([ADR 0015](decisions/0015-theme-status-colours-and-self-hosted-fonts.md)).
   - [x] **12b, `/home`:** the competition list with its declared pattern (spec F6).
-  - [ ] **12c, landing:** the static page with its Design Direction block; `design:gate`
+  - [x] **12c, landing:** the static page with its Design Direction block; `design:gate`
         added to `npm run check`.
 - [ ] **PR 13, demo competition:** script that shuffles and renumbers Palmer Penguins into
       train/test/solution files (`scripts/demo/`), then created through `/host/new` on
-      production.
+      production. Then point the landing's first call to action at it ("Try the demo
+      competition").
 
 ## Day 5: verify, review, ship
 

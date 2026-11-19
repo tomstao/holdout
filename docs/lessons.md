@@ -376,3 +376,27 @@ After the deployed run the four spike collections were empty and the file storag
 - **To reproduce a concurrency fault, write the stress case first.** A temporary spec
   that fires eight `createCompetition` calls with `Promise.all` failed before the fix and
   passed after it, which a rerun of the flaky suite could not show.
+
+## 2026-11-19, day 4: the landing page
+
+- **A prerendered page can animate with no script.** The hero's leaderboard is markup
+  plus CSS keyframes, with each row's travel in an inline custom property
+  (`style="--shift:4"`). It moves in the static HTML, needs no `window`, and
+  `prefers-reduced-motion` turns it off in one media query.
+- **Keep the keyframes in the global stylesheet.** A route's own CSS file loads with the
+  route's script; the prerendered HTML links only the entry stylesheet, so the board
+  would have painted unstyled first.
+- **Animate what moves, not what labels it.** The rank numbers are a separate column.
+  Rows slide past them, so no number has to change mid-flight.
+- **Look at a frame from the middle of an animation.** A screenshot during the slide
+  showed the status label blank for a second and a doubled rule under the last row.
+  Neither was visible in the start and end frames.
+- **Import one kit file, not the kit's index, into the static page**
+  (`components/ui/Button`), and nothing from `deepspace`: the landing should not pull
+  the auth client into its bundle (the scaffold's `Seo.tsx` says the same).
+- **The design rules a linter cannot check fit in a smoke test.** Headline length, the
+  word budget and "no `<img>`" are three assertions on the rendered page.
+- **`grep -P` needs a UTF-8 locale in Git Bash** (`LC_ALL=C.UTF-8`) for the official
+  emoji check; without it the command fails instead of finding nothing.
+- **A port can stay busy for a few seconds after `deepspace test run` returns.** Starting
+  another run at once fails with `port_in_use`; it is free a moment later.
