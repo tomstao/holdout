@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  checkDataset,
-  columnChoices,
-  groupByFile,
-  issuePlace,
-  lookAtFile,
-  tooLargeToRead,
-} from './check'
+import { checkDataset, columnChoices, groupByFile, lookAtFile, tooLargeToRead } from './check'
 
 const train = { name: 'train.csv', text: 'id,species\na1,Adelie\na2,Gentoo\n' }
 const test = { name: 'test.csv', text: 'id,bill\nt1,40\nt2,46\n' }
@@ -107,7 +100,7 @@ describe('checkDataset', () => {
   })
 })
 
-describe('groupByFile and issuePlace', () => {
+describe('groupByFile', () => {
   it('leaves out issues that name no file', () => {
     expect(
       groupByFile([
@@ -120,14 +113,5 @@ describe('groupByFile and issuePlace', () => {
       test: [],
       solution: [],
     })
-  })
-
-  it('writes where in the file a problem is', () => {
-    expect(issuePlace({ path: ['solution', 'row 12', 'species'], message: '' })).toBe(
-      'Row 12, species',
-    )
-    expect(issuePlace({ path: ['test', 'id'], message: '' })).toBe('Id')
-    expect(issuePlace({ path: ['train'], message: '' })).toBe('')
-    expect(issuePlace({ message: '' })).toBe('')
   })
 })

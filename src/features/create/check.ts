@@ -118,10 +118,3 @@ export function groupByFile(issues: readonly Issue[]): Record<DatasetFile, Issue
   }
   return grouped
 }
-
-/** Where in its file a problem is: "Row 12, species", or nothing for the whole file. */
-export function issuePlace(issue: Issue): string {
-  const [, ...place] = issue.path ?? []
-  const text = place.join(', ')
-  return text === '' ? '' : text.charAt(0).toUpperCase() + text.slice(1)
-}

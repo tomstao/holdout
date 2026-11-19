@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DatasetRejected } from '../domain/dataset'
-import { datasetIssues, fileIssues } from './file-issues'
+import { datasetIssues, fileIssues, issuePlace } from './file-issues'
 
 const rejected = (
   issues: DatasetRejected['issues'],
@@ -74,5 +74,18 @@ describe('fileIssues', () => {
     expect(fileIssues({ ok: false, issues: [{ message: 'x' }], omitted: 1 })[1]?.message).toBe(
       'And 1 more problem in this file.',
     )
+  })
+})
+
+describe('issuePlace', () => {
+  it('writes where in the file a problem is, without the file itself', () => {
+    expect(issuePlace({ path: ['solution', 'row 12', 'species'], message: '' })).toBe(
+      'Row 12, species',
+    )
+    expect(issuePlace({ path: ['row 3', 'id'], message: '' })).toBe('Row 3, id')
+    expect(issuePlace({ path: ['test', 'id'], message: '' })).toBe('Id')
+    expect(issuePlace({ path: ['train'], message: '' })).toBe('')
+    expect(issuePlace({ path: [], message: '' })).toBe('')
+    expect(issuePlace({ message: '' })).toBe('')
   })
 })

@@ -50,3 +50,12 @@ export function fileIssues(rejected: Rejected): Issue[] {
   }
   return issues
 }
+
+/** Where in its file a problem is: "Row 12, species", or nothing for the whole file. */
+export function issuePlace(issue: Issue): string {
+  const [first = '', ...rest] = issue.path ?? []
+  // A path may start with the file it belongs to; that is already the drop zone's label.
+  const place = ['train', 'test', 'solution'].includes(first) ? rest : [first, ...rest]
+  const text = place.filter((part) => part !== '').join(', ')
+  return text === '' ? '' : text.charAt(0).toUpperCase() + text.slice(1)
+}
