@@ -63,7 +63,6 @@ const SCAFFOLD_FILES = [
   'src/schemas/users-schema.ts',
   'src/schemas/admin-schema.ts',
   'tests/api.spec.ts',
-  'tests/collab.spec.ts',
   'tests/smoke.spec.ts',
   'tests/helpers/errors.ts',
   'tests/playwright.config.ts',
