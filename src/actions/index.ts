@@ -12,10 +12,12 @@ import type { ActionName } from '../contracts/actions'
 import { makeCreateCompetition } from './create-competition'
 import { createCompetitionDeps, submitPredictionsDeps } from './host-files'
 import { makeSubmitPredictions } from './submit-predictions'
+import { makeUpdateCompetition } from './update-competition'
 
 const handlers = {
   createCompetition: makeCreateCompetition(createCompetitionDeps),
   submitPredictions: makeSubmitPredictions(submitPredictionsDeps),
+  updateCompetition: makeUpdateCompetition({ now: () => Date.now() }),
 } satisfies Record<ActionName, ActionHandler<Env>>
 
 /** The shape the scaffold's action route expects. */

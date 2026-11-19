@@ -12,13 +12,14 @@
  * The contracts are defined in ./competitions.ts and ./submissions.ts, and described in
  * docs/architecture.md ("Server actions").
  */
-import { createCompetition } from './competitions'
+import { createCompetition, updateCompetition } from './competitions'
 import type { ContractRegistry } from './define'
 import { submitPredictions } from './submissions'
 
 export const actionContracts = {
   createCompetition,
   submitPredictions,
+  updateCompetition,
 } as const satisfies ContractRegistry
 
 export type ActionContracts = typeof actionContracts

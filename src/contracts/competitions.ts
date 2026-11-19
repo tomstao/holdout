@@ -124,29 +124,35 @@ const csvUpload = (maxBytes: number) =>
     csv: z.string().min(1).max(maxBytes),
   })
 
+/** The text a host writes about a competition: the same rules when creating and editing. */
+const titleInput = z
+  .string()
+  .trim()
+  .min(3, 'Use at least 3 characters.')
+  .max(80, 'Use at most 80 characters.')
+const summaryInput = z
+  .string()
+  .trim()
+  .min(10, 'Use at least 10 characters.')
+  .max(200, 'Use at most 200 characters.')
+const descriptionInput = z.string().max(5000, 'Use at most 5,000 characters.')
+const deadlineInput = z.number('Choose a date and time.').int().positive()
+
 export const createCompetition = defineAction({
   description:
     'Create a competition from a train, a test and a solution file. Any signed-in user may call it and becomes the host.',
   input: z
     .object({
-      title: z
-        .string()
-        .trim()
-        .min(3, 'Use at least 3 characters.')
-        .max(80, 'Use at most 80 characters.'),
-      summary: z
-        .string()
-        .trim()
-        .min(10, 'Use at least 10 characters.')
-        .max(200, 'Use at most 200 characters.'),
-      description: z.string().max(5000, 'Use at most 5,000 characters.').default(''),
+      title: titleInput,
+      summary: summaryInput,
+      description: descriptionInput.default(''),
       taskType: z.enum(TASK_TYPES),
       metric: z.enum(METRICS),
       /** Column names exactly as they appear in the files' headers. */
       idColumn: z.string().min(1, 'Choose the ID column.').max(100),
       targetColumn: z.string().min(1, 'Choose the target column.').max(100),
       /** Epoch milliseconds; 1 hour to 90 days ahead, checked against the server's clock. */
-      deadline: z.number('Choose a date and time.').int().positive(),
+      deadline: deadlineInput,
       dailyLimit: z
         .number('Enter a whole number from 1 to 20.')
         .int('Enter a whole number from 1 to 20.')
@@ -180,4 +186,22 @@ export const createCompetition = defineAction({
       message: 'The target column must differ from the ID column.',
     }),
   output: z.object({ competitionId: z.string().min(1) }),
+})
+
+export const updateCompetition = defineAction({
+  description:
+    'Change a competition’s title, summary and description, or move its deadline later. Only its host may call it, and only while it is open.',
+  input: z.object({
+    competitionId: z.string().min(1).max(100),
+    title: titleInput,
+    summary: summaryInput,
+    description: descriptionInput,
+    /** Epoch milliseconds. The current deadline, or a later one within 90 days of now. */
+    deadline: deadlineInput,
+  }),
+  output: z.object({
+    competitionId: z.string().min(1),
+    /** The deadline as it now stands. */
+    deadline: z.number().int(),
+  }),
 })
