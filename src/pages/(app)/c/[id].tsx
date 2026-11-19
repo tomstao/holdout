@@ -1,6 +1,7 @@
 /**
- * /c/:id: a competition, for anyone. The header, then four tabs, the chosen
- * one kept in the URL (`?tab=submit`) so a link opens it.
+ * /c/:id: a competition, for anyone. The header, then its tabs, the chosen
+ * one kept in the URL (`?tab=submit`) so a link opens it. Participants get
+ * Submit; the host gets Edit instead.
  */
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from 'deepspace'
@@ -8,6 +9,7 @@ import { buttonVariants, Tabs, TabsContent, TabsList, TabsTrigger } from '@/comp
 import { BRAND } from '../../../constants'
 import { CompetitionHeader } from '../../../features/competition/CompetitionHeader'
 import { DataTab } from '../../../features/competition/DataTab'
+import { EditTab } from '../../../features/competition/EditTab'
 import {
   useCompetition,
   useFinalStandings,
@@ -19,7 +21,7 @@ import { OverviewTab } from '../../../features/competition/OverviewTab'
 import { SubmitTab } from '../../../features/competition/SubmitTab'
 import { phaseAt } from '../../../domain/time'
 
-const TABS = ['leaderboard', 'overview', 'data', 'submit'] as const
+const TABS = ['leaderboard', 'overview', 'data', 'submit', 'edit'] as const
 type Tab = (typeof TABS)[number]
 
 const isTab = (value: string | null): value is Tab => TABS.some((tab) => tab === value)
@@ -58,8 +60,10 @@ export default function CompetitionPage() {
   const isHost = userId === competition.hostId
   const phase = phaseAt(competition.status, competition.deadline, now)
   const requested = params.get('tab')
-  const tab: Tab =
-    isTab(requested) && !(requested === 'submit' && isHost) ? requested : 'leaderboard'
+  // Submit is for everyone but the host, Edit for the host alone.
+  const offered = (candidate: Tab) =>
+    candidate === 'submit' ? !isHost : candidate === 'edit' ? isHost : true
+  const tab: Tab = isTab(requested) && offered(requested) ? requested : 'leaderboard'
   const choose = (next: unknown) => {
     if (typeof next !== 'string' || !isTab(next)) return
     setParams(next === 'leaderboard' ? {} : { tab: next }, { replace: true })
@@ -75,6 +79,7 @@ export default function CompetitionPage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="data">Data</TabsTrigger>
           {!isHost && <TabsTrigger value="submit">Submit</TabsTrigger>}
+          {isHost && <TabsTrigger value="edit">Edit</TabsTrigger>}
         </TabsList>
         <TabsContent value="leaderboard">
           <LeaderboardTab
@@ -113,6 +118,11 @@ export default function CompetitionPage() {
                 choose('leaderboard')
               }}
             />
+          </TabsContent>
+        )}
+        {isHost && (
+          <TabsContent value="edit">
+            <EditTab competitionId={id} competition={competition} phase={phase} />
           </TabsContent>
         )}
       </Tabs>
