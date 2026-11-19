@@ -187,9 +187,12 @@ validation as F1. Everyone watching sees the change live.
 
 ### F6. Browse competitions
 
-**Where:** `/home`. Signed in: "Hosting", "Entered" and "All open" sections. Signed out:
-"All open" and "Recently closed" with a sign-in call to action. Each row: title, summary,
-host, participant count, leader's score, time to deadline or "Closed".
+**Where:** `/home`. Signed in: "Hosting", "Entered", "Open" and "Recently closed"
+sections. Signed out: "Open" and "Recently closed" with a sign-in call to action. A
+competition is listed once: under "Hosting" if the viewer hosts it, else "Entered" if they
+have submitted to it, else by its status. Each row: title, summary, host, participant
+count, the top score (public while it runs, final once closed), time to deadline or
+"Closed". "Recently closed" holds the latest five.
 
 **Empty states:** "No open competitions. Host the first one." (action: Host a
 competition) for signed-in users; the demo competition keeps the list non-empty in

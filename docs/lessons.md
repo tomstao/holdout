@@ -339,3 +339,20 @@ After the deployed run the four spike collections were empty and the file storag
 - **`deepspace test screenshot` needs a server that is already running.** For signed-in
   screens with data, a temporary Playwright spec that calls `page.screenshot()` is
   simpler: `deepspace test run` starts the server and signs the accounts in.
+
+## 2026-11-19, day 4: the competition list
+
+- **A list can read each row's numbers with the row's own subscription.** A row
+  component calls the same hook the competition page uses, so the participant count and
+  the top score are exact and live with no server change. The cost is one subscription
+  per visible row, so a section shows eight rows until asked for more.
+- **The local room keeps every competition the specs ever created** (clients cannot
+  delete, and there is no delete action). After a day of test runs `/home` listed about 100. A spec that looks for its own row has to open "Show all" first, and should find
+  the row by its id, never by position.
+- **Competitions come due while the local server is off.** The cron task closes them the
+  next time `deepspace dev` or `deepspace test` runs, one job at a time.
+- **`deepspace test run a.spec.ts b.spec.ts` runs only the first file.** Run them one
+  after the other, or use a suite name such as `all`.
+- **The design gate looked for `[data-theme="x"]` with double quotes.** Prettier writes
+  the selector with single quotes, so the gate missed the theme block. It accepts both
+  now. A check that greps a formatted file should not depend on the quote style.
