@@ -12,16 +12,15 @@ import {
   CanvasRoom,
   CronRoom,
   JobRoom,
+  MSG,
   PresenceRoom,
   RecordRoom,
   resolveAppRole,
+  SYSTEM_COLLECTIONS,
   workerErrorHandler,
   YjsRoom,
 } from 'deepspace/worker'
 import type { DOBindings, DOManifest, Job, JobContext } from 'deepspace/worker'
-import { AI_CHATS_SCHEMA } from 'deepspace/schema'
-import { registerAgent } from './src/ai/agent.js'
-import { buildTools } from './src/ai/tools.js'
 import { tasks as cronTasks, runTask as runCronTask } from './src/cron.js'
 import { runJob } from './src/jobs.js'
 import { schemas } from './src/schemas.js'
@@ -34,8 +33,12 @@ import {
   resolveAuth,
 } from './src/server/http-routes.js'
 import { registerRealtimeRoutes } from './src/server/realtime-routes.js'
+import { namesCollection } from './src/server/room-guard.js'
 
-// Dynamic deploy reads this manifest to create the app's DO bindings.
+// Dynamic deploy reads this manifest to create the app's DO bindings. The Yjs,
+// canvas and presence rooms stay bound, as the scaffold made them, because
+// removing a Durable Object class is a migration; nothing routes to them
+// (src/server/realtime-routes.ts).
 export const __DO_MANIFEST__ = [
   { binding: 'RECORD_ROOMS', className: 'AppRecordRoom', sqlite: true },
   { binding: 'YJS_ROOMS', className: 'AppYjsRoom', sqlite: true },
@@ -48,6 +51,19 @@ export const __DO_MANIFEST__ = [
 export class AppRecordRoom extends RecordRoom<Env> {
   constructor(state: DurableObjectState, env: Env) {
     super(state, env, schemas, { ownerUserId: env.OWNER_USER_ID })
+  }
+
+  /**
+   * No client writes to this room, and the SDK's built-in collections are no
+   * exception: any role, signed out included, may otherwise write rows of
+   * any size to `canvas-settings` (src/server/room-guard.ts).
+   */
+  override async webSocketMessage(ws: WebSocket, message: ArrayBuffer | string): Promise<void> {
+    if (typeof message === 'string' && namesCollection(message, SYSTEM_COLLECTIONS)) {
+      ws.send(JSON.stringify({ type: MSG.ERROR, payload: { error: 'Unknown collection' } }))
+      return
+    }
+    await super.webSocketMessage(ws, message)
   }
 }
 
@@ -144,12 +160,9 @@ registerAuthAndIntegrationRoutes(app)
 registerRealtimeRoutes(app)
 registerActionRoutes(app, resolveAuth)
 registerFilesRoutes(app)
-// Every scaffold exposes selected tools through HTTP, MCP and browser tools.
-// Only copilot owns the collections needed for the in-app chat UI.
-registerAgent(app, {
-  tools: buildTools,
-  inApp: schemas.some((schema) => schema.name === AI_CHATS_SCHEMA.name),
-})
+// No agent tool routes: the scaffold's `registerAgent` lets a signed-in user
+// run record queries over HTTP, and the app has no assistant
+// (docs/decisions/0016, docs/decisions/0012).
 registerPlatformProxyRoutes(app)
 registerStaticRoutes(app)
 
