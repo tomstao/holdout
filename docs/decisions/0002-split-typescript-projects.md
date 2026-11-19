@@ -36,3 +36,12 @@ rows and columns, where an index that may be missing is the most likely bug.
 
 - **Keep one project and rely on lint rules** for runtime boundaries: lint can ban
   imports, but not a stray `window` or `document`; the compiler can.
+
+## Addendum, 2026-11-19
+
+`tsconfig.node.json` now also includes `src/domain`. The demo generator's test
+(`scripts/demo/demo.test.ts`) runs its output through `validateDataset`, and a composite
+project may only import files it lists (TS6307). The domain is plain TypeScript with no
+DOM or Worker types, so it compiles in both projects. ESLint still checks the domain
+with the app project's stricter flags, because that project comes first in the root
+`tsconfig.json`.

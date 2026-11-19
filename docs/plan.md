@@ -119,10 +119,14 @@ needed. S8 moved to day 4, where the close-out email is built.
   - [x] **12b, `/home`:** the competition list with its declared pattern (spec F6).
   - [x] **12c, landing:** the static page with its Design Direction block; `design:gate`
         added to `npm run check`.
-- [ ] **PR 13, demo competition:** script that shuffles and renumbers Palmer Penguins into
-      train/test/solution files (`scripts/demo/`), then created through `/host/new` on
-      production. Then point the landing's first call to action at it ("Try the demo
-      competition").
+- [ ] **PR 13, demo competition:**
+  - [x] **13a, the files:** `scripts/demo/make-demo.ts` shuffles, renumbers and splits
+        Palmer Penguins into train, test and solution files. Its test runs them through
+        the app's dataset rules.
+  - [ ] **13b, on production (the owner):** deploy `main`; run the script; create the
+        competition at `/host/new` with the values the script prints.
+  - [ ] **13c:** point the landing's first call to action at it ("Try the demo
+        competition").
 
 ## Day 5: verify, review, ship
 

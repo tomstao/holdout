@@ -400,3 +400,28 @@ After the deployed run the four spike collections were empty and the file storag
   emoji check; without it the command fails instead of finding nothing.
 - **A port can stay busy for a few seconds after `deepspace test run` returns.** Starting
   another run at once fails with `port_in_use`; it is free a moment later.
+
+## 2026-11-19, day 4: the demo competition's files
+
+- **The seed of a public data set's shuffle is an answer key.** The demo's labels are
+  public, and the generator and its source file are in a public repository. So the seed
+  is drawn when the owner runs the script and is never committed, and the output folder
+  is git-ignored. It stops the easy path only: rows can still be matched on their
+  measurements, which is why the competition is labelled practice.
+- **Node runs a `.ts` script only if every import has its extension.** The app's modules
+  import each other without one, so a script that Node runs directly cannot import them.
+  The generator is self-contained; its Vitest test, which resolves imports the app's
+  way, checks the output against the app's own `validateDataset`.
+- **A composite TypeScript project may import only files it lists** (TS6307). The scripts
+  project gained `src/domain` in its `include` for that test
+  ([ADR 0002](decisions/0002-split-typescript-projects.md), addendum).
+- **Guessed expected values are a useful first test run.** The first run showed 206 and
+  136 rows where 205 and 137 were expected: each species is rounded on its own. The
+  numbers in the test are the ones the split gives, checked by hand (60 + 27 + 49).
+- **`deepspace test run` will not share a port with `deepspace dev`.** When the owner
+  has the dev server open on 5173, run the specs beside it with `--port 5183`; do not
+  stop a server someone else started. The runner's config says the same: one port per
+  run.
+- **Treat a downloaded file as data before it is code's input:** fetched into an empty
+  folder and checked for size, header, row and class counts, quotes and formula-like
+  cells before it was copied into the repository.
