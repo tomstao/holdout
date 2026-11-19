@@ -9,13 +9,17 @@
  *   3. Call it from the browser with `callAction('<name>', input)` from
  *      src/client/actions.ts; input and output types are inferred from here.
  *
- * The contracts are defined in ./competitions.ts and described in
+ * The contracts are defined in ./competitions.ts and ./submissions.ts, and described in
  * docs/architecture.md ("Server actions").
  */
 import { createCompetition } from './competitions'
 import type { ContractRegistry } from './define'
+import { submitPredictions } from './submissions'
 
-export const actionContracts = { createCompetition } as const satisfies ContractRegistry
+export const actionContracts = {
+  createCompetition,
+  submitPredictions,
+} as const satisfies ContractRegistry
 
 export type ActionContracts = typeof actionContracts
 export type ActionName = keyof ActionContracts
