@@ -124,6 +124,9 @@ epoch milliseconds in `number` columns (not the SDK's `datetime`, which is secon
 `'*'` (signed out), `viewer`, `member` and `admin`. "Closed" means all four `false` for all
 four roles, including `admin`, so not even the app owner's browser receives the rows
 ([ADR 0006](decisions/0006-answer-key-in-a-server-only-collection.md)).
+A closed collection declares no `immutable` column: the room checks immutability before
+permission, which would tell a client whether a guessed value is the stored one
+([lessons](lessons.md#2026-11-19-day-2-data-model)).
 
 | Collection        | Read                                | Written by                       | Unique on                                    |
 | ----------------- | ----------------------------------- | -------------------------------- | -------------------------------------------- |

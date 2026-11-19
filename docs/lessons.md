@@ -214,6 +214,19 @@ After the deployed run the four spike collections were empty and the file storag
   (`rowToData` in the SDK skips `null` columns.) A contract field written as
   `.nullable()` would never read back as `null`. Model a value that may be missing as
   `.optional()` and leave it out when writing.
+- **Never mark a column `immutable` in a closed collection: it leaks the stored value.**
+  On an update the room compares each immutable field with what is stored before it
+  checks permission. A member who sends the right value is told `UPDATE DENIED`; one who
+  sends a wrong value is told `Cannot modify immutable field '…'`. With `privateScore`
+  immutable, a participant could have read a private accuracy by trying each of the
+  `privateRows + 1` possible values. `answer_keys` and `private_scores` declare no
+  immutable column, a unit test keeps it that way, and `rbac.spec.ts` sends right and
+  wrong guesses and expects the same answer. Found by the seeded RBAC spec, confirmed in
+  the SDK source (`putRecord` in `deepspace/dist/worker.js`, 0.44.2).
+- **The room replays its answer to a request id.** A second `core.put` with the same
+  `requestId` gets the first one's answer whatever it contains. A probe that reuses an id
+  sees one answer repeated and misses the difference above; `tests/helpers/room.ts`
+  generates a new id per write.
 - **The room checks a write's shape before its permission.** A member's `core.put` of an
   incomplete record answers `Required field 'summary' is missing`; only a complete one
   answers `CREATE DENIED: role=member, collection=…`. A test of a refusal has to send a
