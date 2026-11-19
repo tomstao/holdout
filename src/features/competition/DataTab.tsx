@@ -64,7 +64,7 @@ export function DataTab({
               className={buttonVariants({ variant: 'outline', size: 'sm', className: 'shrink-0' })}
             >
               Download{' '}
-              <span className="font-mono tabular-nums">
+              <span className="font-normal text-muted-foreground tabular-nums">
                 {fileSize(competition.files[kind].bytes)}
               </span>
             </a>

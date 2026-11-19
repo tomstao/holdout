@@ -184,15 +184,13 @@ export function SubmitTab({
               <>
                 <span className="font-mono tabular-nums">{usedToday}</span> of{' '}
                 <span className="font-mono tabular-nums">{competition.dailyLimit}</span> submissions
-                used today. The count resets in{' '}
-                <span className="font-mono tabular-nums">{resetsIn}</span>.
+                used today. The count resets in <span className="tabular-nums">{resetsIn}</span>.
               </>
             ) : (
               <>
                 You have used all{' '}
                 <span className="font-mono tabular-nums">{competition.dailyLimit}</span> submissions
-                today. The count resets in{' '}
-                <span className="font-mono tabular-nums">{resetsIn}</span>.
+                today. The count resets in <span className="tabular-nums">{resetsIn}</span>.
               </>
             )}
           </p>
