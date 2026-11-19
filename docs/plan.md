@@ -146,11 +146,39 @@ needed. S8 moved to day 4, where the close-out email is built.
       screen; side by side with `docs/design/refs/`; the core loop on the deployed app with
       a fresh test account; two real sessions for the leaderboard; every failure state
       (invalid file, limit reached, closed, signed out, not found).
-- [ ] Independent review by a fresh agent context of the actions, RBAC and the close;
-      adjudicate each finding against the code.
+- [x] Independent review by a fresh agent context of the actions, RBAC and the close;
+      adjudicate each finding against the code. Done 2026-11-19; the findings and what
+      was done about each are in the table below.
 - [ ] Walk the spec's acceptance criteria one by one on production.
 - [ ] README and [submission-notes.md](submission-notes.md) finished; deploy from a clean
       `main`; tag `v1.0.0`.
+
+### The independent review, 2026-11-19
+
+A fresh agent, given the spec's guarantees and the code but none of the build's reasoning,
+reported twelve findings. Each was checked against the code (and the SDK's built code)
+before anything changed. "Confirmed" below is that check, not the reviewer's word.
+
+| #   | Finding                                                                                    | Checked                                                 | Done                                                                       |
+| --- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 1   | Any signed-in user can pause the close task through the cron socket                        | Confirmed in the SDK: `member` may write to a cron room | Route removed ([ADR 0016](decisions/0016-serve-only-what-the-app-uses.md)) |
+| 2   | The agent tool route counts rows of a closed collection through a scan-cap error           | Confirmed in the SDK's query path                       | Agent routes removed (ADR 0016)                                            |
+| 3   | A regression prediction that overflows the score leaves a submission with no private score | To do                                                   | To do                                                                      |
+| 4   | Any signed-in user can call integrations on the owner's account                            | Confirmed in the Worker code; billing not tested        | The proxy serves no integration (ADR 0016)                                 |
+| 5   | Any room name is a room; each new cron room runs the close task forever                    | Confirmed: a first request initialises the room         | One room, by name (ADR 0016)                                               |
+| 6   | The daily limit is checked after the expensive work                                        | To do                                                   | To do                                                                      |
+| 7   | A predictions file's header is echoed whole in the error                                   | To do                                                   | To do                                                                      |
+| 8   | Each step of the close job counts as an attempt                                            | Confirmed in the SDK's job room                         | To do                                                                      |
+| 9   | A signed-out socket can write to the built-in `canvas-settings` collection                 | Confirmed in the SDK: open to every role                | Frames for built-in collections refused (ADR 0016)                         |
+| 10  | The file proxy takes uploads from any member                                               | Confirmed in the Worker code; the quota not tested      | GET, HEAD and DELETE only (ADR 0016)                                       |
+| 11  | Every participant's file names are readable by anyone                                      | To do                                                   | To do                                                                      |
+| 12  | `scoreDecimals` only formats in the browser; the trust model claims more                   | To do                                                   | To do                                                                      |
+
+What the reviewer examined and found sound: the closed collections over the room's socket,
+the action route's identity and output handling, the daily limit under concurrency, the
+close logic, `updateCompetition`, and the domain code with the files route. Not reviewed:
+browser code, `domain/listing.ts`, the platform's side, and nothing was run against a real
+Worker.
 
 ## If behind schedule, cut in this order
 

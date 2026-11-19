@@ -477,3 +477,29 @@ After the deployed run the four spike collections were empty and the file storag
 - **Test competitions on the live site would stay there.** There is no delete, and they
   are listed for everyone. The acceptance walk-through on production is the owner's
   call, not something to run unasked.
+
+## 2026-11-19: what the independent review found in the scaffold
+
+- **The scaffold's unused routes are part of the app.** Every test here was about the
+  code that was written. The holes were in code that was not: a cron socket where a
+  member may pause a task, tool routes for an assistant the app does not have, an
+  integrations proxy that bills the owner for any name, a file proxy that takes uploads,
+  and a built-in collection open to signed-out sockets. All were live for a few hours.
+  Read every route the scaffold registers before the first deploy, and remove what the
+  app does not use ([ADR 0016](decisions/0016-serve-only-what-the-app-uses.md)).
+- **"RBAC is the boundary" is true only where every path applies it the same way.** The
+  record room's socket gives nothing away about a closed collection. The tools API, built
+  on the same room, applies a filter before the permission check and reports a different
+  error when it runs out of rows to scan, which is a count.
+- **A room name in a URL creates the room.** A Durable Object exists once something
+  fetches it, and a cron room schedules its tasks on that first fetch. A route must
+  accept only the names the app means.
+- **A reviewer with no context finds a different class of fault.** The build's own
+  review looked at the actions and the schemas. A reader given only the guarantees went
+  straight to what else the Worker serves.
+- **Write the probe so it is harmless if the fix regresses:** a GET where the real call
+  is a POST, an integration name that does not exist, a file of two bytes. A test of a
+  spending hole must not spend when it fails.
+- **A guard that parses untrusted frames needs its own tests for nonsense.** The first
+  version threw on `"payload": null`; in the Worker that would have been an exception on
+  every such frame.

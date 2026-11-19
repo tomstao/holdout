@@ -296,17 +296,17 @@ that the rows no longer change and every step computes the same standings. The l
 
 ## Trust model
 
-| Threat                                                     | Defence                                                                                                                                |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| A participant reads the answer key or private scores       | Closed collections: the room never sends those rows to any role. Spec'd by a Playwright test over the record hooks and the agent tools |
-| An action leaks a secret field in its response             | `implement()` parses output against the contract, which drops undeclared keys                                                          |
-| A client writes a score, a submission or a competition     | No client role has create, update or delete on any app collection                                                                      |
-| A caller acts on a competition they do not own             | Actions run with RBAC off, so each one checks `hostId` against the verified `userId` before writing                                    |
-| The host submits to their own competition                  | `submitPredictions` refuses with `forbidden`                                                                                           |
-| Probing the public leaderboard                             | Daily limit; final ranking on private rows; scores shown at the host's decimals                                                        |
-| Someone overwrites a dataset file                          | Files live in the host's `self` folder, which only the host and the Worker can write (`app` scope lets any member overwrite: spike S3) |
-| A member triggers the close task or enqueues the job early | The JobRoom refuses every client write (spike S7); the task and the job re-check `deadline <= now`, so an early run does nothing       |
-| Spending the owner's credits                               | The only paid call is one email per closed competition, sent by the job                                                                |
+| Threat                                                                  | Defence                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A participant reads the answer key or private scores                    | Closed collections: the room never sends those rows to any role. Spec'd by a Playwright test over the record room. There are no agent tool routes ([ADR 0016](decisions/0016-serve-only-what-the-app-uses.md))          |
+| An action leaks a secret field in its response                          | `implement()` parses output against the contract, which drops undeclared keys                                                                                                                                           |
+| A client writes a score, a submission or a competition                  | No client role has create, update or delete on any app collection, and the room refuses frames for the SDK's built-in collection                                                                                        |
+| A caller acts on a competition they do not own                          | Actions run with RBAC off, so each one checks `hostId` against the verified `userId` before writing                                                                                                                     |
+| The host submits to their own competition                               | `submitPredictions` refuses with `forbidden`                                                                                                                                                                            |
+| Probing the public leaderboard                                          | Daily limit; final ranking on private rows; scores shown at the host's decimals                                                                                                                                         |
+| Someone overwrites a dataset file                                       | Files live in the host's `self` folder, which only the host and the Worker can write (`app` scope lets any member overwrite: spike S3)                                                                                  |
+| A member triggers, pauses or copies the close task, or enqueues the job | No cron or job socket is routed, and only this app's record room is a room (ADR 0016). The JobRoom refuses every client write (spike S7); the task and the job re-check `deadline <= now`, so an early run does nothing |
+| Spending the owner's credits                                            | The integrations proxy serves no integration (ADR 0016). The only paid call will be one email per closed competition, sent by the job                                                                                   |
 
 Identity comes only from the verified JWT (`ctx.userId`); no action takes a user id from
 its input.
