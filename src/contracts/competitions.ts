@@ -113,6 +113,9 @@ export type FinalStandingRecord = z.output<typeof finalStandingRecord>
  * An uploaded CSV. `max` counts characters, which is never more than the
  * byte length, so it only stops a body far over the limit; the domain checks
  * the exact size in bytes.
+ *
+ * The messages on the fields a person fills in are written to be shown as
+ * they are, under the field.
  */
 const csvUpload = (maxBytes: number) =>
   z.object({
@@ -126,20 +129,42 @@ export const createCompetition = defineAction({
     'Create a competition from a train, a test and a solution file. Any signed-in user may call it and becomes the host.',
   input: z
     .object({
-      title: z.string().trim().min(3).max(80),
-      summary: z.string().trim().min(10).max(200),
-      description: z.string().max(5000).default(''),
+      title: z
+        .string()
+        .trim()
+        .min(3, 'Use at least 3 characters.')
+        .max(80, 'Use at most 80 characters.'),
+      summary: z
+        .string()
+        .trim()
+        .min(10, 'Use at least 10 characters.')
+        .max(200, 'Use at most 200 characters.'),
+      description: z.string().max(5000, 'Use at most 5,000 characters.').default(''),
       taskType: z.enum(TASK_TYPES),
       metric: z.enum(METRICS),
       /** Column names exactly as they appear in the files' headers. */
-      idColumn: z.string().min(1).max(100),
-      targetColumn: z.string().min(1).max(100),
+      idColumn: z.string().min(1, 'Choose the ID column.').max(100),
+      targetColumn: z.string().min(1, 'Choose the target column.').max(100),
       /** Epoch milliseconds; 1 hour to 90 days ahead, checked against the server's clock. */
-      deadline: z.number().int().positive(),
-      dailyLimit: z.number().int().min(1).max(20).default(5),
-      scoreDecimals: z.number().int().min(2).max(6).default(4),
+      deadline: z.number('Choose a date and time.').int().positive(),
+      dailyLimit: z
+        .number('Enter a whole number from 1 to 20.')
+        .int('Enter a whole number from 1 to 20.')
+        .min(1, 'Enter a whole number from 1 to 20.')
+        .max(20, 'Enter a whole number from 1 to 20.')
+        .default(5),
+      scoreDecimals: z
+        .number('Enter a whole number from 2 to 6.')
+        .int('Enter a whole number from 2 to 6.')
+        .min(2, 'Enter a whole number from 2 to 6.')
+        .max(6, 'Enter a whole number from 2 to 6.')
+        .default(4),
       /** Share of the answer key scored publicly when solution.csv has no Usage column. */
-      publicShare: z.number().min(0.1).max(0.5).default(0.3),
+      publicShare: z
+        .number('Enter a share from 10 to 50%.')
+        .min(0.1, 'Enter a share from 10 to 50%.')
+        .max(0.5, 'Enter a share from 10 to 50%.')
+        .default(0.3),
       files: z.object({
         train: csvUpload(DATASET_LIMITS.trainBytes),
         test: csvUpload(DATASET_LIMITS.testBytes),
