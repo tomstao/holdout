@@ -301,3 +301,21 @@ After the deployed run the four spike collections were empty and the file storag
 - **The live spec needs three test accounts** (a host and two participants); the pool on
   this machine is Alice, Bob and Carol. A spec that needs more accounts than exist skips
   itself and says how to create one.
+
+## 2026-11-19, day 4: the close
+
+- **The cron task ticks in the local app.** `deepspace dev` and `deepspace test` run the
+  CronRoom's alarm, so a spec can wait for a real close; it logs `[close] enqueued …` and
+  the job's result in the server output.
+- **A rule relaxed for tests changes what an API test can assert.** With
+  `ALLOW_DEBUG_ROUTES` set, `createCompetition` accepts a deadline 15 seconds ahead. The
+  API test of "less than an hour" then created a real competition and failed. The hour
+  is now asserted in the action's unit test and the API test asserts the local rule.
+- **A test that fails after creating a competition leaves its files in storage.** They
+  are in the test account's private folder on the real platform. List them as that
+  account (`GET /api/files?scope=self&prefix=competitions/`) and delete each one.
+- **The scaffold's lint exemption covered all of `src/server/`.** It now names the three
+  scaffold files; `files-routes.ts`, `room-tools.ts` and `close.ts` get the strict rules.
+- **Worker code that is not an action needs its own record tools.** The scaffold builds
+  them inside its action route. `src/server/room-tools.ts` makes the same call for the
+  cron task, the job and the files route, so they can use `typedRecords`.

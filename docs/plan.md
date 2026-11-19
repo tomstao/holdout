@@ -105,12 +105,13 @@ needed. S8 moved to day 4, where the close-out email is built.
 
 ## Day 4: the close and the design
 
-- [ ] **PR 11, close:** `domain/ranking.ts` final selection and standings; cron task and
+- [x] **PR 11, close:** `domain/ranking.ts` final selection and standings; cron task and
       job per [ADR 0009](decisions/0009-close-with-cron-and-a-job.md); final standings view
-      with shake-up; email sent outside test mode. Spec: a competition due in two minutes
-      closes on its own. Standings are written 20 at a time (a write takes about 28 ms on
-      the deployed app). First, spike S8: one send with `bcc` and `reply_to` to two
-      owner-controlled addresses.
+      with shake-up. Spec: a competition due in 45 seconds closes on its own. Standings are
+      written 20 at a time.
+- [ ] **PR 11b, close-out email:** first spike S8 (one send with `bcc` and `reply_to` to two
+      owner-controlled addresses), then the email from the job, outside test mode. Needs
+      the owner's two addresses. First in the cut order below.
 - [ ] **PR 12, design:** Holdout theme, Navigation, `/home` with its declared pattern, the
       landing with its Design Direction block; `design:gate` added to `npm run check`.
 - [ ] **PR 13, demo competition:** script that shuffles and renumbers Palmer Penguins into

@@ -53,7 +53,7 @@ so regenerating it needs nothing but Python.
 | `create.spec.ts`      | `/host/new` end to end: a visitor is asked to sign in; problems appear under the file with row and column and Create stays disabled; the corrected file clears them; field messages appear and go; the new competition opens on `/c/:id` and its sample file downloads; an unknown competition says so                                                                              |
 | `collab.spec.ts`      | A host and two participants: each participant's page shows the other's new row without a reload, flashing; rows reorder by best score and a tie goes to the earlier best; after the daily limit the page says when the count resets, Submit is disabled and the server refuses with `limit_reached`. Also the scaffold's two-account and API-status checks                          |
 | `limits.spec.ts`      | Invalid file does not use a slot; the slot after the limit is refused with the reset time; a closed competition refuses                                                                                                                                                                                                                                                             |
-| `close.spec.ts`       | A competition due in two minutes closes on its own; final standings and shake-up appear                                                                                                                                                                                                                                                                                             |
+| `close.spec.ts`       | A competition due in 45 seconds closes on its own (about 70 s): the open page goes from Open to Closing to Closed without a reload; a late submission is refused; the final standings, the viewer's rank, the public board as it stood and the private scores of the chosen submissions appear; `private_scores` stays closed                                                       |
 
 `tests/helpers/room.ts` opens the room's socket as any caller, so a spec can read or write a
 collection without a page that mounts the hooks.
@@ -65,9 +65,12 @@ No action deletes a competition, so a spec's competitions (titled `__test-<time>
 in the local room; delete `.wrangler/state` to start clean. Their files go to the real
 platform storage and are removed in `finally`.
 
-**Paid calls in tests:** none. The close job sends email only when
-`ALLOW_DEBUG_ROUTES` is not `"true"` (the flag `deepspace dev` and `deepspace test` set),
-and logs the message it would have sent instead.
+**Paid calls in tests:** none. The close-out email is not built yet; when it is, the job
+will send it only when `ALLOW_DEBUG_ROUTES` is not `"true"` (the flag `deepspace dev` and
+`deepspace test` set) and log the message otherwise.
+
+**What is different locally:** with that flag set, `createCompetition` accepts a deadline
+15 seconds ahead instead of an hour, so `close.spec.ts` can watch a competition close.
 
 ## On the deployed app
 
