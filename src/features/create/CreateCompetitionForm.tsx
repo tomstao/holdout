@@ -19,6 +19,7 @@ import {
   Textarea,
   useToast,
 } from '@/components/ui'
+import { FileDrop } from '../../components/FileDrop'
 import { callAction } from '../../client/actions'
 import { actionContracts } from '../../contracts/actions'
 import type { Issue } from '../../contracts/result'
@@ -34,7 +35,6 @@ import {
   type FileLook,
   type PickedFiles,
 } from './check'
-import { FileDrop } from './FileDrop'
 
 const FILES: { kind: DatasetFile; label: string; hint: string }[] = [
   {

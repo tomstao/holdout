@@ -1,13 +1,13 @@
 /**
- * One CSV drop zone of the create form: pick or drop a file, then see either
- * what it holds ("6 rows, 2 columns") or its problems, each with its row and
- * column.
+ * One CSV drop zone: pick or drop a file, then see either what it holds
+ * ("6 rows, 2 columns") or its problems, each with its row and column. Used
+ * by the create form and by the Submit tab.
  */
 import { useId, useRef, useState, type DragEvent } from 'react'
 import { CheckIcon, FileTextIcon, TriangleAlertIcon } from 'lucide-react'
 import { Button, cn } from '@/components/ui'
-import type { Issue } from '../../contracts/result'
-import { issuePlace } from './check'
+import { issuePlace } from '../contracts/file-issues'
+import type { Issue } from '../contracts/result'
 
 export interface FileDropProps {
   /** `train.csv`, as the host should recognise it. */
