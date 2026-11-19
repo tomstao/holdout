@@ -109,6 +109,8 @@ export function fakeRoom(
     },
     remove(collection, recordId) {
       calls.push(`remove:${collection}:${recordId}`)
+      const failure = refused(`remove:${collection}`)
+      if (failure) return Promise.resolve(failure)
       rows(collection).delete(recordId)
       return Promise.resolve({ success: true, data: { recordId } })
     },

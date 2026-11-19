@@ -309,6 +309,39 @@ describe('submitPredictions under concurrency', () => {
 describe('submitPredictions when storing fails', () => {
   const quiet = () => vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
+  it('removes the submission when the private score write throws', async () => {
+    const error = quiet()
+    const fake = room()
+    fake.before('create:private_scores', () => {
+      throw new Error('the socket closed')
+    })
+    expect(await submit(fake)).toEqual({
+      success: false,
+      code: 'internal',
+      error: 'We could not record the submission. It did not count. Try again.',
+    })
+    expect(fake.calls).toContain('remove:submissions:generated_1')
+    expect(submissionsOf(fake)).toHaveLength(0)
+    expect(fake.rows('private_scores').size).toBe(0)
+    expect(String(error.mock.calls[0]?.[0])).toContain('the socket closed')
+    error.mockRestore()
+  })
+
+  it('still answers when the clean-up fails too, and says so in the log', async () => {
+    const error = quiet()
+    const fake = room()
+    fake.failOn('create:private_scores')
+    fake.failOn('remove:submissions')
+    expect(await submit(fake)).toMatchObject({ success: false, code: 'internal' })
+    // The one case that leaves a submission without its private score; the close leaves it out.
+    expect(submissionsOf(fake)).toHaveLength(1)
+    expect(fake.rows('private_scores').size).toBe(0)
+    expect(error.mock.calls.map((call) => String(call[0])).join(' | ')).toContain(
+      'could not remove generated_1: fake failure of remove:submissions',
+    )
+    error.mockRestore()
+  })
+
   it('removes the submission when the private score cannot be written', async () => {
     const error = quiet()
     const fake = room()
@@ -347,5 +380,91 @@ describe('submitPredictions when storing fails', () => {
       error: 'This competition cannot score submissions right now.',
     })
     error.mockRestore()
+  })
+})
+
+describe('submitPredictions does the cheap checks first', () => {
+  it('does not read the answer key for a caller who has used every slot', async () => {
+    const fake = room({ dailyLimit: 1 })
+    expect((await submit(fake)).success).toBe(true)
+    const before = fake.calls.length
+    expect(await submit(fake)).toMatchObject({ success: false, code: 'limit_reached' })
+    expect(fake.calls.slice(before)).toEqual(['get:competitions:c1', 'query:submissions'])
+  })
+
+  it('does not read the answer key for a file that fails its own checks', async () => {
+    const fake = room()
+    const answer = await submit(fake, { csv: 'id,label\nt1,Adelie\n' })
+    expect(answer).toMatchObject({ success: false, code: 'invalid_file' })
+    expect(fake.calls).toEqual(['get:competitions:c1', 'query:submissions'])
+    expect(submissionsOf(fake)).toHaveLength(0)
+  })
+
+  it('reads the key before it can say an ID is not a test ID', async () => {
+    const fake = room()
+    const csv = CSV.replace('t4,', 't9,')
+    const answer = await submit(fake, { csv })
+    expect(answer).toMatchObject({ success: false, code: 'invalid_file' })
+    expect(fake.calls).toContain('get:answer_keys:c1')
+    expect(submissionsOf(fake)).toHaveLength(0)
+  })
+})
+
+describe('submitPredictions and numbers too large to score', () => {
+  const PRICES = {
+    taskType: 'regression',
+    metric: 'rmse',
+    targetColumn: 'price',
+    labels: undefined,
+  }
+  const priceKey = {
+    competitionId: 'c1',
+    rows: [
+      ['t1', '10', 'public'],
+      ['t2', '20', 'public'],
+      ['t3', '30', 'private'],
+      ['t4', '40', 'private'],
+    ],
+    rowCount: 4,
+  }
+  const prices = (values: string[]) =>
+    formatCsv(
+      ['id', 'price'],
+      values.map((value, index) => [`t${index + 1}`, value]),
+    )
+  const regressionRoom = () => {
+    const fake = room(PRICES)
+    fake.rows('answer_keys').set('c1', priceKey)
+    return fake
+  }
+
+  it('scores an ordinary regression file', async () => {
+    const answer = await submit(regressionRoom(), { csv: prices(['10', '20', '30', '50']) })
+    expect(answer).toMatchObject({ success: true, data: { publicScore: 0, slot: 1 } })
+  })
+
+  it('refuses a huge prediction the same way on a public row and on a private one', async () => {
+    const onPublic = regressionRoom()
+    const onPrivate = regressionRoom()
+    const first = await submit(onPublic, { csv: prices(['1e200', '20', '30', '40']) })
+    const second = await submit(onPrivate, { csv: prices(['10', '20', '1e200', '40']) })
+    const issue = (row: number) => ({
+      success: false,
+      code: 'invalid_file',
+      issues: [
+        {
+          path: [`row ${row}`, 'price'],
+          message: '"1e200" is too large to score. Use a number between -1e100 and 1e100.',
+        },
+      ],
+    })
+    expect(first).toMatchObject(issue(2))
+    expect(second).toMatchObject(issue(4))
+    // Neither is stored or uses a slot, and neither reads the key: nothing tells the rows apart.
+    for (const fake of [onPublic, onPrivate]) {
+      expect(submissionsOf(fake)).toHaveLength(0)
+      expect(fake.rows('private_scores').size).toBe(0)
+      expect(fake.calls).toEqual(['get:competitions:c1', 'query:submissions'])
+    }
   })
 })
