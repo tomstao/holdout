@@ -122,8 +122,11 @@ needed. S8 moved to day 4, where the close-out email is built.
   - [x] **13a, the files:** `scripts/demo/make-demo.ts` shuffles, renumbers and splits
         Palmer Penguins into train, test and solution files. Its test runs them through
         the app's dataset rules.
-  - [ ] **13b, on production (the owner):** deploy `main`; run the script; create the
-        competition at `/host/new` with the values the script prints.
+  - [ ] **13b, on production (the owner):** run the script; create the competition at
+        `/host/new` with the values the script prints. The deploy is done: release #4,
+        2026-11-19, the code of `main` at `6d09dec`. It was made from a branch with two
+        uncommitted doc files, so the release records no commit
+        ([lessons](lessons.md)); the last deploy for v1.0.0 comes from a clean `main`.
   - [ ] **13c:** point the landing's first call to action at it ("Try the demo
         competition").
 

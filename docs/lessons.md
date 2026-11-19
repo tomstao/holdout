@@ -457,3 +457,23 @@ After the deployed run the four spike collections were empty and the file storag
 - **A live region that should speak one thing must contain only that thing.** "Your rank
   is 3." changes when the rank does. "You are 3 of 12." would also be spoken every time
   someone new joined.
+
+## 2026-11-19: the first deploy with features (release #4)
+
+- **A deploy ships the folder as it is, not `main`.** The owner deployed while the agent
+  had the folder on a docs branch with two uncommitted files. The deploy said so
+  ("shipping the working tree of docs/readme WITH uncommitted changes") and recorded no
+  commit. The two files were `README.md` and a doc, so the live code equals `main`, but
+  nothing proves it afterwards. Before handing a deploy to the owner: the folder on
+  `main`, `git status` clean, and say so. `npx deepspace releases` shows a release made
+  otherwise as "dirty worktree".
+- **What can be checked on the live site without writing to it:** the landing's HTML
+  with `curl` (title, headline, canonical, theme); a signed-out browser visit through
+  Playwright pointed at the live URL (the landing animates, its button reaches `/home`,
+  the empty list, a competition that does not exist, the sign-in gate; no console
+  errors, no failed responses); `npx deepspace logs` (the close task runs every minute
+  and reports ok). The room was empty, which is the one state the local room could not
+  show.
+- **Test competitions on the live site would stay there.** There is no delete, and they
+  are listed for everyone. The acceptance walk-through on production is the owner's
+  call, not something to run unasked.
