@@ -33,7 +33,7 @@
     "arch": "depcruise src worker.ts --config .dependency-cruiser.cjs",
     "design:gate": "node scripts/design-gate.ts",
     "validate": "npm run type-check && npm run test:unit",
-    "check": "npm run format:check && npm run lint && npm run type-check && npm run arch && npm run test:coverage"
+    "check": "npm run format:check && npm run lint && npm run type-check && npm run arch && npm run design:gate && npm run test:coverage"
   },
   "dependencies": {
     "@base-ui/react": "~1.6.0",

@@ -8,8 +8,7 @@
  * landing page copy.
  *
  * Run: npm run design:gate (Node 22.18+ runs this TypeScript directly).
- * It is expected to fail until the design phase is done (docs/plan.md, day 4);
- * after that it joins `npm run check`.
+ * It is part of `npm run check`, so CI refuses a page that fails it.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
