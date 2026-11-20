@@ -55,11 +55,25 @@ test.describe('Smoke tests', () => {
     expect(copy.length).toBeGreaterThan(5)
     expect(count(copy.join(' '))).toBeLessThan(150)
 
-    await page.getByTestId('landing-cta').click()
-    await expect(page).toHaveURL(/\/home$/)
-    await expect(page.getByRole('heading', { level: 1, name: 'Competitions' })).toBeVisible({
-      timeout: 15000,
-    })
+    // The first button goes to the demo competition where there is one: in the live room,
+    // so in a production build only (src/demo.ts). This server has none and keeps the
+    // list. Either way the label has to agree with where the button leads.
+    const cta = page.getByTestId('landing-cta')
+    const target = await cta.getAttribute('href')
+    if (target === '/home') {
+      await expect(cta).toHaveText('See the competitions')
+      await cta.click()
+      await expect(page).toHaveURL(/\/home$/)
+      await expect(page.getByRole('heading', { level: 1, name: 'Competitions' })).toBeVisible({
+        timeout: 15000,
+      })
+    } else {
+      await expect(cta).toHaveText('Try the demo competition')
+      expect(target).toMatch(/^\/c\/[0-9a-f-]{36}$/)
+      await cta.click()
+      await expect(page).toHaveURL(/\/c\/[0-9a-f-]{36}$/)
+      await expect(page.getByTestId('competition-title')).toBeVisible({ timeout: 15000 })
+    }
   })
 
   test('the landing leaderboard moves, and stays still when asked to', async ({ page }) => {
