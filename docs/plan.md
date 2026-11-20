@@ -154,10 +154,16 @@ needed. S8 was run on 2026-11-20, with the close-out email: both copies arrived.
       screen; side by side with `docs/design/refs/`; the core loop on the deployed app with
       a fresh test account; two real sessions for the leaderboard; every failure state
       (invalid file, limit reached, closed, signed out, not found).
+      Done on 2026-11-20: the check and all 41 specs; the core loop, two sessions and
+      every failure state on the deployed app (the walk-through below). Not done, so the
+      box stays open: the side-by-side, because the reference screenshots were never
+      taken; the screens were looked at in the specs' screenshots instead.
 - [x] Independent review by a fresh agent context of the actions, RBAC and the close;
       adjudicate each finding against the code. Done 2026-11-19; the findings and what
       was done about each are in the table below.
-- [ ] Walk the spec's acceptance criteria one by one on production.
+- [x] Walk the spec's acceptance criteria one by one on production. Done 2026-11-20 with
+      `tests/live/acceptance.live.ts` and three test accounts, at the owner's word; the
+      results are in the table below.
 - [ ] README and [submission-notes.md](submission-notes.md) finished; deploy from a clean
       `main`; tag `v1.0.0`.
 
@@ -166,16 +172,45 @@ needed. S8 was run on 2026-11-20, with the close-out email: both copies arrived.
 A GitHub-source release records no commit, so this table is the record. Add a row with
 each deploy.
 
-| Release | When (UTC)       | Code                                                         | Checked on the live site                                                                                                                                                                                       |
-| ------- | ---------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| #1      | 2026-11-19 16:30 | The scaffold                                                 | It loads                                                                                                                                                                                                       |
-| #2, #3  | 2026-11-19 17:38 | The day-1 spikes, then rolled back to #1                     | Spikes S1 to S7 ([lessons](lessons.md))                                                                                                                                                                        |
-| #4      | 2026-11-19 21:59 | `main` at `6d09dec`, from a folder with two uncommitted docs | As a visitor: landing, empty list, not-found, sign-in gate; no console errors; the close task runs every minute                                                                                                |
-| #5      | 2026-11-19 22:46 | `main` at `2c2b17a`, from a clean `main`                     | The review's fixes: every `/ws` path but the app's room is 404; integrations and agent tools 404; upload 405; a visitor's write to `canvas-settings` refused; the list still loads                             |
-| #6      | 2026-11-20 02:34 | `main` at `a2c5657`, from a clean `main`                     | The landing's first button reads "Try the demo competition" and opens the demo; the smoke spec passes against the live site, signed out (10 of 10); the close task ran after the deploy; no errors in the logs |
+| Release | When (UTC)       | Code                                                         | Checked on the live site                                                                                                                                                                                                                                                                           |
+| ------- | ---------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #1      | 2026-11-19 16:30 | The scaffold                                                 | It loads                                                                                                                                                                                                                                                                                           |
+| #2, #3  | 2026-11-19 17:38 | The day-1 spikes, then rolled back to #1                     | Spikes S1 to S7 ([lessons](lessons.md))                                                                                                                                                                                                                                                            |
+| #4      | 2026-11-19 21:59 | `main` at `6d09dec`, from a folder with two uncommitted docs | As a visitor: landing, empty list, not-found, sign-in gate; no console errors; the close task runs every minute                                                                                                                                                                                    |
+| #5      | 2026-11-19 22:46 | `main` at `2c2b17a`, from a clean `main`                     | The review's fixes: every `/ws` path but the app's room is 404; integrations and agent tools 404; upload 405; a visitor's write to `canvas-settings` refused; the list still loads                                                                                                                 |
+| #6      | 2026-11-20 02:34 | `main` at `a2c5657`, from a clean `main`                     | The landing's first button reads "Try the demo competition" and opens the demo; the smoke spec passes against the live site, signed out (10 of 10); the close task ran after the deploy; no errors in the logs                                                                                     |
+| #7      | 2026-11-20 03:29 | `main` at `21af317`, from a clean `main`                     | The smoke spec passes against the live site, signed out (10 of 10); no errors in the logs; the close task ran four seconds after the deploy; the walk-through competition closed on its own 30 seconds after its deadline and the new email step logged `"email":"none"` for its test-account host |
 
 Signed in, on release #5: the owner's browser created the demo competition and saw its
-page as the host. Not checked on any release: submit, edit, the close.
+page as the host. Not checked on any release: editing a competition (F5), and the write
+probes against the closed collections, which pass locally and would leave a row on the
+live site if one ever succeeded.
+
+### The acceptance walk-through, 2026-11-20
+
+On the deployed app, with the Alice, Bob and Carol test accounts and a signed-out
+browser. It left one competition there for good:
+<https://holdout.app.space/c/25d0644f-d1a8-4468-9153-9ff598910a16>, "[TEST] Acceptance
+walk-through 2026-11-20T02:53Z", six rows, a daily limit of 2. Criteria 1 to 4 ran on
+release #6; the competition closed on release #7.
+
+| #   | Criterion                                                             | Result                                                                                                                                                                                                                                                                                                                     |
+| --- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Create from three valid files; three bad ones say where               | Pass. The form named file, row and column for each bad file and kept Create disabled; the server refused one sent past the form; the competition was created through the form                                                                                                                                              |
+| 2   | A valid file is scored; another open page shows the row               | Pass. Carol scored 0.3333; the row appeared on Bob's page and a visitor's without a reload, and Bob's on Carol's                                                                                                                                                                                                           |
+| 3   | A bad file uses no slot; the file after the limit is refused          | Pass. `invalid_file` with row and column, the count stayed at 0 of 2; the third file got `limit_reached` and the page said when the count resets                                                                                                                                                                           |
+| 4   | Nobody reads `answer_keys` or `private_scores`                        | Pass for reads: a visitor, both participants and the host were sent no row of either (a visitor and a participant again after the close), while the same socket delivered the public rows. The agent tools answer 404. A submission's answer has its five fields and no private score. The write probes were not run there |
+| 5   | It closes on its own; every viewer gets the standings; the host email | Pass for the close: a page opened before the deadline went to Closed with no reload, 30 seconds after the deadline; a late file was refused; the public leader finished last ("Up 1 place", "Down 1 place") for a visitor, both participants and the host. The email: see below                                            |
+| 6   | `npm run check`, the design gate and all specs pass                   | Pass, locally and in CI: 435 unit tests, 41 specs                                                                                                                                                                                                                                                                          |
+
+The deadline has to be an hour ahead on a deployed app, not the two minutes criterion 5
+names. The close job's line in the live log read
+`{"status":"closed","participants":2,"submissions":3,"email":"none"}`: the host was a
+test account, whose address mail cannot reach. The email itself is checked with a
+competition hosted by the owner's account; its result is recorded with the final pass.
+
+Also seen signed out on release #6: an unknown competition says so; `/host/new` and the
+Submit tab ask for a sign-in; both actions answer 401 without a token.
 
 ### The independent review, 2026-11-19
 

@@ -618,3 +618,33 @@ After the deployed run the four spike collections were empty and the file storag
   the deployed job.
 - **Never log what a provider says back without cleaning it.** A refusal can quote the
   address it refused. The job replaces anything shaped like an address before logging.
+
+## 2026-11-20: the acceptance walk-through on the live site
+
+- **One competition can carry the whole walk-through.** A spec per criterion would have
+  left a dozen test competitions listed for good. One, created through the form with a
+  daily limit of 2 and a deadline an hour out, covered create, submit, the limit, the
+  closed collections and the close.
+- **Build the test data so the result is forced.** Two files, each right on one Adelie
+  row and a different one: the split keeps one row of each label on either side, so
+  whoever leads the public board must finish last. The shake-up shows whatever the
+  random split is, and the spec can assert it.
+- **Rehearse a one-shot run against a local server first.** `HOLDOUT_LIVE_URL` pointed
+  the same spec at a local server, with a local competition due in two minutes standing
+  in for the hour. Both halves passed there before either touched the live site, and
+  both then passed there first time.
+- **Split a test around a long wait, and pass the state in a file.** "walk" writes the
+  id and the deadline; "close" reads them an hour later. "close" can run again after the
+  fact, so only the watching of the deadline is one-shot.
+- **Playwright empties its output folder at the start of every run.** The first half's
+  screenshots were copied out before the second half started.
+- **A page kept open for an hour still gets the close.** The socket held, or came back,
+  and the status went to Closed without a reload, 30 seconds after the deadline.
+- **`deepspace logs --search` did not find a job's log line that a plain fetch showed.**
+  Fetch the window and filter it yourself.
+- **A deploy in the middle of the wait was a gain.** The competition was created on one
+  release and closed on the next, so the new close code ran once on the live site with a
+  result that could be read in the log, before any real host depended on it.
+- **A doc table can name a file that was never written.** `limits.spec.ts` was in the
+  test table from the plan; its cases live in three other specs. Check a table of files
+  against the folder when touching it.
