@@ -60,7 +60,6 @@ so regenerating it needs nothing but Python.
 | `surface.spec.ts`     | Against the running Worker: every `/ws` path but the app's room is 404; a visitor's and a member's write to the built-in collection is refused; a member gets 404 from an integration and from the agent tool route, and 405 from an upload                                                                                                                                                                                                                                                                             |
 | `create.spec.ts`      | `/host/new` end to end: a visitor is asked to sign in; problems appear under the file with row and column and Create stays disabled; the corrected file clears them; field messages appear and go; the new competition opens on `/c/:id` and its sample file downloads; an unknown competition says so                                                                                                                                                                                                                  |
 | `collab.spec.ts`      | A host and two participants: each participant's page shows the other's new row without a reload, flashing; rows reorder by best score and a tie goes to the earlier best; after the daily limit the page says when the count resets, Submit is disabled and the server refuses with `limit_reached`. Also the scaffold's two-account and API-status checks; the viewer's rank is in a polite live region; on a window too short to show second place, its owner still sees their row and the other participant does not |
-| `limits.spec.ts`      | Invalid file does not use a slot; the slot after the limit is refused with the reset time; a closed competition refuses                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `close.spec.ts`       | A competition due in 45 seconds closes on its own (about 70 s): the open page goes from Open to Closing to Closed without a reload; a late submission is refused; the final standings, the viewer's rank, the public board as it stood and the private scores of the chosen submissions appear; `private_scores` stays closed                                                                                                                                                                                           |
 | `edit.spec.ts`        | The host's Edit tab: a short title refused under its field; new text saved and shown on a participant's open page without a reload; moving the deadline asks first, names the new time, and the participant's countdown follows. A participant has no Edit tab. Through the API: no token, a participant, an earlier deadline and an unknown competition are each refused, and the record is unchanged                                                                                                                  |
 
@@ -85,7 +84,29 @@ they host sends nothing on the live site either (`email: "none"` in the job's re
 
 ## On the deployed app
 
-Done by hand on day 5 and after each deploy that touches the core loop: sign in with a
-fresh account, create a competition from the demo files, submit from a second account,
-watch the leaderboard in a third window, let a two-minute competition close. Check
-`npx deepspace logs` for errors and `npx deepspace app usage` for spend.
+The spec's acceptance criteria are walked by `tests/live/acceptance.live.ts`, with its own
+config and three test accounts (a host and two participants). It is not part of
+`npx deepspace test run`. **Run it only when the owner asks:** each run of "walk" leaves
+one competition on the live site for good, titled `[TEST] Acceptance walk-through
+<time>`, listed for everyone, and gives the three accounts a `users` row there.
+
+```sh
+npx playwright test -c tests/live/playwright.live.config.ts -g "walk"    # about 30 s
+npx playwright test -c tests/live/playwright.live.config.ts -g "close:"  # waits for the deadline
+```
+
+| Test    | Asserts                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "walk"  | Criteria 1 to 4. The form names the file, row and column of three bad files and the server refuses one sent past it; a competition is created through the form; a visitor sees it open with its downloads; a bad predictions file is refused and uses no slot; a valid one is scored and appears on two other screens without a reload; the file after the daily limit is refused with the reset time; the host may not submit; a visitor, both participants and the host are sent no row of `answer_keys` or `private_scores` while the same socket delivers the public rows; the agent tools answer 404 |
+| "close" | Criterion 5, without the email. On a page opened before the deadline the status goes to Closed with no reload; a late submission is refused; the final standings show the public leader last, with "Up 1 place" and "Down 1 place"; a visitor, the other participant and the host get the same standings; the public board as it stood is one click away; the closed collections stay closed                                                                                                                                                                                                              |
+
+A deployed app wants a deadline at least an hour ahead, so "walk" sets 63 minutes and
+writes the competition's id and deadline to a file (`HOLDOUT_LIVE_STATE`, by default in
+the temp folder) that "close" reads. "close" can be run again after the fact; only its
+watching of the deadline is lost. The write probes of `rbac.spec.ts` are not repeated
+there: a probe that succeeded would leave a row on the live site.
+
+To rehearse "walk", point `HOLDOUT_LIVE_URL` at a local server that is already running.
+
+After a deploy that touches the core loop, also check `npx deepspace logs` for errors and
+`npx deepspace app usage` for spend.
