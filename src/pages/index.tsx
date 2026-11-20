@@ -43,7 +43,11 @@ import { SplitDiagram } from '../components/landing/SplitDiagram'
 import { Seo } from '../components/Seo'
 import { buttonVariants } from '../components/ui/Button'
 import { Wordmark } from '../components/Wordmark'
+import { DEMO_COMPETITION_ID, landingCallToAction } from '../demo'
 import { seo } from '../seo'
+
+// The demo competition on the live site; the list wherever there is none (src/demo.ts).
+const FIRST_ACTION = landingCallToAction(DEMO_COMPETITION_ID)
 
 const STEPS = [
   'You predict every row of test.csv.',
@@ -92,11 +96,11 @@ export default function Landing() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  to="/home"
+                  to={FIRST_ACTION.to}
                   data-testid="landing-cta"
                   className={buttonVariants({ size: 'lg' })}
                 >
-                  See the competitions
+                  {FIRST_ACTION.label}
                 </Link>
                 <Link to="/host/new" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
                   Host a competition
