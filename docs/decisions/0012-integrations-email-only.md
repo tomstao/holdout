@@ -1,7 +1,8 @@
 # 0012. One integration: the close-out email
 
-**Status:** Accepted, 2026-11-19. Spike S8 confirmed delivery with `bcc` on 2026-11-20 and
-the email is built ([below](#built-2026-11-20)).
+**Status:** Accepted, 2026-11-19. Who receives the email is superseded by
+[ADR 0017](0017-close-email-to-the-host-alone.md) (2026-11-20): the host alone, no `bcc`.
+Spike S8 was run on 2026-11-20 and the email is built ([below](#built-2026-11-20)).
 
 ## Context
 
@@ -44,28 +45,21 @@ a job"; the call from the job is the same request, signed with the owner's token
 `buildCronContext`, and is first exercised for real by the first competition a real
 account hosts that closes on the live site.
 
-**What the build settled, where it differs from the decision above:**
+**What the build settled:**
 
-- **Not always one request.** The platform sends through Resend (DeepSpace's docs),
-  which is understood to take 50 recipients in a message; that limit was not tested
-  here. The job sends one message per 49 participants, the host on
-  each. A class of up to 49 is one request; the 200 the spec is designed for are five
-  ($0.065).
+- **Who receives it changed:** the host alone
+  ([ADR 0017](0017-close-email-to-the-host-alone.md)). With participants in `bcc`, each
+  of them was shown the host's address. So the spike's `bcc` and `reply_to` are not
+  used.
 - **Once at most.** Only the step that sets `closed` sends, after that write. Nothing
   records that the email went out, so nothing can send it again; a step that dies in
   between sends none ([ADR 0009](0009-close-with-cron-and-a-job.md)). A refused send is
   logged and does not fail the job.
-- **The participants see the host's address** (it is the `to` and the `reply_to`), and
-  nobody else's. The host is a teacher writing to a class; a participant can reply to
-  them. This is the decision above as written. The owner was asked whether to hide the
-  host too (everyone in `bcc`, replies to nobody) and had not answered when this was
-  built; it would be a change to `closeEmails` alone.
 - **The sender is DeepSpace's name and address,** so the subject and the first line say
   "Holdout".
-- **Addresses mail cannot reach are left out** (`.test`, `.example`, `.invalid`,
-  `.localhost`, `example.com`): the platform's test accounts use `.test`. A host with
-  such an address gets no email, and neither do their participants.
-- **Addresses stay out of everything but the request:** not in the job's payload or
+- **A host whose address mail cannot reach gets none** (`.test`, `.example`, `.invalid`,
+  `.localhost`, `example.com`): the platform's test accounts use `.test`.
+- **The address stays out of everything but the request:** not in the job's payload or
   result, and a provider's error is logged with any address replaced.
 - **Plain text.** No HTML, so nothing a title could inject; titles and names are cut to
   one line.
