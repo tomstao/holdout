@@ -171,6 +171,9 @@ pinned and marked when it is below the fold.
 5. The competition becomes `closed`; the final standings and the chosen submissions'
    private scores become public.
 6. One email goes to the host, with the participants in `bcc`: the top three and a link.
+   Plain text, replies to the host, sent once at most; a competition with more than 49
+   participants gets one message per 49
+   ([ADR 0012](decisions/0012-integrations-email-only.md#built-2026-11-20)).
 
 **Final standings view** (Leaderboard tab after close): rank, name, private score,
 public rank, and the shake-up (public rank minus private rank: "▲ 3", "▼ 2", "–"). A

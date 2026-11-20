@@ -16,12 +16,13 @@ only through a new record that supersedes it.
 | [0009](0009-close-with-cron-and-a-job.md)                  | Close competitions with a cron task that enqueues a job                  | Accepted; S5 and S7 confirmed |
 | [0010](0010-score-inside-the-submit-action.md)             | Score inside the submit action, not in a background job                  | Accepted; S2 confirmed        |
 | [0011](0011-datasets-in-host-files-behind-a-route.md)      | Datasets in the host's private folder, served by a Worker route          | Accepted; S3 confirmed        |
-| [0012](0012-integrations-email-only.md)                    | One integration: the close-out email                                     | Accepted; S8 on day 4         |
+| [0012](0012-integrations-email-only.md)                    | One integration: the close-out email                                     | Accepted; S8 confirmed        |
 | [0013](0013-docs-in-the-repo.md)                           | Keep the planning documents in the repository                            | Accepted                      |
 | [0014](0014-source-control-github.md)                      | Ship from GitHub source                                                  | Accepted                      |
 | [0015](0015-theme-status-colours-and-self-hosted-fonts.md) | The theme sets its own status colours; fonts are served by the app       | Accepted                      |
 | [0016](0016-serve-only-what-the-app-uses.md)               | The Worker serves only what the app uses: unused scaffold routes removed | Accepted                      |
 
 The day-1 spikes ([plan](../plan.md#de-risking-spikes-day-1)) tested the open questions,
-locally and on the deployed app; each record ends with its result. S8 (the email) moved to
-day 4 ([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)).
+locally and on the deployed app; each record ends with its result. S8 (the email) was run
+on 2026-11-20 with one send to two of the owner's inboxes
+([lessons](../lessons.md#2026-11-19-day-1-spikes-s1-to-s8)).

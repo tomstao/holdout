@@ -51,7 +51,7 @@ goes into [lessons.md](lessons.md) and updates its decision's status.
 
 Results (2026-11-19, locally and on the deployed app):
 [lessons.md](lessons.md#2026-11-19-day-1-spikes-s1-to-s8). S1 to S7 pass and no fallback is
-needed. S8 moved to day 4, where the close-out email is built.
+needed. S8 was run on 2026-11-20, with the close-out email: both copies arrived.
 
 ## Day 1: domain core
 
@@ -108,9 +108,12 @@ needed. S8 moved to day 4, where the close-out email is built.
       job per [ADR 0009](decisions/0009-close-with-cron-and-a-job.md); final standings view
       with shake-up. Spec: a competition due in 45 seconds closes on its own. Standings are
       written 20 at a time.
-- [ ] **PR 11b, close-out email:** first spike S8 (one send with `bcc` and `reply_to` to two
-      owner-controlled addresses), then the email from the job, outside test mode. Needs
-      the owner's two addresses. First in the cut order below.
+- [x] **PR 11b, close-out email:** spike S8 first (one send with `bcc` and `reply_to` to
+      two of the owner's inboxes; both arrived), then the email from the job: the host in
+      `to`, the participants in `bcc`, 49 to a message, sent once at most and never from
+      a local run ([ADR 0012](decisions/0012-integrations-email-only.md#built-2026-11-20)).
+      Not yet seen on the live site: it needs a competition hosted by a real account to
+      close there.
 - [x] **PR 12, design**, in three parts so each can be reviewed on its own:
   - [x] **12a, theme and chrome:** the Holdout theme with an AA check, IBM Plex served by
         the app, the wordmark and favicon, Navigation

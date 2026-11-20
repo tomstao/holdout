@@ -94,7 +94,10 @@ Both spikes ran again on holdout.app.space ([lessons](../lessons.md#2026-11-19-d
 - **A submission without its private score is left out** of the standings instead of
   failing the close.
 
-Not built: the email. It waits for spike S8.
+The email was built on 2026-11-20, after spike S8
+([ADR 0012](0012-integrations-email-only.md#built-2026-11-20)). It is sent by the step
+that sets `closed`, after that write has succeeded. A step that dies between the write
+and the send sends nothing, and no later run does either: once at most, never twice.
 
 Checked by 15 unit tests of the two functions and by `tests/close.spec.ts`, where a
 competition due in 45 seconds is closed by a real cron tick and job in about 70 seconds.
