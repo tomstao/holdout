@@ -614,8 +614,9 @@ After the deployed run the four spike collections were empty and the file storag
   needs a competition hosted by a real account.
 - **Worker code outside the cron task can still make an owner-billed call:**
   `buildCronContext(env, env.OWNER_USER_ID, room).integrations.call(...)` needs only the
-  environment. Type-checked and unit-tested with a fake sender; not yet seen running in
-  the deployed job.
+  environment. Unit-tested with a fake sender, then seen in the deployed job: one
+  competition hosted by a real account, an hour's wait, `"email":"sent"` in the log and
+  one more call in `npx deepspace app usage`.
 - **Never log what a provider says back without cleaning it.** A refusal can quote the
   address it refused. The job replaces anything shaped like an address before logging.
 
