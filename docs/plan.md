@@ -131,7 +131,7 @@ needed. S8 moved to day 4, where the close-out email is built.
         submission), and no route to the answers (404).
   - [x] **13c:** the landing's first button opens it ("Try the demo competition") in a
         production build; any other build keeps "See the competitions" and `/home`
-        (`src/demo.ts`). Live with the next deploy.
+        (`src/demo.ts`). Live since release #6.
 
 - [x] **PR 14, edit (F5):** `updateCompetition` (host only, while open; a deadline only
       moves later), the Edit tab with a confirmation for the deadline, and the close job
@@ -161,14 +161,16 @@ needed. S8 moved to day 4, where the close-out email is built.
 A GitHub-source release records no commit, so this table is the record. Add a row with
 each deploy.
 
-| Release | When (UTC)       | Code                                                         | Checked on the live site                                                                                                                                                           |
-| ------- | ---------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| #1      | 2026-11-19 16:30 | The scaffold                                                 | It loads                                                                                                                                                                           |
-| #2, #3  | 2026-11-19 17:38 | The day-1 spikes, then rolled back to #1                     | Spikes S1 to S7 ([lessons](lessons.md))                                                                                                                                            |
-| #4      | 2026-11-19 21:59 | `main` at `6d09dec`, from a folder with two uncommitted docs | As a visitor: landing, empty list, not-found, sign-in gate; no console errors; the close task runs every minute                                                                    |
-| #5      | 2026-11-19 22:46 | `main` at `2c2b17a`, from a clean `main`                     | The review's fixes: every `/ws` path but the app's room is 404; integrations and agent tools 404; upload 405; a visitor's write to `canvas-settings` refused; the list still loads |
+| Release | When (UTC)       | Code                                                         | Checked on the live site                                                                                                                                                                                       |
+| ------- | ---------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #1      | 2026-11-19 16:30 | The scaffold                                                 | It loads                                                                                                                                                                                                       |
+| #2, #3  | 2026-11-19 17:38 | The day-1 spikes, then rolled back to #1                     | Spikes S1 to S7 ([lessons](lessons.md))                                                                                                                                                                        |
+| #4      | 2026-11-19 21:59 | `main` at `6d09dec`, from a folder with two uncommitted docs | As a visitor: landing, empty list, not-found, sign-in gate; no console errors; the close task runs every minute                                                                                                |
+| #5      | 2026-11-19 22:46 | `main` at `2c2b17a`, from a clean `main`                     | The review's fixes: every `/ws` path but the app's room is 404; integrations and agent tools 404; upload 405; a visitor's write to `canvas-settings` refused; the list still loads                             |
+| #6      | 2026-11-20 02:34 | `main` at `a2c5657`, from a clean `main`                     | The landing's first button reads "Try the demo competition" and opens the demo; the smoke spec passes against the live site, signed out (10 of 10); the close task ran after the deploy; no errors in the logs |
 
-Not checked on any release: anything signed in (create, submit, edit, the close).
+Signed in, on release #5: the owner's browser created the demo competition and saw its
+page as the host. Not checked on any release: submit, edit, the close.
 
 ### The independent review, 2026-11-19
 
