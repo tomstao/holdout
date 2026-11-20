@@ -118,15 +118,20 @@ needed. S8 moved to day 4, where the close-out email is built.
   - [x] **12b, `/home`:** the competition list with its declared pattern (spec F6).
   - [x] **12c, landing:** the static page with its Design Direction block; `design:gate`
         added to `npm run check`.
-- [ ] **PR 13, demo competition:**
+- [x] **PR 13, demo competition:**
   - [x] **13a, the files:** `scripts/demo/make-demo.ts` shuffles, renumbers and splits
         Palmer Penguins into train, test and solution files. Its test runs them through
         the app's dataset rules.
-  - [ ] **13b, on production (the owner):** run the script; create the competition at
-        `/host/new` with the values the script prints. The app is deployed; the releases
-        are listed below.
-  - [ ] **13c:** point the landing's first call to action at it ("Try the demo
-        competition").
+  - [x] **13b, on production:** the owner ran the script; the competition was created at
+        `/host/new` in the owner's browser on 2026-11-19 (release #5):
+        <https://holdout.app.space/c/ff94aae4-8438-4ed6-a3c4-37bbd7850ca2>, "Palmer
+        Penguins (practice)", classification by accuracy, 136 test rows of which 41 are
+        public, closing 2027-02-17 02:00 UTC. Checked signed out: the title, Open, the
+        countdown, an empty leaderboard, the three downloads (train, test, sample
+        submission), and no route to the answers (404).
+  - [x] **13c:** the landing's first button opens it ("Try the demo competition") in a
+        production build; any other build keeps "See the competitions" and `/home`
+        (`src/demo.ts`). Live with the next deploy.
 
 - [x] **PR 14, edit (F5):** `updateCompetition` (host only, while open; a deadline only
       moves later), the Edit tab with a confirmation for the deadline, and the close job

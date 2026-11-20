@@ -559,3 +559,28 @@ After the deployed run the four spike collections were empty and the file storag
 - **Git Bash rewrites a path that starts with `/` in a command's arguments**
   (`/home` became `C:/Program Files/Git/home`). `MSYS_NO_PATHCONV=1` stops it, and then
   applies to every argument, output files included.
+
+## 2026-11-19: the demo competition on the live site
+
+- **A fact about the live site is not an `.env` file.** The demo's id is public and
+  true of production only, which is what `.env.production` is for in Vite. DeepSpace
+  treats every `.env*` file as a secret file (its push preflight refuses a committed
+  one; `secrets upload` reads them), and its docs give no build-time variables for the
+  browser. So the id is a constant in `src/demo.ts`, handed out only when
+  `import.meta.env.PROD` is true.
+- **`deepspace dev` and `deepspace test run` serve with `vite`, not a build,** so
+  `import.meta.env.PROD` is false in both and in Vitest. A switch on it cannot be seen
+  in any of them. Check it in the build: `npm run build`, then read the button in
+  `dist/client/index.html`.
+- **The prerendered page and the browser bundle must agree, or hydration complains.**
+  Both come from the same `vite build`, so both read the same `PROD`. A value taken at
+  run time (the hostname, say) would differ between the two.
+- **A spec that can run against two servers reads what the page says and checks it is
+  consistent.** The smoke spec takes the button's target and asserts the label that
+  goes with it, then follows it. The demo branch runs only against the live site.
+- **Before a click that cannot be undone, read the form's state, not the screen.** The
+  browser extension set the three file inputs and the text fields directly. Each
+  input's React props (`__reactProps…` on the element) showed the form held the same
+  values the page displayed, and the three drops said "Ready", before Create.
+- **Creating took between four and nine seconds on the live site** for 17 kB of files.
+  The button shows its spinner the whole time. Wait; do not click again.

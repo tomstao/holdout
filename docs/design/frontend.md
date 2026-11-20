@@ -148,8 +148,10 @@ As built:
 - "How the split works" is a numbered list of four sentences beside a drawing: 100 test
   rows as an answer sheet, 30 scattered public ones in ink, 70 hatched. The share is the
   create form's default.
-- The first call to action reads "See the competitions" and goes to `/home`. It becomes
-  "Try the demo competition" when the demo exists (plan PR 13).
+- The first call to action reads "Try the demo competition" and opens the practice
+  competition. That competition exists on the live site only, so only a production build
+  has its id (`src/demo.ts`); any other build reads "See the competitions" and goes to
+  `/home`. The label never promises a demo its target lacks.
 - The page imports the button's styles from `components/ui/Button`, not the kit's index,
   and nothing from `deepspace`, so the static page stays light.
 
