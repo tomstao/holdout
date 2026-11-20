@@ -19,7 +19,7 @@
  */
 import type { ActionTools } from 'deepspace/worker'
 import { typedRecords } from '../actions/records'
-import { closeEmails, type CloseEmail, type CloseEmailInput } from '../domain/close-email'
+import { closeEmail, type CloseEmail, type CloseEmailInput } from '../domain/close-email'
 import { METRIC_INFO } from '../domain/metrics'
 import { finalStandings, type FinalStanding, type PrivatelyScored } from '../domain/ranking'
 
@@ -58,8 +58,8 @@ export interface CloseJobDeps extends CloseDeps {
   /** The app's public origin, for the link in the email. No trailing slash. */
   origin: string
   /**
-   * Sends one close-out message. Left out where nothing may be sent (`deepspace dev`
-   * and `deepspace test`): the messages are still built, and counted in the log.
+   * Sends the close-out message. Left out where nothing may be sent (`deepspace dev`
+   * and `deepspace test`): the message is still built, and the log says it was not sent.
    */
   sendEmail?: (message: CloseEmail) => Promise<void>
 }
@@ -216,13 +216,12 @@ export async function closeCompetition(
 
   // Only the step that closed the competition sends the email, and only after the
   // write above succeeded. A retried or repeated job finds it closed and returns
-  // early, so nobody gets the email twice. The price: a step that dies right here
+  // early, so the host never gets it twice. The price: a step that dies right here
   // sends none, and the page shows the results either way.
   const email = await sendCloseEmail(
     {
       title: competition.title,
       url: `${deps.origin}/c/${competitionId}`,
-      hostName: competition.hostName,
       metricName: METRIC_INFO[competition.metric].name,
       scoreDecimals: competition.scoreDecimals,
       standings,
@@ -238,57 +237,34 @@ export async function closeCompetition(
 const withoutAddresses = (text: string) => text.replace(/[^\s@<>"']+@[^\s@<>"']+/g, '<address>')
 
 /**
- * Build and send the close-out email. Never throws: the competition is closed, and a
- * failed job would be retried into a competition that needs nothing more. The
- * addresses go from the `users` rows to the sender and nowhere else, not into the
- * job's result and not into the log.
+ * Build and send the close-out email, to the host alone. Never throws: the competition
+ * is closed, and a failed job would be retried into a competition that needs nothing
+ * more. The host's address goes from their `users` row to the sender and nowhere else,
+ * not into the job's result and not into the log. No participant's row is read.
  */
 async function sendCloseEmail(
-  content: Omit<CloseEmailInput, 'hostEmail' | 'participantEmails' | 'standings'> & {
-    standings: readonly FinalStanding[]
-  },
+  content: Omit<CloseEmailInput, 'hostEmail'>,
   competitionId: string,
   hostId: string,
   deps: CloseJobDeps,
 ): Promise<EmailOutcome> {
-  let sent = 0
   try {
-    const emailOf = async (userId: string) => {
-      const user = await deps.tools.get<{ email?: string }>('users', userId)
-      return user.success ? user.data.record.data.email : undefined
-    }
-    const participantEmails: (string | undefined)[] = []
-    const ids = content.standings.map((standing) => standing.participantId)
-    for (let from = 0; from < ids.length; from += CLOSE_PARALLEL) {
-      participantEmails.push(
-        ...(await Promise.all(ids.slice(from, from + CLOSE_PARALLEL).map(emailOf))),
-      )
-    }
-    const messages = closeEmails({
+    const host = await deps.tools.get<{ email?: string }>('users', hostId)
+    const message = closeEmail({
       ...content,
-      hostEmail: await emailOf(hostId),
-      participantEmails,
+      hostEmail: host.success ? host.data.record.data.email : undefined,
     })
-    if (messages.length === 0) return 'none'
-
-    const recipients = messages.reduce((count, message) => count + message.bcc.length, 1)
+    if (!message) return 'none'
     if (!deps.sendEmail) {
-      console.info(
-        `[close] ${competitionId}: email off here; ${messages.length} message(s) for ${recipients} recipient(s) not sent`,
-      )
+      console.info(`[close] ${competitionId}: email off here; the host's message was not sent`)
       return 'off'
     }
-    for (const message of messages) {
-      await deps.sendEmail(message)
-      sent += 1
-    }
-    console.info(
-      `[close] ${competitionId}: emailed ${recipients} recipient(s) in ${sent} message(s)`,
-    )
+    await deps.sendEmail(message)
+    console.info(`[close] ${competitionId}: emailed the host`)
     return 'sent'
   } catch (error) {
     const reason = withoutAddresses(error instanceof Error ? error.message : String(error))
-    console.error(`[close] ${competitionId}: email failed after ${sent} message(s): ${reason}`)
+    console.error(`[close] ${competitionId}: email failed: ${reason}`)
     return 'failed'
   }
 }

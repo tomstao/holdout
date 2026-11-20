@@ -29,8 +29,6 @@ function emailSender(env: Env): CloseJobDeps['sendEmail'] {
   return async (message) => {
     await owner.integrations.call('email/send', {
       to: message.to,
-      ...(message.bcc.length > 0 ? { bcc: message.bcc } : {}),
-      reply_to: message.reply_to,
       subject: message.subject,
       text: message.text,
     })

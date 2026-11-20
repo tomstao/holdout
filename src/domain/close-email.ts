@@ -1,31 +1,26 @@
 /**
- * The close-out email (spec F4, step 6): the host in `to`, the participants in `bcc`,
- * the top three and a link.
+ * The close-out email (spec F4, step 6): one message to the host, with the top three
+ * and a link.
  *
- * Pure: it takes addresses and standings and returns messages. Who is asked for the
- * addresses, and what sends the result, is the close job's business
+ * To the host alone. A message needs somebody in `to`, and whoever is there is shown
+ * to every other recipient, so writing to the participants as well would hand each of
+ * them the host's address (docs/decisions/0012-integrations-email-only.md).
+ *
+ * Pure: it takes an address and standings and returns a message. Who is asked for the
+ * address, and what sends the result, is the close job's business
  * (src/server/close.ts).
  *
  * The platform sends as "DeepSpace Apps" from its own address, so the subject and the
- * first line name Holdout. Replies go to the host.
+ * first line name Holdout.
  */
 import { formatScore } from './ranking'
-
-/**
- * Participants per message. The platform's mail provider takes 50 recipients in
- * one message and the host is one of them. A larger competition gets one message per
- * 49 participants, with the host on each.
- */
-export const MAX_BCC = 49
 
 /** The names shown in the email. */
 export const TOP_ROWS = 3
 
-/** One `email/send` request (docs/decisions/0012-integrations-email-only.md). */
+/** One `email/send` request. */
 export interface CloseEmail {
   to: string
-  bcc: string[]
-  reply_to: string
   subject: string
   text: string
 }
@@ -34,13 +29,11 @@ export interface CloseEmailInput {
   title: string
   /** The competition's page. */
   url: string
-  hostName: string
   metricName: string
   scoreDecimals: number
   /** The final standings, winner first. Only the first three are named. */
   standings: readonly { rank: number; participantName: string; finalScore: number }[]
   hostEmail: string | undefined
-  participantEmails: readonly (string | undefined)[]
 }
 
 /** Domains that can never receive mail (RFC 2606), which is what test accounts use. */
@@ -59,9 +52,8 @@ export function deliverable(address: string | undefined): string | undefined {
 const oneLine = (text: string) => text.replace(/\s+/g, ' ').trim()
 
 function bodyOf(input: CloseEmailInput): string {
-  const title = oneLine(input.title)
   const count = input.standings.length
-  const lines = [`Holdout: "${title}" has closed.`, '']
+  const lines = [`Holdout: "${oneLine(input.title)}" has closed.`, '']
   if (count === 0) {
     lines.push('Nobody submitted, so there are no final standings.')
   } else {
@@ -80,41 +72,19 @@ function bodyOf(input: CloseEmailInput): string {
     '',
     `Everyone's rank and how far they moved: ${input.url}`,
     '',
-    'You get this one email because you hosted or entered this competition.',
-    `Replies go to the host, ${oneLine(input.hostName)}.`,
+    'You get this one email because you host this competition. Nobody else gets it.',
     '',
   )
   return lines.join('\n')
 }
 
-/**
- * The messages for a closed competition: none when the host has no address mail can
- * reach, otherwise one per 49 participants (one when there are fewer, or none).
- */
-export function closeEmails(input: CloseEmailInput): CloseEmail[] {
+/** The message for a closed competition, or none when mail cannot reach its host. */
+export function closeEmail(input: CloseEmailInput): CloseEmail | undefined {
   const host = deliverable(input.hostEmail)
-  if (host === undefined) return []
-
-  const seen = new Set([host.toLowerCase()])
-  const participants: string[] = []
-  for (const address of input.participantEmails) {
-    const found = deliverable(address)
-    if (found === undefined || seen.has(found.toLowerCase())) continue
-    seen.add(found.toLowerCase())
-    participants.push(found)
+  if (host === undefined) return undefined
+  return {
+    to: host,
+    subject: `Holdout: final standings for ${oneLine(input.title)}`,
+    text: bodyOf(input),
   }
-
-  const subject = `Holdout: final standings for ${oneLine(input.title)}`
-  const text = bodyOf(input)
-  const messages: CloseEmail[] = []
-  for (let from = 0; from === 0 || from < participants.length; from += MAX_BCC) {
-    messages.push({
-      to: host,
-      bcc: participants.slice(from, from + MAX_BCC),
-      reply_to: host,
-      subject,
-      text,
-    })
-  }
-  return messages
 }
