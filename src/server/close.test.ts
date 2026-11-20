@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { fakeRoom, type FakeRoom } from '../actions/fakes'
 import { finalStandingRecord } from '../contracts/competitions'
+import type { CloseEmail } from '../domain/close-email'
 import {
   CLOSE_CHUNK,
   CLOSE_GRACE_MS,
@@ -13,6 +14,7 @@ import {
 
 const DEADLINE = 1_795_000_000_000
 const SETTLED = DEADLINE + CLOSE_GRACE_MS
+const ORIGIN = 'https://holdout.app.space'
 
 const competition = (change: Record<string, unknown> = {}) => ({
   title: 'Palmer Penguins',
@@ -166,18 +168,21 @@ describe('closeDueCompetitions', () => {
 })
 
 describe('closeCompetition', () => {
+  // These rooms have no `users` rows, so there is nobody to write to: `email: 'none'`.
   const close = (room: FakeRoom, now: number, resumeFrom?: unknown, id = 'c1') => {
     const { handle, told } = step(resumeFrom)
-    return closeCompetition(id, handle, { tools: room.tools, now: () => now }).then((result) => ({
-      result,
-      told,
-    }))
+    return closeCompetition(id, handle, {
+      tools: room.tools,
+      now: () => now,
+      origin: ORIGIN,
+      sendEmail: () => Promise.reject(new Error('no email is expected here')),
+    }).then((result) => ({ result, told }))
   }
 
   it('writes the final standings and closes the competition', async () => {
     const room = scoredRoom({ status: 'closing', closingStartedAt: DEADLINE })
     const { result } = await close(room, SETTLED)
-    expect(result).toEqual({ status: 'closed', participants: 2, submissions: 4 })
+    expect(result).toEqual({ status: 'closed', participants: 2, submissions: 4, email: 'none' })
     expect(room.rows('competitions').get('c1')).toMatchObject({
       status: 'closed',
       closedAt: SETTLED,
@@ -279,6 +284,7 @@ describe('closeCompetition', () => {
       status: 'closed',
       participants: 0,
       submissions: 0,
+      email: 'none',
     })
   })
 
@@ -286,7 +292,7 @@ describe('closeCompetition', () => {
     const room = scoredRoom()
     room.rows('private_scores').delete('s4')
     const { result } = await close(room, SETTLED)
-    expect(result).toEqual({ status: 'closed', participants: 1, submissions: 3 })
+    expect(result).toEqual({ status: 'closed', participants: 1, submissions: 3, email: 'none' })
     expect([...room.rows('final_standings').keys()]).toEqual(['c1:ann'])
   })
 
@@ -318,6 +324,7 @@ describe('closeCompetition', () => {
       status: 'closed',
       participants: participants.length,
       submissions: participants.length,
+      email: 'none',
     })
     expect(room.rows('final_standings').size).toBe(participants.length)
     const ranks = [...room.rows('final_standings').values()].map((row) => row.rank as number)
@@ -345,6 +352,131 @@ describe('closeCompetition', () => {
     const reading = scoredRoom()
     reading.failOn('query:private_scores')
     await expect(close(reading, SETTLED)).rejects.toThrow('private_scores')
+  })
+})
+
+describe('the close-out email', () => {
+  const USERS = {
+    host: { name: 'Ada', email: 'ada@school.edu' },
+    ann: { name: 'Ann', email: 'ann@mail.com' },
+    bob: { name: 'Bob', email: 'bob@mail.com' },
+  }
+
+  /** The scored room, with the people behind its rows. */
+  function mailRoom(change: Record<string, unknown> = {}, users: Record<string, object> = USERS) {
+    const room = scoredRoom(change)
+    for (const [id, user] of Object.entries(users)) room.rows('users').set(id, { ...user })
+    return room
+  }
+
+  /** Close `room`, recording each message and where in the room's calls it was sent. */
+  async function closeAndMail(
+    room: FakeRoom,
+    send: (message: CloseEmail) => Promise<void> = () => Promise.resolve(),
+    now = SETTLED,
+  ) {
+    const sent: CloseEmail[] = []
+    const sentAfter: number[] = []
+    const result = await closeCompetition('c1', step().handle, {
+      tools: room.tools,
+      now: () => now,
+      origin: ORIGIN,
+      sendEmail: (message) => {
+        sent.push(message)
+        sentAfter.push(room.calls.length)
+        return send(message)
+      },
+    })
+    return { result, sent, sentAfter }
+  }
+
+  it('goes to the host with the participants in bcc, after the competition is closed', async () => {
+    const room = mailRoom()
+    const { result, sent, sentAfter } = await closeAndMail(room)
+    expect(result).toEqual({ status: 'closed', participants: 2, submissions: 4, email: 'sent' })
+    expect(sent).toHaveLength(1)
+    expect(sent[0]).toMatchObject({
+      to: 'ada@school.edu',
+      bcc: ['bob@mail.com', 'ann@mail.com'],
+      reply_to: 'ada@school.edu',
+      subject: 'Holdout: final standings for Palmer Penguins',
+    })
+    expect(sent[0]?.text).toContain('1. BOB  0.7500\n2. ANN  0.6000\n')
+    expect(sent[0]?.text).toContain(`${ORIGIN}/c/c1`)
+    // The write that closes the competition comes first: it is what makes the send happen once.
+    const closedAt = room.calls.lastIndexOf('update:competitions:c1')
+    expect(closedAt).toBeGreaterThan(-1)
+    expect(sentAfter[0]).toBeGreaterThan(closedAt)
+  })
+
+  it('is not sent again when the job runs again', async () => {
+    const room = mailRoom()
+    await closeAndMail(room)
+    const again = await closeAndMail(room, undefined, SETTLED + 60_000)
+    expect(again.result).toEqual({ status: 'skipped', reason: 'already_closed' })
+    expect(again.sent).toEqual([])
+  })
+
+  it('is not sent before the close: not early, and not by a step that only continues', async () => {
+    expect((await closeAndMail(mailRoom(), undefined, DEADLINE - 1)).sent).toEqual([])
+    expect((await closeAndMail(mailRoom(), undefined, DEADLINE + 1_000)).sent).toEqual([])
+
+    const failing = mailRoom()
+    failing.failOn('update:competitions')
+    const sent: CloseEmail[] = []
+    await expect(
+      closeCompetition('c1', step().handle, {
+        tools: failing.tools,
+        now: () => SETTLED,
+        origin: ORIGIN,
+        sendEmail: (message) => Promise.resolve(void sent.push(message)),
+      }),
+    ).rejects.toThrow('competitions c1')
+    expect(sent).toEqual([])
+  })
+
+  it('closes the competition all the same when the send is refused', async () => {
+    const room = mailRoom()
+    const { result } = await closeAndMail(room, () =>
+      Promise.reject(new Error('email/send failed: ann@mail.com is on the suppression list')),
+    )
+    expect(result).toEqual({ status: 'closed', participants: 2, submissions: 4, email: 'failed' })
+    expect(room.rows('competitions').get('c1')?.status).toBe('closed')
+  })
+
+  it('sends nothing when the host has no address mail can reach', async () => {
+    const testAccounts = mailRoom(
+      {},
+      {
+        host: { name: 'Alice', email: 'alice@deepspace.test' },
+        ann: { name: 'Ann', email: 'ann@mail.com' },
+      },
+    )
+    const { result, sent } = await closeAndMail(testAccounts)
+    expect(result).toMatchObject({ status: 'closed', email: 'none' })
+    expect(sent).toEqual([])
+  })
+
+  it('builds the messages and sends none where there is no sender', async () => {
+    const room = mailRoom()
+    const result = await closeCompetition('c1', step().handle, {
+      tools: room.tools,
+      now: () => SETTLED,
+      origin: ORIGIN,
+    })
+    expect(result).toMatchObject({ status: 'closed', email: 'off' })
+  })
+
+  it('writes to the host alone when nobody submitted', async () => {
+    const room = fakeRoom({ competitions: { c1: competition() }, users: { host: USERS.host } })
+    const { result, sent } = await closeAndMail(room)
+    expect(result).toMatchObject({ participants: 0, email: 'sent' })
+    expect(sent.map((message) => [message.to, message.bcc])).toEqual([['ada@school.edu', []]])
+  })
+
+  it('keeps every address out of the job’s result', async () => {
+    const { result } = await closeAndMail(mailRoom())
+    expect(JSON.stringify(result)).not.toContain('@')
   })
 })
 
