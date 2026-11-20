@@ -290,8 +290,8 @@ sequenceDiagram
   J->>J: ranking.finalStandings() (domain)
   J->>R: upsert final_standings in chunks (ctx.continue between chunks)
   J->>R: set status closed, closedAt
-  J->>R: read the host's and the participants' addresses (users)
-  J-->>M: one email: host in "to", participants in "bcc", 49 to a message
+  J->>R: read the host's address (users)
+  J-->>M: one email, to the host alone
 ```
 
 Every step can run twice without harm: standings have deterministic ids and the job stops
@@ -312,7 +312,7 @@ that the rows no longer change and every step computes the same standings. The l
 | Probing the public leaderboard                                          | Daily limit; final ranking on private rows. `scoreDecimals` is how a score is shown, not a defence: the unrounded score is in the public record and in the action's answer                                              |
 | Someone overwrites a dataset file                                       | Files live in the host's `self` folder, which only the host and the Worker can write (`app` scope lets any member overwrite: spike S3)                                                                                  |
 | A member triggers, pauses or copies the close task, or enqueues the job | No cron or job socket is routed, and only this app's record room is a room (ADR 0016). The JobRoom refuses every client write (spike S7); the task and the job re-check `deadline <= now`, so an early run does nothing |
-| Spending the owner's credits                                            | The integrations proxy serves no integration (ADR 0016). The only paid call is the close-out email, sent by the job and only by the step that closes a competition: one message per 49 participants                     |
+| Spending the owner's credits                                            | The integrations proxy serves no integration (ADR 0016). The only paid call is the close-out email, sent by the job and only by the step that closes a competition: one message, to its host (ADR 0017)                 |
 
 Identity comes only from the verified JWT (`ctx.userId`); no action takes a user id from
 its input.

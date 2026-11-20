@@ -598,13 +598,20 @@ After the deployed run the four spike collections were empty and the file storag
   between any two calls and is retried. Sending after the write that closes the
   competition, in the same step, means a retry finds it closed and sends nothing: once at
   most, with no column to record it. The other order would mail a class twice some day.
+- **`bcc` hides the `bcc` recipients, not whoever is in `to`.** A message needs someone
+  in `to`, so "everyone in `bcc`" does not exist. The plan's "host in `to`, participants
+  in `bcc`" gave every participant the host's address, and anyone who submits one file
+  is a participant. It was built that way, noticed while the owner was looking at the
+  test email, and changed to the host alone before any deploy
+  ([ADR 0017](decisions/0017-close-email-to-the-host-alone.md)). Ask "who learns whose
+  address" of an email design before "does it deliver".
 - **"One email" has a recipient limit.** The platform's provider is understood to take
   50 recipients a message. Read the provider's limits before writing "one request per
-  competition" into a decision ([ADR 0012](decisions/0012-integrations-email-only.md)).
+  competition" into a decision. It no longer applies here: one recipient.
 - **The test accounts cannot receive mail.** Their addresses end in `.test`. A send to
-  one would bounce and count against the sender, so reserved domains are filtered, and
-  so the email cannot be checked by a Playwright run on the live site. It needs a
-  competition hosted by a real account.
+  one would bounce and count against the sender, so a host with a reserved domain gets
+  no email, and so the email cannot be checked by a Playwright run on the live site. It
+  needs a competition hosted by a real account.
 - **Worker code outside the cron task can still make an owner-billed call:**
   `buildCronContext(env, env.OWNER_USER_ID, room).integrations.call(...)` needs only the
   environment. Type-checked and unit-tested with a fake sender; not yet seen running in

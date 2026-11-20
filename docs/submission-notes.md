@@ -29,7 +29,7 @@ each person moved. Spec: [spec.md](spec.md).
 | Job room                           | Closes each one: standings in chunks, idempotent, observable              |
 | App files                          | Dataset downloads, written only by the Worker                             |
 | Auth                               | Google or GitHub sign-in; signed-out visitors can read                    |
-| `email/send` (the one integration) | The close-out email: the host in `to`, the participants in `bcc`          |
+| `email/send` (the one integration) | The close-out email, to the host alone: the top three and a link          |
 
 Left out on purpose, and why: [ADR 0012](decisions/0012-integrations-email-only.md).
 

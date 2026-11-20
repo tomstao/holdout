@@ -109,11 +109,13 @@ needed. S8 was run on 2026-11-20, with the close-out email: both copies arrived.
       with shake-up. Spec: a competition due in 45 seconds closes on its own. Standings are
       written 20 at a time.
 - [x] **PR 11b, close-out email:** spike S8 first (one send with `bcc` and `reply_to` to
-      two of the owner's inboxes; both arrived), then the email from the job: the host in
-      `to`, the participants in `bcc`, 49 to a message, sent once at most and never from
-      a local run ([ADR 0012](decisions/0012-integrations-email-only.md#built-2026-11-20)).
-      Not yet seen on the live site: it needs a competition hosted by a real account to
-      close there.
+      two of the owner's inboxes; both arrived), then the email from the job, sent once
+      at most and never from a local run
+      ([ADR 0012](decisions/0012-integrations-email-only.md#built-2026-11-20)). It goes to
+      the host alone: with participants in `bcc` each of them was shown the host's
+      address, so the owner changed it before it was ever deployed
+      ([ADR 0017](decisions/0017-close-email-to-the-host-alone.md)). Not yet seen on the
+      live site: it needs a competition hosted by a real account to close there.
 - [x] **PR 12, design**, in three parts so each can be reviewed on its own:
   - [x] **12a, theme and chrome:** the Holdout theme with an AA check, IBM Plex served by
         the app, the wordmark and favicon, Navigation
