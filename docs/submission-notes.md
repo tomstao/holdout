@@ -4,8 +4,11 @@ Draft of the note for the DeepSpace portal, filled in as the build goes. The por
 for: what was built, the DeepSpace integrations used, the main trade-off, what the agent
 did, and what the applicant verified.
 
-**Live URL:** <https://holdout.app.space>
-**Repository:** <https://github.com/tomstao/holdout>
+- **Live URL:** <https://holdout.app.space>
+- **Demo competition:**
+  <https://holdout.app.space/c/ff94aae4-8438-4ed6-a3c4-37bbd7850ca2> (Palmer Penguins,
+  practice: the labels are public; open until 2027-02-17)
+- **Repository:** <https://github.com/tomstao/holdout>
 
 ## What I built
 
@@ -76,8 +79,12 @@ _Kept up to date per session._
     assistant the app does not have, an integrations proxy billed to the owner, a file
     proxy that took uploads, and a built-in collection open to signed-out sockets
     ([ADR 0016](decisions/0016-serve-only-what-the-app-uses.md)).
-  - Left 403 unit tests and 41 Playwright tests (against the real room and file storage)
+  - Left 406 unit tests and 41 Playwright tests (against the real room and file storage)
     passing, and the design rules checked in CI.
+  - Created the demo competition on the live site in my browser, with my values and my
+    go-ahead for the one click that cannot be undone, then checked its page signed out.
+    Pointed the landing's first button at it and, after my deploy, ran the smoke tests
+    against the live site.
 - **Where I directed or corrected it** (_a draft from the session; edit or delete_):
   - Set the working rules up front: small conventional commits, hooks never skipped, one
     reviewable pull request at a time, deploys only by me, the official DeepSpace docs
@@ -106,8 +113,6 @@ From [plan.md](plan.md):
 - **The close-out email.** The job is ready for it; the one platform check left (a send
   with `bcc` and `reply_to`) needs two inboxes of mine, so nothing is wired to real
   recipients yet. The page shows the results either way.
-- **The demo competition on the deployed app**, and the landing's "Try the demo
-  competition" link, which needs that competition's id.
 - **The name of each uploaded file is in the public submission row.** The page shows it
   only to its owner; hiding it from the wire needs a collection only the owner reads
   ([ADR 0007](decisions/0007-derive-the-leaderboard-from-submissions.md)).

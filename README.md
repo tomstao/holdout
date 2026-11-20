@@ -9,11 +9,12 @@ updates live for everyone watching. Part of the answer key is held out: at the d
 the private leaderboard, scored on rows nobody saw a score for, replaces the public one,
 and the page shows how far each person moved.
 
-> **Status, 2026-11-19:** the features of v1 are built, tested and live at
-> <https://holdout.app.space>. Still open: the close-out email, the demo competition, and
-> the last walk through the acceptance criteria on the live site
-> ([docs/plan.md](docs/plan.md)). The live site shows the owner's last deploy, which can
-> be behind `main`.
+> **Status, 2026-11-20:** the features of v1 are built, tested and live at
+> <https://holdout.app.space>. Try it on the practice competition,
+> [Palmer Penguins](https://holdout.app.space/c/ff94aae4-8438-4ed6-a3c4-37bbd7850ca2),
+> open until 2027-02-17. Still open: the close-out email and the last walk through the
+> acceptance criteria on the live site ([docs/plan.md](docs/plan.md)). The live site
+> shows the owner's last deploy, which can be behind `main`.
 
 ## What is in it
 
