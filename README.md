@@ -9,12 +9,13 @@ updates live for everyone watching. Part of the answer key is held out: at the d
 the private leaderboard, scored on rows nobody saw a score for, replaces the public one,
 and the page shows how far each person moved.
 
-> **Status, 2026-11-20:** the features of v1 are built, tested and live at
+> **Status, 2026-11-20: v1.** Every feature of v1 is built, tested and live at
 > <https://holdout.app.space>. Try it on the practice competition,
 > [Palmer Penguins](https://holdout.app.space/c/ff94aae4-8438-4ed6-a3c4-37bbd7850ca2),
-> open until 2027-02-17. Still open: the close-out email and the last walk through the
-> acceptance criteria on the live site ([docs/plan.md](docs/plan.md)). The live site
-> shows the owner's last deploy, which can be behind `main`.
+> open until 2027-02-17. The spec's acceptance criteria were walked on the live site;
+> [docs/plan.md](docs/plan.md#the-acceptance-walk-through-2026-11-20) has what passed
+> and what was not checked. The live site shows the owner's last deploy, which can be
+> behind `main`.
 
 ## What is in it
 
@@ -27,7 +28,8 @@ and the page shows how far each person moved.
 
 At its deadline a competition closes on its own: a scheduled task finds it, a job scores
 each participant's two best public submissions on the private rows, and the page shows
-the final standings and how far each person moved.
+the final standings and how far each person moved. The host gets one email with the top
+three; nobody else is written to.
 
 ## Quick start
 

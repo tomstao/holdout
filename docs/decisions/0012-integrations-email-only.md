@@ -42,8 +42,9 @@ copies arrived. The owner reported it as "from deepspace, didn't show the sender
 read here as: the sender shown is DeepSpace, and neither copy shows the other address.
 Not confirmed by the owner: where Reply goes. The spike asked for a send "from
 a job"; the call from the job is the same request, signed with the owner's token by
-`buildCronContext`, and is first exercised for real by the first competition a real
-account hosts that closes on the live site.
+`buildCronContext`. That call was made by the deployed job later the same day, for a
+test competition the owner's account hosted: the job logged `"email":"sent"` and the
+account's usage showed the second call ([plan](../plan.md#the-acceptance-walk-through-2026-11-20)).
 
 **What the build settled:**
 

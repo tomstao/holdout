@@ -114,8 +114,8 @@ needed. S8 was run on 2026-11-20, with the close-out email: both copies arrived.
       ([ADR 0012](decisions/0012-integrations-email-only.md#built-2026-11-20)). It goes to
       the host alone: with participants in `bcc` each of them was shown the host's
       address, so the owner changed it before it was ever deployed
-      ([ADR 0017](decisions/0017-close-email-to-the-host-alone.md)). Not yet seen on the
-      live site: it needs a competition hosted by a real account to close there.
+      ([ADR 0017](decisions/0017-close-email-to-the-host-alone.md)). Sent by the
+      live job on 2026-11-20 for a test competition the owner's account hosted (below).
 - [x] **PR 12, design**, in three parts so each can be reviewed on its own:
   - [x] **12a, theme and chrome:** the Holdout theme with an AA check, IBM Plex served by
         the app, the wordmark and favicon, Navigation
@@ -164,22 +164,25 @@ needed. S8 was run on 2026-11-20, with the close-out email: both copies arrived.
 - [x] Walk the spec's acceptance criteria one by one on production. Done 2026-11-20 with
       `tests/live/acceptance.live.ts` and three test accounts, at the owner's word; the
       results are in the table below.
-- [ ] README and [submission-notes.md](submission-notes.md) finished; deploy from a clean
-      `main`; tag `v1.0.0`.
+- [x] README and [submission-notes.md](submission-notes.md) finished; deploy from a clean
+      `main`; tag `v1.0.0`. Done 2026-11-20. Release #7 is that deploy: every commit
+      after `21af317` is docs or tests, so what the site serves is what the tag holds. In
+      the notes, "What I verified myself" and the wording of the trade-off are the
+      owner's and are left for them.
 
 ### Releases
 
 A GitHub-source release records no commit, so this table is the record. Add a row with
 each deploy.
 
-| Release | When (UTC)       | Code                                                         | Checked on the live site                                                                                                                                                                                                                                                                           |
-| ------- | ---------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| #1      | 2026-11-19 16:30 | The scaffold                                                 | It loads                                                                                                                                                                                                                                                                                           |
-| #2, #3  | 2026-11-19 17:38 | The day-1 spikes, then rolled back to #1                     | Spikes S1 to S7 ([lessons](lessons.md))                                                                                                                                                                                                                                                            |
-| #4      | 2026-11-19 21:59 | `main` at `6d09dec`, from a folder with two uncommitted docs | As a visitor: landing, empty list, not-found, sign-in gate; no console errors; the close task runs every minute                                                                                                                                                                                    |
-| #5      | 2026-11-19 22:46 | `main` at `2c2b17a`, from a clean `main`                     | The review's fixes: every `/ws` path but the app's room is 404; integrations and agent tools 404; upload 405; a visitor's write to `canvas-settings` refused; the list still loads                                                                                                                 |
-| #6      | 2026-11-20 02:34 | `main` at `a2c5657`, from a clean `main`                     | The landing's first button reads "Try the demo competition" and opens the demo; the smoke spec passes against the live site, signed out (10 of 10); the close task ran after the deploy; no errors in the logs                                                                                     |
-| #7      | 2026-11-20 03:29 | `main` at `21af317`, from a clean `main`                     | The smoke spec passes against the live site, signed out (10 of 10); no errors in the logs; the close task ran four seconds after the deploy; the walk-through competition closed on its own 30 seconds after its deadline and the new email step logged `"email":"none"` for its test-account host |
+| Release | When (UTC)       | Code                                                         | Checked on the live site                                                                                                                                                                                                                                                                                                                                                                        |
+| ------- | ---------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #1      | 2026-11-19 16:30 | The scaffold                                                 | It loads                                                                                                                                                                                                                                                                                                                                                                                        |
+| #2, #3  | 2026-11-19 17:38 | The day-1 spikes, then rolled back to #1                     | Spikes S1 to S7 ([lessons](lessons.md))                                                                                                                                                                                                                                                                                                                                                         |
+| #4      | 2026-11-19 21:59 | `main` at `6d09dec`, from a folder with two uncommitted docs | As a visitor: landing, empty list, not-found, sign-in gate; no console errors; the close task runs every minute                                                                                                                                                                                                                                                                                 |
+| #5      | 2026-11-19 22:46 | `main` at `2c2b17a`, from a clean `main`                     | The review's fixes: every `/ws` path but the app's room is 404; integrations and agent tools 404; upload 405; a visitor's write to `canvas-settings` refused; the list still loads                                                                                                                                                                                                              |
+| #6      | 2026-11-20 02:34 | `main` at `a2c5657`, from a clean `main`                     | The landing's first button reads "Try the demo competition" and opens the demo; the smoke spec passes against the live site, signed out (10 of 10); the close task ran after the deploy; no errors in the logs                                                                                                                                                                                  |
+| #7      | 2026-11-20 03:29 | `main` at `21af317`, from a clean `main`                     | The smoke spec passes against the live site, signed out (10 of 10); no errors in the logs; the close task ran four seconds after the deploy; the walk-through competition closed on its own 30 seconds after its deadline and the new email step logged `"email":"none"` for its test-account host; a test competition hosted by the owner's account closed and the job logged `"email":"sent"` |
 
 Signed in, on release #5: the owner's browser created the demo competition and saw its
 page as the host. Not checked on any release: editing a competition (F5), and the write
@@ -206,8 +209,17 @@ release #6; the competition closed on release #7.
 The deadline has to be an hour ahead on a deployed app, not the two minutes criterion 5
 names. The close job's line in the live log read
 `{"status":"closed","participants":2,"submissions":3,"email":"none"}`: the host was a
-test account, whose address mail cannot reach. The email itself is checked with a
-competition hosted by the owner's account; its result is recorded with the final pass.
+test account, whose address mail cannot reach.
+
+**The email half of criterion 5.** A second test competition, hosted by the owner's own
+account and created in the owner's browser on release #7:
+<https://holdout.app.space/c/ede25854-56ea-4361-b82b-54448bddfeec>, "[TEST] Close-out
+email check 2026-11-20", nobody entered. It closed 36 seconds after its deadline and
+the live job logged `emailed the host` and
+`{"status":"closed","participants":0,"submissions":0,"email":"sent"}`; the account's
+usage went from one `email/send` call to two. So the request was made and the platform
+accepted it. Whether the message reached the inbox is for the owner to say: it is in
+"What I verified myself" in [submission-notes.md](submission-notes.md), not here.
 
 Also seen signed out on release #6: an unknown competition says so; `/host/new` and the
 Submit tab ask for a sign-in; both actions answer 401 without a token.

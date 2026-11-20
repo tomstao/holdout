@@ -35,11 +35,23 @@ Left out on purpose, and why: [ADR 0012](decisions/0012-integrations-email-only.
 
 ## The main trade-off
 
-_To finish at the end. Candidate: deriving the live leaderboard from insert-only
-submission records in the browser instead of storing it. It removes a race DeepSpace
-cannot prevent (no atomic read-modify-write) at the cost of each viewer downloading a
-competition's submissions, which caps a competition at classroom size
-([ADR 0007](decisions/0007-derive-the-leaderboard-from-submissions.md))._
+_A draft from the build's records; put it in your own words._
+
+The live leaderboard is not stored anywhere. Each browser works it out from the public
+submission rows, which are only ever inserted.
+
+- **Why:** DeepSpace records have no atomic read-modify-write. A stored "best score per
+  participant" row would be a race between two submissions arriving together. Rows that
+  are never updated cannot lose that race, and the daily limit uses `uniqueOn` for the
+  one place where two writes must not both win.
+- **What it costs:** every viewer downloads all of a competition's submissions, about 390
+  bytes each, so 5,000 of them are 2 MB in one frame. That caps a competition at
+  classroom size (designed for 200 participants). And a public row is public in full:
+  the name of each uploaded file is readable by anyone who asks the room.
+- **What I would do at ten times the size:** a per-participant best row written by a job,
+  which serialises its writes.
+
+The record: [ADR 0007](decisions/0007-derive-the-leaderboard-from-submissions.md).
 
 ## What the agent did
 
@@ -79,12 +91,28 @@ _Kept up to date per session._
     assistant the app does not have, an integrations proxy billed to the owner, a file
     proxy that took uploads, and a built-in collection open to signed-out sockets
     ([ADR 0016](decisions/0016-serve-only-what-the-app-uses.md)).
-  - Left 406 unit tests and 41 Playwright tests (against the real room and file storage)
-    passing, and the design rules checked in CI.
+- **2026-11-20, the last day (Claude Code):**
   - Created the demo competition on the live site in my browser, with my values and my
     go-ahead for the one click that cannot be undone, then checked its page signed out.
     Pointed the landing's first button at it and, after my deploy, ran the smoke tests
     against the live site.
+  - Walked the spec's acceptance criteria on the live site, once I said to: one test
+    competition created through the form, three test accounts, a signed-out browser.
+    Create, submit, the live board, the daily limit and the closed collections passed;
+    an hour later the competition closed on its own, 30 seconds after its deadline, and
+    every viewer got the final standings ([plan.md](plan.md) has the table). It
+    rehearsed the run against a local server first, because each run leaves a
+    competition on the live site for good.
+  - Built the close-out email after one test send to two inboxes of mine. It first built
+    what the plan said, the host in `to` and the participants in `bcc`. I asked whether
+    the host's address should be hidden; it then said its own recommendation had been
+    wrong, that every participant would have been shown the host's address, and laid
+    out three options. I chose the host alone, and it was changed before any deploy
+    ([ADR 0017](decisions/0017-close-email-to-the-host-alone.md)). After my deploy it
+    created a one-hour test competition under my account; the live job sent the email
+    when it closed.
+  - Left 435 unit tests and 41 Playwright tests (against the real room and file storage)
+    passing, and the design rules checked in CI.
 - **Where I directed or corrected it** (_a draft from the session; edit or delete_):
   - Set the working rules up front: small conventional commits, hooks never skipped, one
     reviewable pull request at a time, deploys only by me, the official DeepSpace docs
@@ -94,6 +122,10 @@ _Kept up to date per session._
     check rather than send to addresses I had not picked.
   - Asked for branch protection on `main` once the first pull requests were in.
   - Told it the plan's days were a timeline, not a pace.
+  - Gave the go-ahead for each thing that cannot be undone on the live site: creating
+    the demo, and the walk-through's test competitions, titled as tests.
+  - Asked "should we hide the email?" when the close-out email was built with the host's
+    address visible to participants, and chose the host alone.
 
 ## What I verified myself
 
@@ -105,19 +137,31 @@ _Fill in with what you checked by hand, not what the agent reported. Suggested:_
       a third window update, let a short competition close
 - [ ] Tried to read `answer_keys` as a participant
 - [ ] Reviewed the actions' authorisation checks line by line
+- [ ] Saw the test email arrive in both of my inboxes, and the close-out email from the
+      live site in my account's
+- [ ] Looked at the closed test competition's final standings and shake-up on the live
+      site
 
 ## Unfinished, and what I would do next
 
 From [plan.md](plan.md):
 
-- **The close-out email has not been seen arriving from the live site.** It is built and
-  unit-tested, and one test send to two inboxes of mine arrived. The first real one goes
-  out when a competition hosted by a real account closes there.
+- **The close-out email has been sent from the live site once.** A test competition I
+  hosted closed and the job's log and my usage show the send. Whether it reached my
+  inbox is in "What I verified myself" above. It has never gone to a host other than me.
 - **The name of each uploaded file is in the public submission row.** The page shows it
   only to its owner; hiding it from the wire needs a collection only the owner reads
   ([ADR 0007](decisions/0007-derive-the-leaderboard-from-submissions.md)).
 - **Nothing limits how often an action may be called.** A refused call is cheap now, but
   there is no rate limit per user.
+- **Participants are not emailed at the close.** Any message to them would show them the
+  host's address, so only the host gets one. Next: a setting for the host, "show my
+  address to participants", or one message per person with a cap on spend
+  ([ADR 0017](decisions/0017-close-email-to-the-host-alone.md)).
+- **Editing a competition was not walked on the live site,** and neither were the write
+  probes against the closed collections. Both pass against the real room locally.
+- **Two test competitions stay listed on the live site beside the demo.** Nothing
+  deletes a competition in v1.
 - **Reference screenshots** for the design were never taken; the screens were checked
   against the design direction and DeepSpace's checklists instead.
 - Out of scope for v1 by decision, each with what would come next: choosing final
