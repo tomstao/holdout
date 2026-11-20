@@ -1,7 +1,7 @@
 # 0012. One integration: the close-out email
 
-**Status:** Accepted, 2026-11-19. Delivery with `bcc` and `reply_to` (spike S8) is not yet
-tested: it needs two owner-controlled addresses.
+**Status:** Accepted, 2026-11-19. Spike S8 confirmed delivery with `bcc` on 2026-11-20 and
+the email is built ([below](#built-2026-11-20)).
 
 ## Context
 
@@ -32,6 +32,43 @@ Left out on purpose:
 - Email addresses go into `bcc`, so participants do not see each other's.
 - The live catalog says the sender is always `notifications@updates.app.space`
   (`from` is ignored), so `reply_to` is set to the host's address.
+
+## Built, 2026-11-20
+
+**Spike S8.** One `email/send` with a `to`, a `bcc` and a `reply_to`, to two inboxes of
+the owner's, through `npx deepspace integrations invoke` as the owner ($0.01). Both
+copies arrived. The owner reported it as "from deepspace, didn't show the sender email",
+read here as: the sender shown is DeepSpace, and neither copy shows the other address.
+Not confirmed by the owner: where Reply goes. The spike asked for a send "from
+a job"; the call from the job is the same request, signed with the owner's token by
+`buildCronContext`, and is first exercised for real by the first competition a real
+account hosts that closes on the live site.
+
+**What the build settled, where it differs from the decision above:**
+
+- **Not always one request.** The platform sends through Resend (DeepSpace's docs),
+  which is understood to take 50 recipients in a message; that limit was not tested
+  here. The job sends one message per 49 participants, the host on
+  each. A class of up to 49 is one request; the 200 the spec is designed for are five
+  ($0.065).
+- **Once at most.** Only the step that sets `closed` sends, after that write. Nothing
+  records that the email went out, so nothing can send it again; a step that dies in
+  between sends none ([ADR 0009](0009-close-with-cron-and-a-job.md)). A refused send is
+  logged and does not fail the job.
+- **The participants see the host's address** (it is the `to` and the `reply_to`), and
+  nobody else's. The host is a teacher writing to a class; a participant can reply to
+  them. This is the decision above as written. The owner was asked whether to hide the
+  host too (everyone in `bcc`, replies to nobody) and had not answered when this was
+  built; it would be a change to `closeEmails` alone.
+- **The sender is DeepSpace's name and address,** so the subject and the first line say
+  "Holdout".
+- **Addresses mail cannot reach are left out** (`.test`, `.example`, `.invalid`,
+  `.localhost`, `example.com`): the platform's test accounts use `.test`. A host with
+  such an address gets no email, and neither do their participants.
+- **Addresses stay out of everything but the request:** not in the job's payload or
+  result, and a provider's error is logged with any address replaced.
+- **Plain text.** No HTML, so nothing a title could inject; titles and names are cut to
+  one line.
 
 ## Revisit when
 

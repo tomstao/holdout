@@ -29,7 +29,7 @@ each person moved. Spec: [spec.md](spec.md).
 | Job room                           | Closes each one: standings in chunks, idempotent, observable              |
 | App files                          | Dataset downloads, written only by the Worker                             |
 | Auth                               | Google or GitHub sign-in; signed-out visitors can read                    |
-| `email/send` (the one integration) | One close-out email per competition. **Not built yet** (see the end)      |
+| `email/send` (the one integration) | The close-out email: the host in `to`, the participants in `bcc`          |
 
 Left out on purpose, and why: [ADR 0012](decisions/0012-integrations-email-only.md).
 
@@ -110,9 +110,9 @@ _Fill in with what you checked by hand, not what the agent reported. Suggested:_
 
 From [plan.md](plan.md):
 
-- **The close-out email.** The job is ready for it; the one platform check left (a send
-  with `bcc` and `reply_to`) needs two inboxes of mine, so nothing is wired to real
-  recipients yet. The page shows the results either way.
+- **The close-out email has not been seen arriving from the live site.** It is built and
+  unit-tested, and one test send to two inboxes of mine arrived. The first real one goes
+  out when a competition hosted by a real account closes there.
 - **The name of each uploaded file is in the public submission row.** The page shows it
   only to its owner; hiding it from the wire needs a collection only the owner reads
   ([ADR 0007](decisions/0007-derive-the-leaderboard-from-submissions.md)).

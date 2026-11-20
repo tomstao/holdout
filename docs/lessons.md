@@ -82,7 +82,7 @@ storage both times. The questions are in [plan.md](plan.md#de-risking-spikes-day
 | S5  | Pass                    | Job: 200 writes in one run (0.9 s), 5 chunks of 40 with `ctx.continue` (1.0 s), 1,200 in one run. Cron task: 200 writes in 0.9 s                                   | Job: 200 writes in one run (5.7 s), 5 chunks of 40 (5.7 s), 1,200 in one run (32.9 s; 3.0 s with 20 in flight). Cron task: 200 writes in 5.4 s (0.45 s with 20 in flight), 1,100 in one run. An action stops at 1,000 |
 | S6  | Pass                    | 4,999 rows arrive as one 1.95 MB WebSocket frame, ready in 82 ms; a new row appears live. With no `limit`, all 5,003 rows arrive                                   | The same frame, ready in 560 ms; a new row appears live                                                                                                                                                               |
 | S7  | Pass                    | With `authorizeWrite: () => false`, `enqueueJob` from the cron task and from an action still ran the job; a member's `useJobs().enqueue` was refused               | The same                                                                                                                                                                                                              |
-| S8  | Not run                 | Moved to day 4 with the close-out email (the owner's choice); needs two owner-controlled addresses and costs $0.013                                                | Not run                                                                                                                                                                                                               |
+| S8  | Pass (2026-11-20)       | Not run locally: one real send was enough                                                                                                                          | One `email/send` through the CLI as the owner, to two of the owner's inboxes: both the `to` and the `bcc` copy arrived, shown as from DeepSpace. $0.01. Where Reply goes was not confirmed                            |
 
 After the deployed run the four spike collections were empty and the file storage showed
 0 B. The two test accounts now have `users` rows in the production room.
@@ -584,3 +584,30 @@ After the deployed run the four spike collections were empty and the file storag
   values the page displayed, and the three drops said "Ready", before Create.
 - **Creating took between four and nine seconds on the live site** for 17 kB of files.
   The button shows its spinner the whole time. Wait; do not click again.
+
+## 2026-11-20: the close-out email
+
+- **A spike of an integration needs no code.**
+  `npx deepspace integrations invoke email/send --body-file <file> --yes --json` makes one
+  real call as the owner, and `npx deepspace app usage` shows the charge at once. Keep
+  the body file out of the repository: it holds real addresses.
+- **`from` can be left out of `email/send`.** The catalog says it is ignored and the send
+  without it worked; the guide still lists it as required. The message arrives as
+  "DeepSpace Apps", so the app has to name itself in the subject and the first line.
+- **An email is sent at most once or at least once; pick one.** A job step can die
+  between any two calls and is retried. Sending after the write that closes the
+  competition, in the same step, means a retry finds it closed and sends nothing: once at
+  most, with no column to record it. The other order would mail a class twice some day.
+- **"One email" has a recipient limit.** The platform's provider is understood to take
+  50 recipients a message. Read the provider's limits before writing "one request per
+  competition" into a decision ([ADR 0012](decisions/0012-integrations-email-only.md)).
+- **The test accounts cannot receive mail.** Their addresses end in `.test`. A send to
+  one would bounce and count against the sender, so reserved domains are filtered, and
+  so the email cannot be checked by a Playwright run on the live site. It needs a
+  competition hosted by a real account.
+- **Worker code outside the cron task can still make an owner-billed call:**
+  `buildCronContext(env, env.OWNER_USER_ID, room).integrations.call(...)` needs only the
+  environment. Type-checked and unit-tested with a fake sender; not yet seen running in
+  the deployed job.
+- **Never log what a provider says back without cleaning it.** A refusal can quote the
+  address it refused. The job replaces anything shaped like an address before logging.
